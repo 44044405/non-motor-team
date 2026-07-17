@@ -1,0 +1,1909 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chin Hock — Renewal Manager</title>
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1a3560">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="CH Renewals">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icons/favicon.png">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg: #faf6e9;
+  --card: #fffef7;
+  --card2: #fdf8e8;
+  --border: #e8d98a;
+  --border2: #f0e9b8;
+  --navy: #1a3560;
+  --navy2: #243f72;
+  --gold: #c49a0a;
+  --gold-bg: #fff8d6;
+  --red: #b83232;
+  --red-bg: #fff0f0;
+  --red-border: #f5c0c0;
+  --orange: #c45c0a;
+  --orange-bg: #fff4ec;
+  --green: #1a7a4a;
+  --green-bg: #edfaf4;
+  --green-border: #a8e6c8;
+  --purple: #5c3a9e;
+  --purple-bg: #f3eeff;
+  --muted: #7a7050;
+  --muted2: #b0a070;
+  --text: #1e1a0e;
+  --teal: #0a6e6e;
+  --teal-bg: #e8f8f8;
+  --teal-border: #9dd8d8;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; }
+
+/* ── LAYOUT ── */
+.shell { display: flex; min-height: 100vh; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 200px; background: var(--navy); flex-shrink: 0;
+  display: flex; flex-direction: column;
+  position: fixed; height: 100vh; z-index: 20;
+}
+.logo { padding: 22px 18px 18px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+.logo-name { font-weight: 800; font-size: 14px; color: #fff; line-height: 1.3; }
+.logo-sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+
+.nav { padding: 10px 0; flex: 1; }
+.nav-btn {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 18px; width: 100%;
+  color: rgba(255,255,255,0.5); font-size: 13px; font-weight: 500;
+  border: none; background: none; cursor: pointer;
+  border-left: 3px solid transparent; text-align: left;
+  font-family: 'Inter', sans-serif; transition: all 0.12s;
+}
+.nav-btn:hover { color: #fff; background: rgba(255,255,255,0.05); }
+.nav-btn.active { color: #ffd84f; border-left-color: #ffd84f; background: rgba(255,216,79,0.08); font-weight: 600; }
+.nav-icon { font-size: 15px; width: 20px; text-align: center; }
+.nav-count {
+  margin-left: auto; font-size: 11px; font-weight: 700;
+  font-family: 'DM Mono', monospace;
+  background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5);
+  padding: 1px 7px; border-radius: 10px;
+}
+.nav-count.alert { background: var(--red); color: #fff; animation: blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.6} }
+
+.sidebar-bottom { padding: 14px 18px; border-top: 1px solid rgba(255,255,255,0.08); }
+.year-switch { display: flex; gap: 4px; }
+.yr-btn { flex: 1; padding: 5px 0; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.4); font-family: 'Inter', sans-serif; transition: all 0.12s; }
+.yr-btn.active { background: #ffd84f; color: var(--navy); }
+.yr-btn-ar { padding: 5px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--border); background: var(--card2); color: var(--muted); font-family: 'Inter', sans-serif; transition: all 0.12s; }
+.yr-btn-ar:hover { border-color: var(--navy); color: var(--navy); }
+.yr-btn-ar.active-ar { background: var(--navy); color: #fff; border-color: var(--navy); }
+.yr-btn-top { padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid var(--border); background: var(--card); color: var(--muted); font-family: 'Inter', sans-serif; transition: all 0.12s; }
+.yr-btn-top:hover { border-color: var(--navy); color: var(--navy); background: var(--card2); }
+.yr-btn-top.active-top { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+/* ── MAIN ── */
+.main { margin-left: 200px; flex: 1; padding: 0; }
+
+/* ── TOPBAR ── */
+.topbar {
+  background: var(--card); border-bottom: 1.5px solid var(--border);
+  padding: 14px 28px; display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 10;
+}
+.topbar-date { font-size: 13px; color: var(--muted); }
+.topbar-date strong { color: var(--navy); font-weight: 700; }
+.topbar-actions { display: flex; gap: 8px; }
+
+.btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; font-family: 'Inter', sans-serif; transition: all 0.12s; }
+.btn:hover { opacity: 0.85; transform: translateY(-1px); }
+.btn-primary { background: var(--navy); color: #fff; }
+.btn-gold { background: #ffd84f; color: var(--navy); }
+.btn-ghost { background: transparent; border: 1.5px solid var(--border); color: var(--muted); }
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+.btn-xs { padding: 3px 9px; font-size: 11px; border-radius: 6px; }
+
+/* ── CONTENT ── */
+.content { padding: 24px 28px; }
+
+/* ── TODAY SECTION ── */
+.today-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.today-title { font-size: 18px; font-weight: 800; color: var(--navy); }
+.today-sub { font-size: 13px; color: var(--muted); }
+
+/* ── ACTION CARDS (today's tasks) ── */
+.action-strip { display: grid; grid-template-columns: repeat(5,1fr); gap: 10px; margin-bottom: 28px; }
+.action-card {
+  background: var(--card); border: 1.5px solid var(--border2);
+  border-radius: 12px; padding: 16px 18px; cursor: pointer;
+  transition: all 0.12s; border-top: 3px solid transparent;
+}
+.action-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
+.action-card.active { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+.action-card.c-red { border-top-color: var(--red); }
+.action-card.c-orange { border-top-color: var(--orange); }
+.action-card.c-purple { border-top-color: var(--purple); }
+.action-card.c-green { border-top-color: var(--green); }
+.ac-num { font-size: 32px; font-weight: 800; font-family: 'DM Mono', monospace; line-height: 1; }
+.c-red .ac-num { color: var(--red); }
+.c-orange .ac-num { color: var(--orange); }
+.c-purple .ac-num { color: var(--purple); }
+.c-green .ac-num { color: var(--green); }
+.ac-label { font-size: 12px; font-weight: 600; color: var(--muted); margin-top: 6px; }
+.ac-sub { font-size: 11px; color: var(--muted2); margin-top: 3px; }
+
+/* ── PIPELINE VIEW ── */
+.pipeline { display: grid; grid-template-columns: repeat(6,1fr); gap: 8px; margin-bottom: 24px; }
+.pipe-col { background: var(--card); border: 1.5px solid var(--border2); border-radius: 12px; overflow: hidden; }
+.pipe-head {
+  padding: 12px 16px; display: flex; align-items: center; gap: 8px;
+  border-bottom: 1.5px solid var(--border2); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;
+}
+.pipe-head .ph-dot { width: 8px; height: 8px; border-radius: 50%; }
+.pipe-count { margin-left: auto; font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 700; padding: 2px 7px; border-radius: 8px; }
+
+/* pipe colors */
+.pipe-contact .pipe-head { background: var(--orange-bg); color: var(--orange); }
+.pipe-contact .ph-dot { background: var(--orange); }
+.pipe-contact .pipe-count { background: var(--orange-bg); color: var(--orange); }
+
+.pipe-waiting .pipe-head { background: var(--gold-bg); color: var(--gold); }
+.pipe-waiting .ph-dot { background: var(--gold); }
+.pipe-waiting .pipe-count { background: var(--gold-bg); color: var(--gold); }
+
+.pipe-payment .pipe-head { background: var(--purple-bg); color: var(--purple); }
+.pipe-payment .ph-dot { background: var(--purple); }
+.pipe-payment .pipe-count { background: var(--purple-bg); color: var(--purple); }
+
+.pipe-done .pipe-head { background: var(--green-bg); color: var(--green); }
+.pipe-done .ph-dot { background: var(--green); }
+.pipe-done .pipe-count { background: var(--green-bg); color: var(--green); }
+
+.pipe-ready .pipe-head { background: var(--teal-bg); color: var(--teal); }
+.pipe-ready .ph-dot { background: var(--teal); }
+.pipe-ready .pipe-count { background: var(--teal-bg); color: var(--teal); }
+
+.pipe-pendingpol .pipe-head { background: #fff0e8; color: #a04000; }
+.pipe-pendingpol .ph-dot { background: #c06010; }
+.pipe-pendingpol .pipe-count { background: #fff0e8; color: #a04000; }
+
+.pipe-body { padding: 10px; max-height: 420px; overflow-y: auto; }
+.pipe-empty { text-align: center; padding: 24px 10px; color: var(--muted2); font-size: 12px; }
+
+/* ── PIPELINE CARD ── */
+.pcard {
+  background: var(--card2); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 10px 12px; margin-bottom: 8px;
+  cursor: pointer; transition: all 0.1s;
+}
+.pcard:hover { border-color: var(--muted2); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.pcard:last-child { margin-bottom: 0; }
+.pcard-name { font-weight: 700; font-size: 12px; color: var(--navy); line-height: 1.3; }
+.pcard-meta { display: flex; align-items: center; gap: 6px; margin-top: 5px; flex-wrap: wrap; }
+.pcard-days { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; }
+.days-red { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+.days-orange { background: var(--orange-bg); color: var(--orange); }
+.days-yellow { background: var(--gold-bg); color: var(--gold); }
+.days-green { background: var(--green-bg); color: var(--green); }
+.pcard-premium { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); }
+.pcard-ins { font-size: 10px; color: var(--muted2); }
+.pcard-note { font-size: 11px; color: var(--muted); margin-top: 5px; font-style: italic; border-top: 1px solid var(--border2); padding-top: 5px; }
+.pcard-actions { display: flex; gap: 5px; margin-top: 7px; }
+
+/* ── ALL RECORDS TABLE ── */
+.table-section { display: none; }
+.table-section.show { display: block; }
+.section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.section-title { font-size: 16px; font-weight: 800; color: var(--navy); }
+
+.tbl-wrap { background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; overflow: hidden; }
+table { width: 100%; border-collapse: collapse; }
+thead th { background: var(--card2); padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1.5px solid var(--border); cursor: pointer; white-space: nowrap; }
+thead th:hover { color: var(--navy); }
+tbody tr { border-bottom: 1px solid var(--border2); cursor: pointer; transition: background 0.08s; }
+tbody tr:hover { background: var(--card2); }
+tbody tr:last-child { border-bottom: none; }
+td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
+.td-name { font-weight: 600; color: var(--navy); max-width: 180px; }
+.td-sub { font-size: 10px; color: var(--muted); margin-top: 1px; }
+.td-mono { font-family: 'DM Mono', monospace; font-size: 12px; }
+
+/* ── BADGES ── */
+.badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.b-red { background: var(--red-bg); color: var(--red); }
+.b-orange { background: var(--orange-bg); color: var(--orange); }
+.b-gold { background: var(--gold-bg); color: var(--gold); }
+.b-green { background: var(--green-bg); color: var(--green); }
+.b-purple { background: var(--purple-bg); color: var(--purple); }
+.b-gray { background: #f0e8cc; color: var(--muted); }
+.b-navy { background: #1a3560; color: #fff; }
+.b-teal { background: var(--teal-bg); color: var(--teal); border: 1px solid var(--teal-border); }
+
+.tag { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+.tag-fire { background: var(--orange-bg); color: var(--orange); }
+.tag-pa { background: rgba(26,53,96,0.08); color: var(--navy); }
+.tag-travel { background: var(--green-bg); color: var(--green); }
+.tag-med { background: var(--gold-bg); color: var(--gold); }
+.tag-gpa { background: var(--purple-bg); color: var(--purple); }
+
+/* ── TOOLBAR ── */
+.toolbar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+.tb-search { flex: 1; min-width: 180px; background: var(--card2); border: 1.5px solid var(--border); border-radius: 8px; padding: 7px 12px; color: var(--text); font-size: 13px; font-family: 'Inter', sans-serif; outline: none; }
+.tb-search:focus { border-color: var(--navy); }
+.tb-select { background: var(--card2); border: 1.5px solid var(--border); border-radius: 8px; padding: 7px 10px; color: var(--text); font-size: 12px; font-family: 'Inter', sans-serif; outline: none; cursor: pointer; }
+
+/* ── MODAL ── */
+.overlay { display: none; position: fixed; inset: 0; background: rgba(10,20,50,0.55); z-index: 100; align-items: center; justify-content: center; }
+.overlay.show { display: flex; }
+.modal { background: var(--card); border: 1.5px solid var(--border); border-radius: 16px; width: 560px; max-width: 95vw; padding: 26px; max-height: 92vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.18); }
+.modal-lg { width: 640px; }
+.modal-hd { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+.modal-title { font-size: 17px; font-weight: 800; color: var(--navy); }
+.modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--muted); line-height: 1; }
+.modal-close:hover { color: var(--text); }
+.modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border2); }
+
+/* Detail grid */
+.dg { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+.dg-full { grid-column: 1/-1; }
+.dg label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; display: block; margin-bottom: 3px; }
+.dg span { font-size: 13px; color: var(--text); }
+.divider { border: none; border-top: 1px solid var(--border2); margin: 16px 0; }
+
+/* Status chips */
+.chips { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 6px; }
+.chip {
+  padding: 6px 13px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  cursor: pointer; border: 1.5px solid transparent; transition: all 0.12s;
+  font-family: 'Inter', sans-serif;
+}
+.chip:hover { opacity: 0.8; }
+.chip-c { background: var(--orange-bg); color: var(--orange); }
+.chip-w { background: var(--gold-bg); color: var(--gold); }
+.chip-p { background: var(--purple-bg); color: var(--purple); }
+.chip-r { background: var(--green-bg); color: var(--green); }
+.chip-h { background: #f0e8cc; color: var(--muted); }
+.chip-ready { background: var(--teal-bg); color: var(--teal); }
+.chip.on { border-color: currentColor; box-shadow: 0 0 0 2px rgba(0,0,0,0.05); }
+
+/* Form fields */
+.frow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.frow-3 { grid-template-columns: 1fr 1fr 1fr; }
+.ff { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+.ff.full { grid-column: 1/-1; }
+.ff label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
+.ff input, .ff select, .ff textarea {
+  background: var(--card2); border: 1.5px solid var(--border);
+  border-radius: 7px; padding: 8px 11px; color: var(--text);
+  font-size: 13px; font-family: 'Inter', sans-serif; outline: none;
+}
+.ff input:focus, .ff select:focus, .ff textarea:focus { border-color: var(--navy); background: #fff; }
+.ff textarea { resize: vertical; min-height: 60px; }
+
+/* Notes textarea in modal */
+.notes-ta { width: 100%; background: var(--card2); border: 1.5px solid var(--border); border-radius: 8px; padding: 9px 12px; color: var(--text); font-size: 13px; font-family: 'Inter', sans-serif; resize: vertical; min-height: 65px; outline: none; }
+.notes-ta:focus { border-color: var(--navy); }
+
+/* Section label */
+.sec-lbl { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+
+/* Progress bar on pcard */
+.progress-row { display: flex; gap: 4px; margin-top: 7px; }
+.prog-step { flex: 1; height: 3px; border-radius: 2px; background: var(--border2); }
+.prog-step.done { background: var(--green); }
+.prog-step.current { background: var(--orange); }
+
+/* Toast */
+.toast { position: fixed; bottom: 22px; right: 22px; background: var(--navy); color: #fff; padding: 11px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; z-index: 300; transform: translateY(60px); opacity: 0; transition: all 0.25s; }
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* Urgent banner */
+.urgent-banner {
+  background: linear-gradient(90deg, var(--red-bg), #fff8f8);
+  border: 1.5px solid var(--red-border); border-radius: 10px;
+  padding: 11px 18px; margin-bottom: 18px;
+  display: none; align-items: center; gap: 12px; font-size: 13px;
+}
+.urgent-banner.show { display: flex; }
+.ub-text strong { color: var(--red); }
+
+/* scrollbar */
+::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-thumb { background: #d0c080; border-radius: 3px; }
+
+
+/* ── FOLLOW-UP TIMELINE ── */
+.timeline { margin-top: 10px; }
+.tl-entry {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 8px 0; border-bottom: 1px solid var(--border2);
+  font-size: 12px;
+}
+.tl-entry:last-child { border-bottom: none; }
+.tl-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--navy); flex-shrink: 0; margin-top: 4px; }
+.tl-dot.dot-contact { background: var(--orange); }
+.tl-dot.dot-waiting { background: var(--gold); }
+.tl-dot.dot-payment { background: var(--purple); }
+.tl-dot.dot-ready { background: var(--teal); }
+.tl-dot.dot-renewed { background: var(--green); }
+.tl-date { font-family: 'DM Mono', monospace; color: var(--muted); font-size: 11px; width: 86px; flex-shrink: 0; padding-top: 1px; }
+.tl-content { flex: 1; }
+.tl-status { font-weight: 700; color: var(--navy); }
+.tl-note { color: var(--muted); margin-top: 2px; font-style: italic; }
+.tl-del { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px; padding: 0 4px; flex-shrink: 0; }
+.tl-del:hover { color: var(--red); }
+
+/* ── ADD FOLLOW-UP FORM ── */
+.followup-form {
+  background: var(--card2); border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 12px 14px; margin-top: 10px;
+}
+.followup-row { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
+.followup-row .ff { margin-bottom: 0; flex: 1; min-width: 120px; }
+
+/* ── PENDING POLICY ── */
+.policy-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+}
+.policy-pending { background: #fff4ec; color: var(--orange); border: 1px solid rgba(196,92,10,0.2); }
+.policy-received { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+
+.pending-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; background: var(--card2);
+  border: 1.5px solid var(--border); border-radius: 8px; margin-bottom: 8px;
+  cursor: pointer; transition: all 0.1s;
+}
+.pending-row:hover { border-color: var(--navy); }
+.pending-row.received { opacity: 0.6; }
+.pending-check {
+  width: 20px; height: 20px; border-radius: 5px;
+  border: 2px solid var(--border); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; background: #fff;
+}
+.pending-check.checked { background: var(--green); border-color: var(--green); color: #fff; }
+.pending-info { flex: 1; }
+.pending-name { font-weight: 700; font-size: 13px; color: var(--navy); }
+.pending-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.pending-date { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+
+/* Pipeline view toggle */
+.view-toggle { display: flex; gap: 4px; background: var(--card2); border: 1.5px solid var(--border); border-radius: 8px; padding: 3px; }
+.vt-btn { padding: 5px 13px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; color: var(--muted); border: none; background: none; font-family: 'Inter', sans-serif; }
+.vt-btn.active { background: var(--navy); color: #fff; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-name">Chin Hock Agency</div>
+    <div class="logo-sub">Renewal Manager</div>
+  </div>
+  <nav class="nav">
+    <button class="nav-btn active" onclick="gotoView('all')" id="nb-all">
+      <span class="nav-icon">📋</span> All Records
+    </button>
+    <button class="nav-btn" onclick="gotoView('pipeline')" id="nb-pipeline">
+      <span class="nav-icon">📊</span> Pipeline
+      <span class="nav-count" id="nc-pendingpol" style="display:none;"></span>
+    </button>
+    <button class="nav-btn" onclick="gotoView('today')" id="nb-today">
+      <span class="nav-icon">⚡</span> Today's Tasks
+      <span class="nav-count alert" id="nc-today">0</span>
+    </button>
+    <div style="margin: 10px 18px; border-top: 1px solid rgba(255,255,255,0.07);"></div>
+    <button class="nav-btn" onclick="gotoView('contact')" id="nb-contact">
+      <span class="nav-icon">📞</span> Need to Contact
+      <span class="nav-count" id="nc-contact">0</span>
+    </button>
+    <button class="nav-btn" onclick="gotoView('waiting')" id="nb-waiting">
+      <span class="nav-icon">⏳</span> Waiting Reply
+      <span class="nav-count" id="nc-waiting">0</span>
+    </button>
+    <button class="nav-btn" onclick="gotoView('payment')" id="nb-payment">
+      <span class="nav-icon">💰</span> Pending Payment
+      <span class="nav-count" id="nc-payment">0</span>
+    </button>
+    <button class="nav-btn" onclick="gotoView('ready')" id="nb-ready">
+      <span class="nav-icon">🚀</span> Ready to Proceed
+      <span class="nav-count" id="nc-ready">0</span>
+    </button>
+    <button class="nav-btn" onclick="gotoView('renewed')" id="nb-renewed">
+      <span class="nav-icon">✅</span> Renewed
+      <span class="nav-count" id="nc-renewed">0</span>
+    </button>
+
+  </nav>
+
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-date">
+      <strong id="today-str">—</strong>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;flex:1;justify-content:center;">
+      <button class="yr-btn-top" onclick="setARYear(2025)" id="yr-ar-2025">2025</button>
+      <button class="yr-btn-top" onclick="setARYear(2026)" id="yr-ar-2026">2026</button>
+      <button class="yr-btn-top active-top" onclick="setARYear(2027)" id="yr-ar-2027">2027</button>
+      <button class="yr-btn-top" onclick="setARYear(0)" id="yr-ar-all">All</button>
+      <div style="width:1px;height:18px;background:var(--border);margin:0 2px;"></div>
+      <select class="tb-select" id="ar-month" onchange="applyARFilter()" style="font-size:12px;padding:5px 8px;min-width:110px;">
+        <option value="">All Months</option>
+        <option value="1">January</option><option value="2">February</option>
+        <option value="3">March</option><option value="4">April</option>
+        <option value="5">May</option><option value="6">June</option>
+        <option value="7">July</option><option value="8">August</option>
+        <option value="9">September</option><option value="10">October</option>
+        <option value="11">November</option><option value="12">December</option>
+      </select>
+    </div>
+    <div class="topbar-actions">
+      <span id="sync-indicator" style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;background:#f0e8cc;color:var(--muted);">⚙ No Sync</span>
+      <button class="btn btn-ghost btn-sm" onclick="showSyncSetup()" title="Google Sheet Sync Settings">⚙ Sheet Sync</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ Export</button>
+      <button class="btn btn-gold" onclick="showAdd()">+ New Record</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- URGENT BANNER -->
+    <div class="urgent-banner" id="urgent-banner">
+      <span style="font-size:18px;">🚨</span>
+      <span class="ub-text"><strong id="ub-txt">0 policies</strong> expiring within 7 days — not yet renewed!</span>
+      <button class="btn btn-sm" style="background:var(--red);color:#fff;margin-left:auto;" onclick="gotoView('today')">See Now</button>
+    </div>
+
+    <!-- ══ TODAY VIEW ══ -->
+    <div id="view-today">
+      <div class="today-header">
+        <div>
+          <div class="today-title">Today's Action List</div>
+          <div class="today-sub" id="today-action-sub">—</div>
+        </div>
+        <div class="view-toggle">
+          <button class="vt-btn active" onclick="switchTodayView('cards',this)" id="tv-cards">Cards</button>
+          <button class="vt-btn" onclick="switchTodayView('table',this)" id="tv-table">Table</button>
+        </div>
+      </div>
+
+      <!-- KPI strip -->
+      <div class="action-strip">
+        <div class="action-card c-red" onclick="gotoView('contact')">
+          <div class="ac-num" id="kpi-contact">0</div>
+          <div class="ac-label">📞 Need to Contact</div>
+          <div class="ac-sub">Expiring ≤ 30 days, not contacted</div>
+        </div>
+        <div class="action-card c-orange" onclick="gotoView('waiting')">
+          <div class="ac-num" id="kpi-waiting">0</div>
+          <div class="ac-label">⏳ Waiting Reply</div>
+          <div class="ac-sub">Contacted, no response yet</div>
+        </div>
+        <div class="action-card c-purple" onclick="gotoView('payment')">
+          <div class="ac-num" id="kpi-payment">0</div>
+          <div class="ac-label">💰 Pending Payment</div>
+          <div class="ac-sub">Agreed, awaiting payment</div>
+        </div>
+        <div class="action-card" style="border-top-color:var(--teal);" onclick="gotoView('ready')">
+          <div class="ac-num" style="color:var(--teal);" id="kpi-ready">0</div>
+          <div class="ac-label" style="color:var(--teal);">🚀 Ready to Proceed</div>
+          <div class="ac-sub">Payment received, open policy</div>
+        </div>
+        <div class="action-card c-green" onclick="gotoView('renewed')">
+          <div class="ac-num" id="kpi-renewed">0</div>
+          <div class="ac-label">✅ Renewed</div>
+          <div class="ac-sub" id="kpi-renewed-sub">This year</div>
+        </div>
+      </div>
+
+      <!-- Today cards (urgent action items) -->
+      <div id="today-cards-wrap">
+        <div class="sec-lbl" style="margin-bottom:10px;" id="today-list-label">—</div>
+        <div id="today-card-list"></div>
+      </div>
+
+      <!-- Today table view -->
+      <div id="today-table-wrap" style="display:none;">
+        <div class="tbl-wrap">
+          <table><thead><tr>
+            <th>Customer</th><th onclick="sortBy('expiry')">Expiry ↕</th>
+            <th>Premium</th><th>Product</th><th>Insurer</th><th>Contact</th><th>Status</th><th></th>
+          </tr></thead>
+          <tbody id="today-tbody"></tbody></table>
+          <div class="pipe-empty" id="today-empty" style="display:none;">✓ Nothing urgent today</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PIPELINE VIEW ══ -->
+    <div id="view-pipeline" style="display:none;">
+      <div class="section-head" style="margin-bottom:16px;">
+        <div class="section-title">Renewal Pipeline</div>
+        <div style="font-size:12px;color:var(--muted);">Click any card to update status</div>
+      </div>
+      <div class="pipeline">
+        <div class="pipe-col pipe-contact">
+          <div class="pipe-head"><span class="ph-dot"></span>Need to Contact<span class="pipe-count" id="pc-contact">0</span></div>
+          <div class="pipe-body" id="pb-contact"><div class="pipe-empty">—</div></div>
+        </div>
+        <div class="pipe-col pipe-waiting">
+          <div class="pipe-head"><span class="ph-dot"></span>Waiting Reply<span class="pipe-count" id="pc-waiting">0</span></div>
+          <div class="pipe-body" id="pb-waiting"><div class="pipe-empty">—</div></div>
+        </div>
+        <div class="pipe-col pipe-payment">
+          <div class="pipe-head"><span class="ph-dot"></span>Pending Payment<span class="pipe-count" id="pc-payment">0</span></div>
+          <div class="pipe-body" id="pb-payment"><div class="pipe-empty">—</div></div>
+        </div>
+        <div class="pipe-col pipe-ready">
+          <div class="pipe-head"><span class="ph-dot"></span>Ready to Proceed<span class="pipe-count" id="pc-ready">0</span></div>
+          <div class="pipe-body" id="pb-ready"><div class="pipe-empty">—</div></div>
+        </div>
+        <div class="pipe-col pipe-done">
+          <div class="pipe-head"><span class="ph-dot"></span>Renewed<span class="pipe-count" id="pc-renewed">0</span></div>
+          <div class="pipe-body" id="pb-renewed"><div class="pipe-empty">—</div></div>
+        </div>
+        <div class="pipe-col pipe-pendingpol">
+          <div class="pipe-head"><span class="ph-dot"></span>Pending Policy<span class="pipe-count" id="pc-pendingpol">0</span></div>
+          <div class="pipe-body" id="pb-pendingpol"><div class="pipe-empty">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ALL RECORDS VIEW ══ -->
+    <div id="view-all" class="table-section">
+      <div class="section-head">
+        <div class="section-title">All Records</div>
+        <div style="font-size:12px;color:var(--muted);" id="all-count">—</div>
+      </div>
+
+      <div class="toolbar">
+        <input class="tb-search" id="tbl-search" placeholder="🔍 Search name, insurer, contact..." oninput="renderAll()">
+        <select class="tb-select" id="tbl-cat" onchange="renderAll()">
+          <option value="">All Categories</option>
+          <option>Fire / Business Ins</option><option>Individual PA / Medical</option>
+          <option>Annual Travel Ins</option><option>Group Medical</option><option>Group PA / GPA</option>
+        </select>
+        <select class="tb-select" id="tbl-ins" onchange="renderAll()">
+          <option value="">All Insurers</option>
+          <option>Allianz</option><option>Generali</option><option>Liberty</option>
+          <option>Pacific</option><option>Kurnia</option><option>Rhb</option><option>Lonpac</option>
+        </select>
+<select class="tb-select" id="tbl-st" onchange="renderAll()">
+          <option value="">All Status</option>
+          <option value="contact">Need to Contact</option>
+          <option value="waiting">Waiting Reply</option>
+          <option value="payment">Pending Payment</option>
+          <option value="ready">Ready to Proceed</option>
+          <option value="renewed">Renewed</option>
+          <option value="hold">Hold</option>
+        </select>
+      </div>
+      <div class="tbl-wrap">
+        <table><thead><tr>
+          <th onclick="sortBy('name')">Customer ↕</th>
+          <th onclick="sortBy('expiry')">Expiry ↕</th>
+          <th onclick="sortBy('premium')">Premium ↕</th>
+          <th>Product</th><th>Insurer</th><th>Contact No.</th>
+          <th>Status</th><th>Notes</th><th></th>
+        </tr></thead>
+        <tbody id="all-tbody"></tbody></table>
+        <div class="pipe-empty" id="all-empty" style="display:none;">No records found.</div>
+      </div>
+    </div>
+
+    <!-- ══ FILTERED VIEWS (contact/waiting/payment/renewed) ══ -->
+    <div id="view-filtered" style="display:none;">
+      <div class="section-head" style="margin-bottom:16px;">
+        <div class="section-title" id="fv-title">—</div>
+        <div style="font-size:12px;color:var(--muted);" id="fv-count">—</div>
+      </div>
+      <div class="tbl-wrap">
+        <table><thead><tr>
+          <th>Customer</th><th onclick="sortBy('expiry')">Expiry ↕</th>
+          <th>Premium</th><th>Product</th><th>Insurer</th><th>Contact No.</th>
+          <th>Notes</th><th></th>
+        </tr></thead>
+        <tbody id="fv-tbody"></tbody></table>
+        <div class="pipe-empty" id="fv-empty" style="display:none;">— None in this stage —</div>
+      </div>
+    </div>
+</div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- ══ DETAIL / EDIT MODAL ══ -->
+<div class="overlay" id="modal-detail" onclick="closeDetail(event)">
+  <div class="modal">
+    <div class="modal-hd">
+      <div>
+        <div class="modal-title" id="md-name">—</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px;" id="md-meta">—</div>
+      </div>
+      <button class="modal-close" onclick="closeDetailDirect()">✕</button>
+    </div>
+    <div class="dg">
+      <div><label>Expiry Date</label><span id="md-expiry">—</span></div>
+      <div><label>Days Left</label><span id="md-days">—</span></div>
+      <div><label>Last Year Premium</label><span id="md-premium" class="td-mono">—</span></div>
+      <div><label>Insurance Co.</label><span id="md-insurer">—</span></div>
+      <div><label>Contact No.</label><span id="md-contact" class="td-mono">—</span></div>
+      <div><label>Year</label><span id="md-year">—</span></div>
+      <div class="dg-full" id="md-remark-row"><label>Remark</label><span id="md-remark" style="color:var(--muted);">—</span></div>
+    </div>
+    <hr class="divider">
+    <div class="sec-lbl">Update Status</div>
+    <div class="chips">
+      <span class="chip chip-c" onclick="pickStatus('contact',this)">📞 Need to Contact</span>
+      <span class="chip chip-w" onclick="pickStatus('waiting',this)">⏳ Waiting Reply</span>
+      <span class="chip chip-p" onclick="pickStatus('payment',this)">💰 Pending Payment</span>
+      <span class="chip chip-ready" onclick="pickStatus('ready',this)">🚀 Ready to Proceed</span>
+      <span class="chip chip-r" onclick="pickStatus('renewed',this)">✅ Renewed</span>
+      <span class="chip chip-h" onclick="pickStatus('hold',this)">⏸ Hold</span>
+    </div>
+    <hr class="divider">
+    <!-- Contact Date -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+      <div class="ff" style="margin-bottom:0;">
+        <label>Date Contacted <span style="color:var(--muted);font-size:9px;">(when you first called/whatsapp)</span></label>
+        <input id="md-contact-date" type="date" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:Inter,sans-serif;outline:none;width:100%;">
+      </div>
+      <div class="ff" style="margin-bottom:0;">
+        <label>Policy Doc Received?</label>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+          <input type="checkbox" id="md-policy-received" style="width:18px;height:18px;cursor:pointer;accent-color:var(--green);">
+          <label for="md-policy-received" style="font-size:13px;font-weight:600;color:var(--text);cursor:pointer;text-transform:none;letter-spacing:0;">Tick when policy doc received</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Follow-up Timeline -->
+    <div class="sec-lbl" style="margin-bottom:6px;">Follow-up History <span style="color:var(--muted);font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;">(stays even after status changes)</span></div>
+    <div class="timeline" id="md-timeline"></div>
+
+    <!-- Add follow-up entry -->
+    <div class="followup-form">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:8px;">+ Add Follow-up Entry</div>
+      <div class="followup-row">
+        <div class="ff"><label>Date</label><input type="date" id="fu-date" style="background:#fff;border:1.5px solid var(--border);border-radius:7px;padding:7px 10px;font-size:12px;font-family:Inter,sans-serif;outline:none;width:100%;"></div>
+        <div class="ff" style="flex:2;"><label>Note</label><input type="text" id="fu-note" placeholder="e.g. Called, will reply tmr / Quoted RM280 / Waiting IC copy..." style="background:#fff;border:1.5px solid var(--border);border-radius:7px;padding:7px 10px;font-size:12px;font-family:Inter,sans-serif;outline:none;width:100%;"></div>
+        <button class="btn btn-primary btn-sm" onclick="addFollowup()" style="flex-shrink:0;height:34px;">Add</button>
+      </div>
+    </div>
+
+    <hr class="divider">
+    <div class="sec-lbl">General Notes</div>
+    <textarea class="notes-ta" id="md-notes" placeholder="e.g. Quoted RM 280, waiting payment by 15 Jan..."></textarea>
+    <div id="invoice-fields" style="display:none; margin-top:14px; padding:14px 16px; background:var(--teal-bg); border:1.5px solid var(--teal-border); border-radius:10px;">
+      <div style="font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:10px;">🚀 Ready to Proceed — Fill in Details <span style="color:var(--red);font-size:10px;">(both fields required)</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="ff" style="margin-bottom:0;">
+          <label>Invoice Number <span style="color:var(--red);">*</span></label>
+          <input id="md-invoice" placeholder="e.g. INV-2027-001" required style="background:#fff;border:1.5px solid var(--teal-border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:Inter,sans-serif;outline:none;">
+        </div>
+        <div class="ff" style="margin-bottom:0;">
+          <label>OR Number (Official Receipt) <span style="color:var(--red);">*</span></label>
+          <input id="md-or" placeholder="e.g. OR-2027-001" required style="background:#fff;border:1.5px solid var(--teal-border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:Inter,sans-serif;outline:none;">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closeDetailDirect()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveDetail()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ADD NEW RECORD MODAL ══ -->
+<div class="overlay" id="modal-add" onclick="closeAdd(event)">
+  <div class="modal modal-lg">
+    <div class="modal-hd">
+      <div>
+        <div class="modal-title">+ New Record</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;">Add a new policy to track</div>
+      </div>
+      <button class="modal-close" onclick="closeAddDirect()">✕</button>
+    </div>
+
+    <div class="frow">
+      <div class="ff full"><label>Customer Name *</label><input id="a-name" placeholder="e.g. TAN AH KOW"></div>
+    </div>
+    <div class="frow">
+      <div class="ff"><label>Expiry Date *</label><input id="a-expiry" type="date"></div>
+      <div class="ff"><label>Last Year Premium (RM)</label><input id="a-premium" type="number" placeholder="0.00" step="0.01"></div>
+    </div>
+    <div class="frow">
+      <div class="ff"><label>Product Category *</label>
+        <select id="a-cat">
+          <option value="Fire / Business Ins">Fire / Business Ins</option>
+          <option value="Individual PA / Medical">Individual PA / Medical</option>
+          <option value="Annual Travel Ins">Annual Travel Ins</option>
+          <option value="Group Medical">Group Medical</option>
+          <option value="Group PA / GPA">Group PA / GPA</option>
+        </select>
+      </div>
+      <div class="ff"><label>Insurance Company *</label>
+        <select id="a-insurer">
+          <option>Allianz</option><option>Generali</option><option>Liberty</option>
+          <option>Pacific</option><option>Kurnia</option><option>Rhb</option><option>Lonpac</option>
+        </select>
+      </div>
+    </div>
+    <div class="frow">
+      <div class="ff"><label>Contact No.</label><input id="a-contact" placeholder="601XXXXXXXX"></div>
+      <div class="ff"><label>Year</label>
+        <select id="a-year"><option value="2025">2025</option><option value="2026">2026</option><option value="2027" selected>2027</option></select>
+      </div>
+    </div>
+    <div class="frow">
+      <div class="ff"><label>Initial Status</label>
+        <select id="a-status">
+          <option value="contact">📞 Need to Contact</option>
+          <option value="waiting">⏳ Waiting Reply</option>
+          <option value="payment">💰 Pending Payment</option>
+          <option value="ready">🚀 Ready to Proceed</option>
+          <option value="renewed">✅ Renewed</option>
+          <option value="hold">⏸ Hold</option>
+        </select>
+      </div>
+      <div class="ff"><label>Quoted Price (RM)</label><input id="a-quoted" type="number" placeholder="0.00" step="0.01"></div>
+    </div>
+    <div class="ff"><label>Notes / Remark</label><textarea id="a-notes" placeholder="e.g. AUTO RENEW / BURGLARY / referred by..."></textarea></div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closeAddDirect()">Cancel</button>
+      <button class="btn btn-gold" onclick="doAdd()">✓ Add Record</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ SYNC SETUP MODAL ══ -->
+<div class="overlay" id="modal-sync" onclick="closeSyncModal(event)">
+  <div class="modal" style="width:520px;">
+    <div class="modal-hd">
+      <div>
+        <div class="modal-title">⚙ Google Sheet Sync</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px;">Auto-sync every change to your Google Sheet</div>
+      </div>
+      <button class="modal-close" onclick="closeSyncDirect()">✕</button>
+    </div>
+
+    <div id="sync-status-box" style="padding:12px 16px;border-radius:10px;margin-bottom:16px;font-size:13px;font-weight:600;background:#f0e8cc;color:var(--muted);">
+      ○ Not connected — paste your Apps Script URL below
+    </div>
+
+    <div class="ff">
+      <label>Apps Script Web App URL <span style="color:var(--red);">*</span></label>
+      <input id="sync-url-input" class="notes-ta" style="min-height:auto;padding:9px 12px;font-family:DM Mono,monospace;font-size:12px;" placeholder="https://script.google.com/macros/s/.../exec">
+    </div>
+
+    <div style="background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;margin-top:12px;font-size:12px;color:var(--muted);line-height:1.8;">
+      <strong style="color:var(--navy);">Haven't set up Apps Script yet?</strong><br>
+      Follow the setup guide to get your URL.<br>
+      Your Sheet ID: <span style="font-family:DM Mono,monospace;color:var(--navy);font-weight:600;">1P9yWABjotSitiLlD_ZameO2DNMj8Mv0ZInw6mlunf_8</span>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="disconnectSync()" id="disconnect-btn" style="display:none;color:var(--red);">Disconnect</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeSyncDirect()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSyncUrl()">Save & Test Connection</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════ DATA ════════════════════════════════════════════════
+const RAW_2026 = [
+  {name:"OOI SOON ENG & TING SWEE ENG",expiry:"2025-05-07",premium:145.8,category:"Fire / Business Ins",insurer:"Allianz",contact:"60164428293",remark:"",year:2025},
+  {name:"LIN KENG BOON",expiry:"2025-06-18",premium:410.5,category:"Fire / Business Ins",insurer:"Allianz",contact:"60124012666",remark:"",year:2025},
+  {name:"CHRIS LEE",expiry:"2026-01-05",premium:829,category:"Individual PA / Medical",insurer:"Generali",contact:"",remark:"AUTO RENEW",year:2026},
+  {name:"OO MEI FONG",expiry:"2026-01-07",premium:329,category:"Annual Travel Ins",insurer:"Generali",contact:"60124937202",remark:"",year:2026},
+  {name:"NELPIN ANG",expiry:"2026-01-07",premium:329,category:"Annual Travel Ins",insurer:"Generali",contact:"60124937202",remark:"",year:2026},
+  {name:"LEE TUCK SENG",expiry:"2026-01-07",premium:879,category:"Fire / Business Ins",insurer:"Generali",contact:"60169869373",remark:"",year:2026},
+  {name:"TERRANCE JUDE D'ANGELUS",expiry:"2026-01-13",premium:482.67,category:"Fire / Business Ins",insurer:"Generali",contact:"60124408783",remark:"FHE-F6047191-12",year:2026},
+  {name:"TERMINAL 33 MART",expiry:"2026-01-30",premium:577,category:"Fire / Business Ins",insurer:"Generali",contact:"60195523519",remark:"",year:2026},
+  {name:"TAN JO VYNN",expiry:"2026-02-04",premium:484.12,category:"Annual Travel Ins",insurer:"Generali",contact:"",remark:"",year:2026},
+  {name:"TEH LING YUN",expiry:"2026-02-05",premium:227.1,category:"Individual PA / Medical",insurer:"Allianz",contact:"601161444531",remark:"",year:2026},
+  {name:"LEE WAH",expiry:"2026-02-06",premium:95,category:"Fire / Business Ins",insurer:"Pacific",contact:"60122267512",remark:"",year:2026},
+  {name:"CHEAH KAH YAN",expiry:"2026-02-18",premium:247.6,category:"Fire / Business Ins",insurer:"Kurnia",contact:"60124975301",remark:"",year:2026},
+  {name:"DOREEN KOH SOO SIANG & LEE EUXIAN",expiry:"2026-02-18",premium:247.6,category:"Fire / Business Ins",insurer:"Kurnia",contact:"60124975301",remark:"不要Renew 没人住",year:2026},
+  {name:"KOH YEE TING",expiry:"2026-02-18",premium:247.6,category:"Fire / Business Ins",insurer:"Kurnia",contact:"60124975301",remark:"",year:2026},
+  {name:"BEH KEAH HUAI",expiry:"2026-03-09",premium:416.1,category:"Individual PA / Medical",insurer:"Allianz",contact:"60199754861",remark:"",year:2026},
+  {name:"WIN STORE HOME ACCESSORIES SDN BHD",expiry:"2026-03-11",premium:2498.8,category:"Fire / Business Ins",insurer:"Generali",contact:"",remark:"",year:2026},
+  {name:"PUSAT PERUBATAN TRADITIONAL TABIB CINA KM TAN",expiry:"2026-03-14",premium:258.4,category:"Fire / Business Ins",insurer:"Generali",contact:"60124799409",remark:"",year:2026},
+  {name:"CHAI BEE LENG",expiry:"2026-03-15",premium:701.7,category:"Annual Travel Ins",insurer:"Generali",contact:"60124881222",remark:"Hold",year:2026},
+  {name:"LEOW PEI LING",expiry:"2026-03-20",premium:1010,category:"Annual Travel Ins",insurer:"Allianz",contact:"60174808880",remark:"",year:2026},
+  {name:"ENG GIAP EONG @ OOI GUIK ENG",expiry:"2026-03-21",premium:406.6,category:"Fire / Business Ins",insurer:"Pacific",contact:"60122267512",remark:"",year:2026},
+  {name:"LOO WAI KONG",expiry:"2026-03-22",premium:122.4,category:"Fire / Business Ins",insurer:"Allianz",contact:"60124878811",remark:"",year:2026},
+  {name:"ALVIN SETIAWAN PUTRA",expiry:"2026-03-23",premium:647.2,category:"Annual Travel Ins",insurer:"Allianz",contact:"60164459133",remark:"",year:2026},
+  {name:"SIM KOK HENG & SIM KOK BENG",expiry:"2026-03-29",premium:253,category:"Fire / Business Ins",insurer:"Allianz",contact:"60124061136",remark:"",year:2026},
+  {name:"GOH GAIK LAN",expiry:"2026-04-02",premium:486,category:"Annual Travel Ins",insurer:"Generali",contact:"60195769741",remark:"",year:2026},
+  {name:"SOW SAY KOW",expiry:"2026-04-07",premium:301.6,category:"Fire / Business Ins",insurer:"Allianz",contact:"60124028822",remark:"",year:2026},
+  {name:"OOI YIN MENG",expiry:"2026-04-07",premium:484.1,category:"Annual Travel Ins",insurer:"Generali",contact:"",remark:"",year:2026},
+  {name:"BULB EIGHTY FOUR SDN BHD",expiry:"2026-04-09",premium:820,category:"Fire / Business Ins",insurer:"Rhb",contact:"60125675166",remark:"BURGLARY",year:2026},
+  {name:"BULB EIGHTY FOUR SDN BHD",expiry:"2026-04-09",premium:269.7,category:"Fire / Business Ins",insurer:"Rhb",contact:"60125675166",remark:"",year:2026},
+  {name:"SAW LIP FUNG AND SAW LI XIAN",expiry:"2026-04-12",premium:573.5,category:"Fire / Business Ins",insurer:"Allianz",contact:"60164430330",remark:"",year:2026},
+  {name:"TAN TEIK TEONG",expiry:"2026-04-16",premium:275.4,category:"Fire / Business Ins",insurer:"Allianz",contact:"60194090405",remark:"",year:2026},
+  {name:"OOI HOCK HOO",expiry:"2026-04-17",premium:398.8,category:"Fire / Business Ins",insurer:"Allianz",contact:"60194442472",remark:"",year:2026},
+  {name:"TWO ZERO TWO SDN BHD",expiry:"2026-04-18",premium:15064.1,category:"Individual PA / Medical",insurer:"Generali",contact:"60124317202",remark:"",year:2026},
+  {name:"KEJURUTERAAN POH HOCK",expiry:"2026-04-26",premium:586,category:"Fire / Business Ins",insurer:"Allianz",contact:"60124531025",remark:"",year:2026},
+  {name:"LIM ZHEN BANG",expiry:"2026-04-27",premium:262.1,category:"Fire / Business Ins",insurer:"Allianz",contact:"60174574967",remark:"",year:2026},
+  {name:"TAN LOO LOON & TAN POH SEE",expiry:"2026-04-27",premium:301.6,category:"Fire / Business Ins",insurer:"Allianz",contact:"60124826477",remark:"",year:2026},
+  {name:"JMS SUPERMART (SUNGAI PUYU) SDN BHD",expiry:"2026-04-27",premium:1869.63,category:"Fire / Business Ins",insurer:"Allianz",contact:"60124682818",remark:"",year:2026},
+  {name:"TANG YONG YEAN",expiry:"2026-05-07",premium:616.1,category:"Fire / Business Ins",insurer:"Allianz",contact:"60175700399",remark:"",year:2026},
+  {name:"LU AH SEE & NG CHEE MIN & GOH SHU FEN",expiry:"2026-05-07",premium:302.55,category:"Fire / Business Ins",insurer:"Allianz",contact:"60174165495",remark:"",year:2026},
+  {name:"BOON CSB WORKSHOP",expiry:"2026-05-12",premium:2751.04,category:"Fire / Business Ins",insurer:"Generali",contact:"60127840311",remark:"",year:2026},
+  {name:"CHONG SHIJIE & CHONG SHISHAN & CHONG SHIYAO",expiry:"2026-05-19",premium:129.6,category:"Fire / Business Ins",insurer:"Kurnia",contact:"60165960452",remark:"",year:2026},
+  {name:"TEOH GHIM ENG & LIM LAY SUAN",expiry:"2026-05-30",premium:199.4,category:"Fire / Business Ins",insurer:"Allianz",contact:"60174214883",remark:"",year:2026},
+  {name:"KOH SAIK YONG",expiry:"2026-05-31",premium:510,category:"Annual Travel Ins",insurer:"Allianz",contact:"60165211259",remark:"",year:2026},
+  {name:"LEE BEE HONG",expiry:"2026-05-31",premium:510,category:"Annual Travel Ins",insurer:"Allianz",contact:"60165211259",remark:"",year:2026},
+  {name:"ANG KIAN HUAT",expiry:"2026-06-12",premium:551,category:"Individual PA / Medical",insurer:"Allianz",contact:"60124317202",remark:"",year:2026},
+  {name:"LOO SIEW CHONG",expiry:"2026-06-12",premium:132.8,category:"Individual PA / Medical",insurer:"Allianz",contact:"60124317202",remark:"",year:2026},
+  {name:"ANNIE ANG",expiry:"2026-06-12",premium:111.2,category:"Individual PA / Medical",insurer:"Allianz",contact:"60124317202",remark:"",year:2026},
+  {name:"JAMIE ANG",expiry:"2026-06-12",premium:461.4,category:"Individual PA / Medical",insurer:"Allianz",contact:"60124317202",remark:"",year:2026},
+  {name:"NELPIN ANG",expiry:"2026-06-12",premium:461.4,category:"Individual PA / Medical",insurer:"Allianz",contact:"60124317202",remark:"",year:2026},
+  {name:"VINCY ANG",expiry:"2026-06-12",premium:111.2,category:"Individual PA / Medical",insurer:"Allianz",contact:"60124317202",remark:"",year:2026},
+  {name:"SY TRANSPORT SERVICE",expiry:"2026-06-13",premium:91,category:"Fire / Business Ins",insurer:"Generali",contact:"60174572267",remark:"",year:2026},
+  {name:"LEAN IM SEE",expiry:"2026-06-20",premium:205.8,category:"Fire / Business Ins",insurer:"Allianz",contact:"601157531505",remark:"",year:2026},
+  {name:"ASHTON LEE YOU ZER",expiry:"2026-06-27",premium:486,category:"Annual Travel Ins",insurer:"Generali",contact:"",remark:"",year:2026},
+  {name:"LEE LAY SUAN",expiry:"2026-06-27",premium:339,category:"Annual Travel Ins",insurer:"Generali",contact:"",remark:"",year:2026},
+  {name:"JANET BRIONES BAJADO",expiry:"2026-06-27",premium:486,category:"Annual Travel Ins",insurer:"Generali",contact:"60169869373",remark:"",year:2026},
+  {name:"KO AH IYU",expiry:"2026-06-27",premium:162,category:"Individual PA / Medical",insurer:"Kurnia",contact:"60164515059",remark:"",year:2026},
+  {name:"TWO ZERO TWO FOOD SDN BHD",expiry:"2026-06-27",premium:123.4,category:"Individual PA / Medical",insurer:"Kurnia",contact:"60124317202",remark:"ONG BOK THIAM",year:2026},
+  {name:"CHAN HUI PING",expiry:"2026-07-02",premium:64.8,category:"Fire / Business Ins",insurer:"Allianz",contact:"60169535386",remark:"",year:2026},
+  {name:"LEE JEE WEN & OOI YUET YI",expiry:"2026-07-07",premium:1012,category:"Annual Travel Ins",insurer:"Generali",contact:"60169869373",remark:"",year:2026},
+  {name:"TEOH KUNG KHYE",expiry:"2026-07-18",premium:468.2,category:"Fire / Business Ins",insurer:"Allianz",contact:"60134888443",remark:"",year:2026},
+  {name:"CHONG KWONG CHUNG",expiry:"2026-07-22",premium:301.6,category:"Fire / Business Ins",insurer:"Allianz",contact:"601110909778",remark:"",year:2026},
+  {name:"ANG CHENG HOCK",expiry:"2026-07-22",premium:1484.2,category:"Fire / Business Ins",insurer:"Kurnia",contact:"60125670270",remark:"",year:2026},
+  {name:"TANG SWEE GOAY",expiry:"2026-07-22",premium:722.8,category:"Fire / Business Ins",insurer:"Allianz",contact:"60124444211",remark:"",year:2026},
+  {name:"TAN TOENG LENG & TAN TOENG BING",expiry:"2026-07-26",premium:203.8,category:"Fire / Business Ins",insurer:"Kurnia",contact:"60124383639",remark:"",year:2026},
+  {name:"GL CONTAINER SERVICES SDN BHD",expiry:"2026-07-27",premium:17488.94,category:"Fire / Business Ins",insurer:"Lonpac",contact:"60179509495",remark:"ETIQA",year:2026},
+  {name:"FOO SIEW MING",expiry:"2026-07-27",premium:388,category:"Fire / Business Ins",insurer:"Kurnia",contact:"60174192541",remark:"CAR+WORKMEN",year:2026},
+  {name:"LIM HOCK ENG",expiry:"2026-07-27",premium:388,category:"Fire / Business Ins",insurer:"Kurnia",contact:"60174192541",remark:"CAR+WORKMEN",year:2026},
+  {name:"OOI AH HENG",expiry:"2026-07-29",premium:64.8,category:"Fire / Business Ins",insurer:"Allianz",contact:"601120752367",remark:"",year:2026},
+  {name:"TAN BENG LAN",expiry:"2026-07-31",premium:272.45,category:"Fire / Business Ins",insurer:"Kurnia",contact:"60164977915",remark:"",year:2026},
+  {name:"YEE CHOI HONG",expiry:"2026-08-01",premium:341.1,category:"Fire / Business Ins",insurer:"Generali",contact:"60124682818",remark:"",year:2026},
+  {name:"TAN PENG KOK",expiry:"2026-08-12",premium:262,category:"Fire / Business Ins",insurer:"Allianz",contact:"60174640537",remark:"",year:2026},
+  {name:"KHOR BOON WOOI",expiry:"2026-08-17",premium:150.2,category:"Fire / Business Ins",insurer:"Allianz",contact:"60164428293",remark:"",year:2026},
+  {name:"OOI GIAP KHOON",expiry:"2026-08-19",premium:474,category:"Annual Travel Ins",insurer:"Generali",contact:"60164018885",remark:"",year:2026},
+  {name:"SY TRANSPORT SERVICE",expiry:"2026-08-21",premium:1582.5,category:"Fire / Business Ins",insurer:"Generali",contact:"60174572267",remark:"",year:2026},
+  {name:"BRILLIANCE AUTO ELECTRICAL",expiry:"2026-08-25",premium:450,category:"Fire / Business Ins",insurer:"Generali",contact:"60105628219",remark:"",year:2026},
+  {name:"LIM POH HOCK",expiry:"2026-08-26",premium:357.5,category:"Fire / Business Ins",insurer:"Allianz",contact:"60124531025",remark:"",year:2026},
+  {name:"CHIN HOCK AGENCY HALIM PA",expiry:"2026-08-27",premium:172,category:"Individual PA / Medical",insurer:"Kurnia",contact:"",remark:"PA SUPREME KURNIA",year:2026},
+  {name:"KHOR YEOW KEE",expiry:"2026-08-27",premium:4050.03,category:"Individual PA / Medical",insurer:"Rhb",contact:"60164851269",remark:"",year:2026},
+  {name:"OOI SEE LING",expiry:"2026-08-28",premium:329,category:"Annual Travel Ins",insurer:"Generali",contact:"60164018885",remark:"",year:2026},
+  {name:"ANG CHENG HOCK",expiry:"2026-08-28",premium:334,category:"Fire / Business Ins",insurer:"Kurnia",contact:"",remark:"",year:2026},
+  {name:"ANG CHENG HOCK",expiry:"2026-08-28",premium:778.95,category:"Fire / Business Ins",insurer:"Kurnia",contact:"60125670270",remark:"",year:2026},
+  {name:"LEE SHU NEE",expiry:"2026-09-01",premium:600.8,category:"Annual Travel Ins",insurer:"Generali",contact:"60166933302",remark:"",year:2026},
+  {name:"JMS SUPERMART SDN BHD",expiry:"2026-09-01",premium:885.4,category:"Group PA / GPA",insurer:"Generali",contact:"60124682818",remark:"",year:2026},
+  {name:"ANG YEE YING",expiry:"2026-09-04",premium:337.2,category:"Individual PA / Medical",insurer:"Allianz",contact:"",remark:"",year:2026},
+  {name:"TAN SIK KOON",expiry:"2026-09-05",premium:97.9,category:"Fire / Business Ins",insurer:"Allianz",contact:"60164613327",remark:"",year:2026},
+  {name:"TAI TEIK YAW",expiry:"2026-09-06",premium:151.3,category:"Fire / Business Ins",insurer:"Allianz",contact:"60124975301",remark:"",year:2026},
+  {name:"TWO ZERO TWO SDN BHD",expiry:"2026-09-07",premium:1030.6,category:"Group PA / GPA",insurer:"Kurnia",contact:"",remark:"",year:2026},
+  {name:"CHEAH KOK PENG",expiry:"2026-09-11",premium:64.8,category:"Fire / Business Ins",insurer:"Allianz",contact:"60174995281",remark:"",year:2026},
+  {name:"LEE LAY SUAN",expiry:"2026-09-12",premium:1259.4,category:"Individual PA / Medical",insurer:"Rhb",contact:"0105384405",remark:"",year:2026},
+  {name:"LEE LAY SUAN",expiry:"2026-09-12",premium:1608.45,category:"Fire / Business Ins",insurer:"Allianz",contact:"",remark:"",year:2026},
+  {name:"LU EE HENG",expiry:"2026-09-12",premium:509,category:"Annual Travel Ins",insurer:"Generali",contact:"60103926017",remark:"",year:2026},
+  {name:"LIM AH LAN",expiry:"2026-09-17",premium:600.8,category:"Annual Travel Ins",insurer:"Generali",contact:"60124682818",remark:"",year:2026},
+  {name:"LIM ZHI YONG",expiry:"2026-09-24",premium:330.5,category:"Fire / Business Ins",insurer:"Allianz",contact:"60145985562",remark:"",year:2026},
+  {name:"SENG MEE LENG",expiry:"2026-09-26",premium:159.8,category:"Fire / Business Ins",insurer:"Allianz",contact:"60124407289",remark:"",year:2026},
+  {name:"NG BEE CHOW",expiry:"2026-09-26",premium:255.7,category:"Fire / Business Ins",insurer:"Generali",contact:"60164443812",remark:"",year:2026},
+  {name:"OOI CHENG HAI & KHOR BEE LIN",expiry:"2026-09-27",premium:453.25,category:"Fire / Business Ins",insurer:"Allianz",contact:"",remark:"WEI NI FATHER (ANG)",year:2026},
+  {name:"TEW AH SWAN",expiry:"2026-10-01",premium:301,category:"Fire / Business Ins",insurer:"Allianz",contact:"60164975817",remark:"",year:2026},
+  {name:"WJD INFRA SDN BHD PLK5428",expiry:"2026-10-06",premium:766,category:"Fire / Business Ins",insurer:"Rhb",contact:"60199646853",remark:"MOBILE EQUIPMENT",year:2026},
+  {name:"ONG WEI LIN & OOI YUET LI",expiry:"2026-10-11",premium:962,category:"Annual Travel Ins",insurer:"Generali",contact:"60126474405",remark:"",year:2026},
+  {name:"TSW ENTERPRISE",expiry:"2026-10-11",premium:577,category:"Fire / Business Ins",insurer:"Generali",contact:"60186630288",remark:"",year:2026},
+  {name:"OOI CHONG HOR",expiry:"2026-10-13",premium:474,category:"Annual Travel Ins",insurer:"Generali",contact:"60124536926",remark:"",year:2026},
+  {name:"ONG BEE KUAN",expiry:"2026-10-13",premium:474,category:"Annual Travel Ins",insurer:"Generali",contact:"60124536926",remark:"",year:2026},
+  {name:"LEE SHU NEE",expiry:"2026-10-20",premium:719.6,category:"Annual Travel Ins",insurer:"Generali",contact:"60166933302",remark:"",year:2026},
+  {name:"ONG JING FU & ONG BOON LEONG",expiry:"2026-10-20",premium:475.7,category:"Fire / Business Ins",insurer:"Lonpac",contact:"60124536926",remark:"P25FB12052383PNG",year:2026},
+  {name:"TAN SIM GUIK",expiry:"2026-10-21",premium:318.9,category:"Fire / Business Ins",insurer:"Allianz",contact:"60174561275",remark:"",year:2026},
+  {name:"TCH (BW) SDN BHD",expiry:"2026-10-24",premium:1044.4,category:"Fire / Business Ins",insurer:"Generali",contact:"60124444211",remark:"",year:2026},
+  {name:"TECHNOCON CONTROL SDN BHD",expiry:"2026-10-25",premium:1312.5,category:"Group Medical",insurer:"Kurnia",contact:"60124093383",remark:"",year:2026},
+  {name:"WEI ZUO TRADING SDN BHD",expiry:"2026-10-28",premium:2811,category:"Fire / Business Ins",insurer:"Allianz",contact:"60164226376",remark:"",year:2026},
+  {name:"JMS SUPERMART (SUNGAI PUYU) SDN BHD",expiry:"2026-10-29",premium:811.4,category:"Group PA / GPA",insurer:"Generali",contact:"60124682818",remark:"",year:2026},
+  {name:"KHOR CHEN LOON",expiry:"2026-11-12",premium:260.3,category:"Fire / Business Ins",insurer:"Allianz",contact:"60124878811",remark:"",year:2026},
+  {name:"NOVEMBER 3 SHOP",expiry:"2026-11-17",premium:577,category:"Fire / Business Ins",insurer:"Generali",contact:"60186630288",remark:"",year:2026},
+  {name:"TAN SIONG KEE",expiry:"2026-11-25",premium:897.7,category:"Fire / Business Ins",insurer:"Allianz",contact:"60194478382",remark:"KINDERGARDEN",year:2026},
+  {name:"TANG HONG YEAN & TAI BOON CHUAN",expiry:"2026-11-26",premium:352.6,category:"Fire / Business Ins",insurer:"Allianz",contact:"60175700399",remark:"",year:2026},
+  {name:"LEONG KOK KWEE",expiry:"2026-11-26",premium:417.2,category:"Annual Travel Ins",insurer:"Generali",contact:"60164018885",remark:"",year:2026},
+  {name:"ENG HOCK PENG",expiry:"2026-11-26",premium:1131.8,category:"Annual Travel Ins",insurer:"Generali",contact:"60124809785",remark:"",year:2026},
+  {name:"ENG ZHI YONG",expiry:"2026-11-26",premium:575.9,category:"Annual Travel Ins",insurer:"Generali",contact:"60124809785",remark:"",year:2026},
+  {name:"WJD INFRA SDN BHD",expiry:"2026-11-26",premium:1954,category:"Fire / Business Ins",insurer:"Rhb",contact:"60199646853",remark:"MOBILE EQUIPMENT",year:2026},
+  {name:"LIM CHIEN LIN",expiry:"2026-11-28",premium:71.8,category:"Fire / Business Ins",insurer:"Allianz",contact:"60165217808",remark:"",year:2026},
+  {name:"TAN SIEW POH",expiry:"2026-11-28",premium:438.7,category:"Fire / Business Ins",insurer:"Allianz",contact:"60164289596",remark:"",year:2026},
+  {name:"FAONGG ANCIENT TEA ENTERPRISE",expiry:"2026-12-03",premium:115.3,category:"Fire / Business Ins",insurer:"Kurnia",contact:"60146011866",remark:"FMD",year:2026},
+  {name:"FAONGG ANCIENT TEA ENTERPRISE",expiry:"2026-12-03",premium:550,category:"Fire / Business Ins",insurer:"Kurnia",contact:"60146011866",remark:"BURGLARY",year:2026},
+  {name:"GOH CHYE SENG",expiry:"2026-12-03",premium:129.6,category:"Fire / Business Ins",insurer:"Kurnia",contact:"60194110986",remark:"FMD",year:2026},
+  {name:"GOH CHYE SENG",expiry:"2026-12-03",premium:223.9,category:"Fire / Business Ins",insurer:"Kurnia",contact:"60194110986",remark:"HOUSE OWNER",year:2026},
+  {name:"HNG @ HONG SIEW LIAN",expiry:"2026-12-05",premium:350.2,category:"Fire / Business Ins",insurer:"Allianz",contact:"60124640229",remark:"",year:2026},
+  {name:"AMBRITEX DEVELOPMENT SDN BHD",expiry:"2026-12-08",premium:295.1,category:"Fire / Business Ins",insurer:"Kurnia",contact:"60122878345",remark:"",year:2026},
+  {name:"JMS SPORT CENTRE",expiry:"2026-12-17",premium:648.9,category:"Fire / Business Ins",insurer:"Allianz",contact:"60124682818",remark:"",year:2026},
+  {name:"TAN BEE LAY",expiry:"2026-12-27",premium:310.4,category:"Fire / Business Ins",insurer:"Allianz",contact:"60174574967",remark:"",year:2026},
+  {name:"VINCY ANG",expiry:"2026-12-28",premium:1326,category:"Annual Travel Ins",insurer:"Generali",contact:"60164402658",remark:"GROUP",year:2026},
+  {name:"ANG KIAN HUAT",expiry:"2026-12-28",premium:600,category:"Annual Travel Ins",insurer:"Generali",contact:"60164402658",remark:"SENIOR",year:2026},
+  {name:"LAM FOONG MARKETING PLT",expiry:"2026-11-26",premium:3091.24,category:"Group Medical",insurer:"Kurnia",contact:"0124809785",remark:"",year:2026},
+];
+
+const RAW_2027 = [
+  {name:"OOI AH HENG",expiry:"2027-07-29",premium:64.8,category:"Fire / Business Ins",insurer:"Allianz",contact:"01157531505",remark:"",year:2027},
+  {name:"LEAN IM SEE",expiry:"2027-06-20",premium:211.7,category:"Fire / Business Ins",insurer:"Allianz",contact:"01157531505",remark:"",year:2027},
+  {name:"LEE JEE WEN",expiry:"2027-07-07",premium:1012,category:"Annual Travel Ins",insurer:"Generali",contact:"60169869373",remark:"",year:2027},
+  {name:"ASHTON LEE YOU ZER",expiry:"2027-06-27",premium:486,category:"Annual Travel Ins",insurer:"Generali",contact:"60169869373",remark:"",year:2027},
+  {name:"CHONG SHIJIE & CHONG SHISHAN & CHONG SHIYAO",expiry:"2027-06-01",premium:129.6,category:"Fire / Business Ins",insurer:"Liberty",contact:"60165960452",remark:"",year:2027},
+  {name:"ANG KIAN HUAT",expiry:"2027-06-12",premium:551,category:"Individual PA / Medical",insurer:"Allianz",contact:"60124317202",remark:"",year:2027},
+  {name:"LOO SIEW CHONG",expiry:"2027-06-12",premium:132.8,category:"Individual PA / Medical",insurer:"Allianz",contact:"60124317202",remark:"",year:2027},
+  {name:"ANNIE ANG",expiry:"2027-06-12",premium:111.2,category:"Individual PA / Medical",insurer:"Allianz",contact:"60124317202",remark:"",year:2027},
+  {name:"VINCY ANG",expiry:"2027-06-12",premium:111.2,category:"Individual PA / Medical",insurer:"Allianz",contact:"60124317202",remark:"",year:2027},
+  {name:"JAMIE ANG",expiry:"2027-06-12",premium:461.4,category:"Individual PA / Medical",insurer:"Allianz",contact:"60124317202",remark:"",year:2027},
+  {name:"NELPIN ANG",expiry:"2027-06-12",premium:461.4,category:"Individual PA / Medical",insurer:"Allianz",contact:"60124317202",remark:"",year:2027},
+  {name:"ANG CHOOI BEOY & LEE TUCK SENG",expiry:"2027-06-13",premium:1313.3,category:"Annual Travel Ins",insurer:"Allianz",contact:"60124923248",remark:"",year:2027},
+  {name:"NELPIN ANG",expiry:"2027-01-07",premium:339,category:"Annual Travel Ins",insurer:"Generali",contact:"60124937202",remark:"",year:2027},
+  {name:"OO MEI FONG",expiry:"2027-12-20",premium:339,category:"Annual Travel Ins",insurer:"Generali",contact:"60124937202",remark:"",year:2027},
+  {name:"LEE TUCK SENG",expiry:"2027-01-07",premium:879.02,category:"Fire / Business Ins",insurer:"Generali",contact:"60169869373",remark:"",year:2027},
+  {name:"YEOH SIEW LIAN",expiry:"2027-01-04",premium:180.7,category:"Individual PA / Medical",insurer:"Liberty",contact:"60124372934",remark:"",year:2027},
+  {name:"TERRANCE JUDE D'ANGELUS",expiry:"2027-01-13",premium:482.7,category:"Fire / Business Ins",insurer:"Generali",contact:"60124408783",remark:"",year:2027},
+  {name:"CHRIS LEE",expiry:"2027-05-01",premium:857,category:"Individual PA / Medical",insurer:"Generali",contact:"",remark:"",year:2027},
+  {name:"TERMINAL 33 MART",expiry:"2027-03-01",premium:577,category:"Fire / Business Ins",insurer:"Generali",contact:"60195523519",remark:"",year:2027},
+  {name:"LEE LAY SUAN",expiry:"2027-03-09",premium:486,category:"Annual Travel Ins",insurer:"Generali",contact:"60105384405",remark:"",year:2027},
+  {name:"ANG CHIN HONG & LIM YEN SHA",expiry:"2027-03-02",premium:1144.8,category:"Fire / Business Ins",insurer:"Allianz",contact:"60105628219",remark:"",year:2027},
+  {name:"SIM KOK HENG & SIM KOK BENG",expiry:"2027-03-29",premium:210.4,category:"Fire / Business Ins",insurer:"Allianz",contact:"60124061136",remark:"",year:2027},
+  {name:"LIM KOOI TIANG",expiry:"2027-03-13",premium:220.6,category:"Individual PA / Medical",insurer:"Liberty",contact:"60164504678",remark:"",year:2027},
+  {name:"TAN YAT NUM",expiry:"2027-03-13",premium:220.6,category:"Individual PA / Medical",insurer:"Liberty",contact:"60164504678",remark:"",year:2027},
+  {name:"LIM TEIK CHYE",expiry:"2027-03-23",premium:220.6,category:"Individual PA / Medical",insurer:"Liberty",contact:"60164504678",remark:"",year:2027},
+  {name:"LOO WAI KONG",expiry:"2027-03-22",premium:126.1,category:"Fire / Business Ins",insurer:"Allianz",contact:"60124878811",remark:"",year:2027},
+  {name:"LEE KEE TONG & HOO MUI LING",expiry:"2027-03-22",premium:150.7,category:"Fire / Business Ins",insurer:"Allianz",contact:"60164575305",remark:"",year:2027},
+  {name:"PUSAT PERUBATAN TRADITIONAL TABIB CINA KM TAN",expiry:"2027-03-14",premium:258.4,category:"Fire / Business Ins",insurer:"Generali",contact:"60124799409",remark:"",year:2027},
+  {name:"WIN STORE HOME ACCESSORIES SDN BHD",expiry:"2027-03-11",premium:2498.75,category:"Fire / Business Ins",insurer:"Generali",contact:"60174808880",remark:"",year:2027},
+  {name:"LEE WAH",expiry:"2027-02-06",premium:95,category:"Fire / Business Ins",insurer:"Pacific",contact:"60122267512",remark:"",year:2027},
+  {name:"TAN JO VYNN",expiry:"2027-04-02",premium:484.1,category:"Annual Travel Ins",insurer:"Generali",contact:"60126474405",remark:"",year:2027},
+  {name:"LIM ZHEN BANG & U MEE YAN & LIM ZHEN YU",expiry:"2027-04-27",premium:269.7,category:"Fire / Business Ins",insurer:"Allianz",contact:"60174574967",remark:"",year:2027},
+  {name:"SAW LIP FUNG",expiry:"2027-04-12",premium:573.5,category:"Fire / Business Ins",insurer:"Allianz",contact:"60164430330",remark:"",year:2027},
+  {name:"LIM ZHEN YE",expiry:"2027-04-07",premium:509,category:"Annual Travel Ins",insurer:"Generali",contact:"60163314452",remark:"",year:2027},
+  {name:"MOEY SHIH WEN",expiry:"2027-03-17",premium:894.5,category:"Individual PA / Medical",insurer:"Generali",contact:"60105384405",remark:"",year:2027},
+  {name:"TWO ZERO TWO SDN BHD",expiry:"2027-12-04",premium:15920.56,category:"Group Medical",insurer:"Generali",contact:"60124317202",remark:"",year:2027},
+  {name:"LIM CHIEW HWA",expiry:"2027-04-13",premium:703,category:"Annual Travel Ins",insurer:"Generali",contact:"60124881222",remark:"",year:2027},
+  {name:"LIM WEY HENG",expiry:"2027-04-13",premium:484.1,category:"Annual Travel Ins",insurer:"Generali",contact:"60124881222",remark:"",year:2027},
+  {name:"CHAI BEE LENG",expiry:"2027-04-13",premium:484.1,category:"Annual Travel Ins",insurer:"Generali",contact:"60124881222",remark:"",year:2027},
+  {name:"TAN TEIK TEONG",expiry:"2027-04-16",premium:275.4,category:"Fire / Business Ins",insurer:"Allianz",contact:"0194090405",remark:"",year:2027},
+  {name:"ENG GIAP EONG & OOI GUIK ENG",expiry:"2027-03-21",premium:406,category:"Fire / Business Ins",insurer:"Pacific",contact:"60122267512",remark:"",year:2027},
+  {name:"LIM SIN KHOON",expiry:"2027-04-14",premium:146.8,category:"Fire / Business Ins",insurer:"Allianz",contact:"60164379007",remark:"",year:2027},
+  {name:"KEJURUTERAAN POH HOCK",expiry:"2027-04-26",premium:603.3,category:"Fire / Business Ins",insurer:"Allianz",contact:"60124531025",remark:"",year:2027},
+  {name:"CHIN HOCK AGENCY",expiry:"2027-04-21",premium:506.62,category:"Fire / Business Ins",insurer:"Generali",contact:"60126474405",remark:"",year:2027},
+  {name:"TAN LOO LOON & TAN POH SEE",expiry:"2027-04-27",premium:301.6,category:"Fire / Business Ins",insurer:"Allianz",contact:"60124826477",remark:"",year:2027},
+  {name:"TANG HONG YEAN",expiry:"2027-05-07",premium:633.2,category:"Fire / Business Ins",insurer:"Allianz",contact:"60175700399",remark:"",year:2027},
+  {name:"LU AH SEE",expiry:"2027-05-07",premium:302.6,category:"Fire / Business Ins",insurer:"Allianz",contact:"60174165495",remark:"",year:2027},
+  {name:"OOI SOON ENG & TING SWEE ENG",expiry:"2027-05-07",premium:301.6,category:"Fire / Business Ins",insurer:"Allianz",contact:"60164428293",remark:"",year:2027},
+  {name:"TEOH GHIM ENG",expiry:"2027-05-30",premium:241,category:"Fire / Business Ins",insurer:"Allianz",contact:"60174214883",remark:"",year:2027},
+  {name:"TAN SHEOW KHIM",expiry:"2027-05-21",premium:600,category:"Annual Travel Ins",insurer:"Generali",contact:"",remark:"",year:2027},
+  {name:"LAI KOOI HWANG",expiry:"2027-05-21",premium:295,category:"Annual Travel Ins",insurer:"Generali",contact:"",remark:"",year:2027},
+];
+
+// ═══════════ STATE ════════════════════════════════════════════
+const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+let activeYear = 2027;
+let activeMonth = 0; // 0 = all months
+let activeView = 'today';
+let sortKey = 'expiry', sortDir = 1;
+let editingId = null;
+let policies = [];
+
+const _daysCache = {};
+function days(d){
+  if(_daysCache[d]!==undefined) return _daysCache[d];
+  const dt=new Date(d); dt.setHours(0,0,0,0);
+  _daysCache[d]=Math.round((dt-TODAY)/86400000);
+  return _daysCache[d];
+}
+
+function guessStatus(r){
+  const rk=(r.remark||'').toLowerCase();
+  if(rk.includes('auto renew')||rk.includes('renewed')) return 'renewed';
+  if(rk.includes('hold')||rk.includes('不要')) return 'hold';
+  return 'contact'; // default = needs to be contacted
+}
+
+function initPolicies(){
+  const all=[...RAW_2026,...RAW_2027];
+  try{
+    const saved=JSON.parse(localStorage.getItem('cha_v3')||'[]');
+    policies=all.map((r,i)=>{
+      const s=saved.find(x=>x.id===i);
+      return{id:i,...r,status:s?.status||guessStatus(r),notes:s?.notes||'',quoted:s?.quoted||0,invoice:s?.invoice||'',ornum:s?.ornum||'',contactDate:s?.contactDate||'',policyReceived:s?.policyReceived||false,followups:s?.followups||[]};
+    });
+    const extras=saved.filter(s=>s.id>=all.length);
+    policies=[...policies,...extras];
+  }catch(e){
+    policies=all.map((r,i)=>({id:i,...r,status:guessStatus(r),notes:'',quoted:0}));
+  }
+}
+
+function save(changedPolicy){
+  try{ localStorage.setItem('cha_v3',JSON.stringify(policies.map(p=>({id:p.id,status:p.status,notes:p.notes,quoted:p.quoted,invoice:p.invoice||'',ornum:p.ornum||'',contactDate:p.contactDate||'',policyReceived:p.policyReceived||false,followups:p.followups||[],name:p.name,expiry:p.expiry,premium:p.premium,category:p.category,insurer:p.insurer,contact:p.contact,remark:p.remark,year:p.year})))); }catch(e){}
+  if(changedPolicy) syncToSheet(changedPolicy);
+}
+
+// ═══════════ HELPERS ══════════════════════════════════════════
+function dayBadge(d){
+  if(d<0) return `<span class="badge b-red">Expired</span>`;
+  if(d===0) return `<span class="badge b-red">Today!</span>`;
+  if(d<=7) return `<span class="pcard-days days-red">${d}d</span>`;
+  if(d<=30) return `<span class="pcard-days days-orange">${d}d</span>`;
+  if(d<=60) return `<span class="pcard-days days-yellow">${d}d</span>`;
+  return `<span class="pcard-days days-green">${d}d</span>`;
+}
+function tblDayBadge(d){
+  if(d<0) return `<span class="badge b-red">Expired</span>`;
+  if(d<=7) return `<span class="badge b-red">${d}d</span>`;
+  if(d<=30) return `<span class="badge b-orange">${d}d</span>`;
+  if(d<=60) return `<span class="badge b-gold">${d}d</span>`;
+  return `<span class="badge b-green">${d}d</span>`;
+}
+function statusBadge(s){
+  return{contact:`<span class="badge b-red">Need Contact</span>`,
+    waiting:`<span class="badge b-gold">Waiting Reply</span>`,
+    payment:`<span class="badge b-purple">Pending Payment</span>`,
+    ready:`<span class="badge b-teal">🚀 Ready to Proceed</span>`,
+    renewed:`<span class="badge b-green">✓ Renewed</span>`,
+    hold:`<span class="badge b-gray">Hold</span>`}[s]||'';
+}
+function catTag(c){
+  if(!c)return'';
+  if(c.includes('Fire'))return`<span class="tag tag-fire">Fire</span>`;
+  if(c.includes('Travel'))return`<span class="tag tag-travel">Travel</span>`;
+  if(c.includes('Group Medical'))return`<span class="tag tag-med">G.Med</span>`;
+  if(c.includes('GPA')||c.includes('Group PA'))return`<span class="tag tag-gpa">GPA</span>`;
+  return`<span class="tag tag-pa">PA</span>`;
+}
+function fmtDate(d){ return new Date(d).toLocaleDateString('en-MY',{day:'2-digit',month:'short',year:'numeric'}); }
+function fmtRM(n){ return 'RM '+Number(n).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function stepIdx(s){ return{contact:0,waiting:1,payment:2,ready:3,renewed:4}[s]??-1; }
+
+// ═══════════ YEAR FILTER ═════════════════════════════════════
+function setYear(y){
+  activeYear=y;
+  ['2026','2027','all'].forEach(x=>document.getElementById('yr-'+x).classList.toggle('active',(y==2026&&x=='2026')||(y==2027&&x=='2027')||(y==0&&x=='all')));
+
+  updateGlobalFilterLabel();
+  refresh();
+}
+
+function applyGlobalFilter(){ refresh(); }
+
+function clearGlobalFilter(){ refresh(); }
+
+const MONTHS=['','January','February','March','April','May','June','July','August','September','October','November','December'];
+function updateGlobalFilterLabel(){ }
+function filtered(){
+  // Use arYear/arMonth as the single source of truth for all views
+  let data = arYear ? policies.filter(p=>p.year===arYear) : policies;
+  if(arMonth) data = data.filter(p => new Date(p.expiry).getMonth()+1 === arMonth);
+  return data;
+}
+
+// ═══════════ VIEWS ════════════════════════════════════════════
+const VIEWS=['today','pipeline','all','contact','waiting','payment','ready','renewed'];
+function gotoView(v){
+  activeView=v;
+  VIEWS.forEach(x=>{
+    const nb=document.getElementById('nb-'+x);
+    if(nb) nb.classList.toggle('active',x===v);
+  });
+  document.getElementById('view-today').style.display=(v==='today')?'block':'none';
+  document.getElementById('view-pipeline').style.display=(v==='pipeline')?'block':'none';
+  document.getElementById('view-all').style.display='none';
+  document.getElementById('view-filtered').style.display='none';
+  document.querySelector('#view-all')?.classList.remove('show');
+  if(v==='all'){ document.getElementById('view-all').style.display='block'; }
+  else if(['contact','waiting','payment','ready','renewed'].includes(v)){
+    document.getElementById('view-filtered').style.display='block';
+  }
+  refresh();
+}
+
+// ═══════════ MAIN REFRESH ════════════════════════════════════
+function refresh(){
+  const data=filtered();
+  const d=data.map(p=>({...p,d:days(p.expiry)}));
+
+  // Counts
+  const nContact=d.filter(p=>p.status==='contact').length;
+  const nWaiting=d.filter(p=>p.status==='waiting').length;
+  const nPayment=d.filter(p=>p.status==='payment').length;
+  const nReady=d.filter(p=>p.status==='ready').length;
+  const nRenewed=d.filter(p=>p.status==='renewed').length;
+  const nPendingPol=d.filter(p=>p.status==='renewed'&&!p.policyReceived).length;
+  const nToday=d.filter(p=>p.d<=30&&p.status!=='renewed'&&p.status!=='hold').length;
+  const nUrgent=d.filter(p=>p.d<=7&&p.status!=='renewed'&&p.status!=='hold').length;
+
+  // Sidebar badges
+  document.getElementById('nc-today').textContent=nToday;
+  document.getElementById('nc-today').className='nav-count'+(nToday>0?' alert':'');
+  document.getElementById('nc-contact').textContent=nContact;
+  document.getElementById('nc-waiting').textContent=nWaiting;
+  document.getElementById('nc-payment').textContent=nPayment;
+  document.getElementById('nc-ready').textContent=nReady;
+  document.getElementById('nc-renewed').textContent=nRenewed;
+  const _ppEl=document.getElementById('nc-pendingpol');
+  if(_ppEl){ if(nPendingPol>0){_ppEl.textContent=nPendingPol;_ppEl.style.display='';_ppEl.className='nav-count alert';}else{_ppEl.style.display='none';} }
+
+  // KPI
+  document.getElementById('kpi-contact').textContent=nContact;
+  document.getElementById('kpi-waiting').textContent=nWaiting;
+  document.getElementById('kpi-payment').textContent=nPayment;
+  document.getElementById('kpi-ready').textContent=nReady;
+  document.getElementById('kpi-renewed').textContent=nRenewed;
+
+  // Urgent banner
+  if(nUrgent>0){
+    document.getElementById('urgent-banner').classList.add('show');
+    document.getElementById('ub-txt').textContent=nUrgent+(nUrgent===1?' policy':' policies');
+  } else { document.getElementById('urgent-banner').classList.remove('show'); }
+
+  // Action sub
+  document.getElementById('today-action-sub').textContent=`${nToday} policies need attention in the next 30 days`;
+
+  // Only render the active view (performance: skip inactive views)
+  if(activeView==='today') renderToday(d);
+  else if(activeView==='pipeline') renderPipeline(d);
+  else if(activeView==='all') renderAll();
+  else if(['contact','waiting','payment','ready','renewed'].includes(activeView)) renderFiltered(activeView,d);
+}
+
+// ═══════════ TODAY VIEW ═══════════════════════════════════════
+let todaySubView='cards';
+function switchTodayView(v,el){
+  todaySubView=v;
+  document.querySelectorAll('.vt-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('today-cards-wrap').style.display=v==='cards'?'block':'none';
+  document.getElementById('today-table-wrap').style.display=v==='table'?'block':'none';
+}
+
+function renderToday(d){
+  const urgent=d.filter(p=>p.d<=7&&p.status!=='renewed'&&p.status!=='hold').sort((a,b)=>a.d-b.d);
+  const soon=d.filter(p=>p.d>7&&p.d<=30&&p.status!=='renewed'&&p.status!=='hold').sort((a,b)=>a.d-b.d);
+  const all=[...urgent,...soon];
+
+  document.getElementById('today-list-label').textContent=
+    all.length?`${urgent.length} urgent (≤7 days) + ${soon.length} upcoming (8–30 days)`:'All clear! Nothing urgent.';
+
+  // Cards
+  const cardList=document.getElementById('today-card-list');
+  if(all.length===0){ cardList.innerHTML=`<div style="text-align:center;padding:40px;color:var(--muted);font-size:14px;">🎉 Nothing urgent today!</div>`; }
+  else{
+    cardList.innerHTML=all.map(p=>{
+      const si=stepIdx(p.status);
+      const steps=['contact','waiting','payment','renewed'];
+      const prog=steps.map((s,i)=>`<div class="prog-step ${i<si?'done':i===si?'current':''}"></div>`).join('');
+      return`<div class="pcard" onclick="openDetail(${p.id})">
+        <div class="pcard-name">${p.name}</div>
+        <div class="pcard-meta">
+          ${dayBadge(p.d)}
+          <span class="pcard-premium">${fmtRM(p.premium)}</span>
+          ${catTag(p.category)}
+          <span class="pcard-ins">${p.insurer}</span>
+        </div>
+        ${p.contact?`<div style="font-size:11px;color:var(--muted);margin-top:4px;">📞 ${p.contact}</div>`:''}
+        ${p.notes?`<div class="pcard-note">📝 ${p.notes}</div>`:''}
+        <div class="progress-row">${prog}</div>
+        <div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;">
+          ${statusBadge(p.status)}
+          ${p.quoted?`<span class="badge b-navy">Quoted: ${fmtRM(p.quoted)}</span>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Table
+  const tbody=document.getElementById('today-tbody');
+  tbody.innerHTML=all.map(p=>`<tr onclick="openDetail(${p.id})">
+    <td class="td-name">${p.name}</td>
+    <td>${fmtDate(p.expiry)}<br>${tblDayBadge(p.d)}</td>
+    <td class="td-mono">${fmtRM(p.premium)}</td>
+    <td>${catTag(p.category)}</td>
+    <td>${p.insurer}</td>
+    <td class="td-mono" style="font-size:11px;">${p.contact||'—'}</td>
+    <td>${statusBadge(p.status)}</td>
+    <td><button class="btn btn-primary btn-xs" onclick="event.stopPropagation();openDetail(${p.id})">Edit</button></td>
+  </tr>`).join('');
+  document.getElementById('today-empty').style.display=all.length?'none':'';
+}
+
+// ═══════════ PIPELINE VIEW ════════════════════════════════════
+function renderPipeline(d){
+  const cols={contact:[],waiting:[],payment:[],ready:[],renewed:[],pendingpol:[]};
+  d.filter(p=>p.status!=='hold').sort((a,b)=>a.d-b.d).forEach(p=>{
+    if(p.status==='renewed' && !p.policyReceived){
+      cols.pendingpol.push(p);
+    }
+    if(cols[p.status]) cols[p.status].push(p);
+  });
+  ['contact','waiting','payment','ready','renewed'].forEach(st=>{
+    const list=cols[st];
+    document.getElementById('pc-'+st).textContent=list.length;
+    document.getElementById('pb-'+st).innerHTML=list.length?list.map(p=>`
+      <div class="pcard" onclick="openDetail(${p.id})">
+        <div class="pcard-name">${p.name}</div>
+        <div class="pcard-meta">${dayBadge(p.d)}<span class="pcard-premium">${fmtRM(p.premium)}</span>${catTag(p.category)}</div>
+        ${p.notes?`<div class="pcard-note">📝 ${p.notes}</div>`:''}
+        ${p.quoted?`<div style="font-size:11px;color:var(--navy);margin-top:4px;font-weight:600;">Quoted: ${fmtRM(p.quoted)}</div>`:''}
+        ${p.invoice?`<div style="font-size:11px;color:var(--teal);margin-top:3px;font-weight:600;">🧾 INV: ${p.invoice}${p.ornum?' | OR: '+p.ornum:''}</div>`:''}
+      </div>`).join(''):`<div class="pipe-empty">—</div>`;
+  });
+  // Pending Policy column — renewed but policy doc not yet received
+  const ppList=cols.pendingpol;
+  document.getElementById('pc-pendingpol').textContent=ppList.length;
+  document.getElementById('pb-pendingpol').innerHTML=ppList.length?ppList.map(p=>`
+    <div class="pcard" onclick="openDetail(${p.id})">
+      <div class="pcard-name">${p.name}</div>
+      <div class="pcard-meta">${dayBadge(p.d)}<span class="pcard-premium">${fmtRM(p.premium)}</span>${catTag(p.category)}</div>
+      ${p.invoice?`<div style="font-size:11px;color:var(--teal);margin-top:4px;font-weight:600;">🧾 ${p.invoice}${p.ornum?' | OR: '+p.ornum:''}</div>`:''}
+      <div style="font-size:11px;color:#a04000;font-weight:600;margin-top:4px;">📄 Waiting for policy doc</div>
+      ${p.notes?`<div class="pcard-note">📝 ${p.notes}</div>`:''}
+    </div>`).join(''):`<div class="pipe-empty" style="color:var(--green);">✓ All policies received</div>`;
+}
+
+
+// ═══════════ ALL RECORDS LOCAL FILTER (year + month) ══════════
+let arYear = 2027;
+let arMonth = 0;
+
+function setARYear(y) {
+  arYear = y;
+  ['2025','2026','2027','all'].forEach(x => {
+    const el = document.getElementById('yr-ar-'+x);
+    if(el){
+      const isActive = (y==2025&&x=='2025')||(y==2026&&x=='2026')||(y==2027&&x=='2027')||(y==0&&x=='all');
+      el.classList.toggle('active-ar', isActive);
+      el.classList.toggle('active-top', isActive);
+    }
+  });
+  updateARFilterTag();
+  refresh(); // refresh ALL views, not just renderAll
+}
+
+function applyARFilter() {
+  const m = document.getElementById('ar-month');
+  arMonth = m ? parseInt(m.value)||0 : 0;
+  updateARFilterTag();
+  renderAll();
+}
+
+function clearARFilter() {
+  arYear = 2027; arMonth = 0;
+  setARYear(2027); // init year buttons
+  const m = document.getElementById('ar-month');
+  if(m) m.value = '';
+  updateARFilterTag();
+  renderAll();
+}
+
+const AR_MONTHS = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function updateARFilterTag() {
+  const tag = document.getElementById('ar-filter-tag');
+  const btn = document.getElementById('ar-clear-btn');
+  const parts = [];
+  if(arYear) parts.push(arYear);
+  if(arMonth) parts.push(AR_MONTHS[arMonth]);
+  if(tag) { tag.textContent = parts.length ? '📅 '+parts.join(' · ') : ''; tag.style.display = parts.length?'inline-flex':'none'; }
+  if(btn) btn.style.display = parts.length ? 'inline-flex' : 'none';
+}
+
+// ═══════════ ALL RECORDS ═════════════════════════════════════
+let allSortKey='expiry',allSortDir=1;
+function sortBy(k){ if(allSortKey===k)allSortDir*=-1; else{allSortKey=k;allSortDir=1;} renderAll(); }
+function renderAll(){
+  const search=document.getElementById('tbl-search').value.toLowerCase();
+  const cat=document.getElementById('tbl-cat').value;
+  const ins=document.getElementById('tbl-ins').value;
+  const st=document.getElementById('tbl-st').value;
+  // Use All Records local filter (arYear/arMonth), not global filter
+  let data = policies.map(p=>({...p,d:days(p.expiry)}));
+  if(arYear) data = data.filter(p=>p.year===arYear);
+  if(arMonth) data = data.filter(p=>new Date(p.expiry).getMonth()+1===arMonth);
+  if(search) data=data.filter(p=>p.name.toLowerCase().includes(search)||p.insurer.toLowerCase().includes(search)||p.contact.includes(search)||(p.remark||'').toLowerCase().includes(search));
+  if(cat) data=data.filter(p=>p.category===cat);
+  if(ins) data=data.filter(p=>p.insurer===ins);
+  if(st) data=data.filter(p=>p.status===st);
+  data.sort((a,b)=>{
+    let av=a[allSortKey],bv=b[allSortKey];
+    if(allSortKey==='expiry'){av=new Date(av);bv=new Date(bv);}
+    if(typeof av==='string')av=av.toLowerCase(),bv=bv.toLowerCase();
+    return av<bv?-allSortDir:av>bv?allSortDir:0;
+  });
+  const arTotal = arYear ? policies.filter(p=>p.year===arYear).length : policies.length;
+  document.getElementById('all-count').textContent=`${data.length} of ${arTotal} records`;
+  document.getElementById('all-empty').style.display=data.length?'none':'';
+  document.getElementById('all-tbody').innerHTML=data.map(p=>`<tr onclick="openDetail(${p.id})">
+    <td class="td-name">${p.name}<div class="td-sub">${p.remark||''}</div></td>
+    <td>${fmtDate(p.expiry)}<br>${tblDayBadge(p.d)}</td>
+    <td class="td-mono">${fmtRM(p.premium)}${p.quoted?`<br><span style="font-size:10px;color:var(--navy);">Q: ${fmtRM(p.quoted)}</span>`:''}</td>
+    <td>${catTag(p.category)}</td>
+    <td style="font-size:12px;">${p.insurer}</td>
+    <td class="td-mono" style="font-size:11px;">${p.contact||'—'}</td>
+    <td>${statusBadge(p.status)}</td>
+    <td style="font-size:11px;color:var(--muted);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.notes||'—'}${p.invoice?`<br><span style="color:var(--teal);font-weight:600;">🧾 ${p.invoice}</span>`:''}</td>
+    <td><button class="btn btn-primary btn-xs" onclick="event.stopPropagation();openDetail(${p.id})">Edit</button></td>
+  </tr>`).join('');
+}
+
+// ═══════════ FILTERED VIEW ════════════════════════════════════
+function renderFiltered(v,d){
+  const titles={contact:'📞 Need to Contact',waiting:'⏳ Waiting Reply',payment:'💰 Pending Payment',ready:'🚀 Ready to Proceed',renewed:'✅ Renewed'};
+  const list=d.filter(p=>p.status===v).sort((a,b)=>a.d-b.d);
+  document.getElementById('fv-title').textContent=titles[v];
+  document.getElementById('fv-count').textContent=`${list.length} policies`;
+  document.getElementById('fv-empty').style.display=list.length?'none':'';
+  document.getElementById('fv-tbody').innerHTML=list.map(p=>`<tr onclick="openDetail(${p.id})">
+    <td class="td-name">${p.name}<div class="td-sub">${p.remark||''}</div></td>
+    <td>${fmtDate(p.expiry)}<br>${tblDayBadge(p.d)}</td>
+    <td class="td-mono">${fmtRM(p.premium)}${p.quoted?`<br><span style="font-size:10px;color:var(--navy);">Q: ${fmtRM(p.quoted)}</span>`:''}</td>
+    <td>${catTag(p.category)}</td>
+    <td style="font-size:12px;">${p.insurer}</td>
+    <td class="td-mono" style="font-size:11px;">${p.contact||'—'}</td>
+    <td style="font-size:11px;color:var(--muted);max-width:160px;">${p.notes||'—'}</td>
+    <td><button class="btn btn-primary btn-xs" onclick="event.stopPropagation();openDetail(${p.id})">Edit</button></td>
+  </tr>`).join('');
+}
+
+// ═══════════ DETAIL MODAL ════════════════════════════════════
+function openDetail(id){
+  editingId=id;
+  const p=policies.find(x=>x.id===id);
+  const d=days(p.expiry);
+  document.getElementById('md-name').textContent=p.name;
+  document.getElementById('md-meta').innerHTML=`${catTag(p.category)} &nbsp;${p.insurer} &nbsp;<span style="color:var(--muted)">${p.year}</span>`;
+  document.getElementById('md-expiry').textContent=fmtDate(p.expiry);
+  document.getElementById('md-days').innerHTML=tblDayBadge(d)+` &nbsp;(${fmtDate(p.expiry)})`;
+  document.getElementById('md-premium').textContent=fmtRM(p.premium);
+  document.getElementById('md-insurer').textContent=p.insurer;
+  document.getElementById('md-contact').textContent=p.contact||'—';
+  document.getElementById('md-year').textContent=p.year;
+  document.getElementById('md-remark').textContent=p.remark||'—';
+  document.getElementById('md-notes').value=p.notes||'';
+
+  // Add quoted price field dynamically
+  let qRow=document.getElementById('md-quoted-row');
+  if(!qRow){
+    const hr=document.querySelector('#modal-detail .divider');
+    qRow=document.createElement('div');
+    qRow.id='md-quoted-row';
+    qRow.style.cssText='margin-bottom:14px;';
+    qRow.innerHTML='<label style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:4px;">Quoted Price (RM)</label><input id="md-quoted" type="number" step="0.01" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:Inter,sans-serif;outline:none;width:220px;">';
+    hr.parentNode.insertBefore(qRow,hr);
+  }
+  document.getElementById('md-quoted').value=p.quoted||'';
+
+  // Status chips
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+  const chipMap={contact:'.chip-c',waiting:'.chip-w',payment:'.chip-p',ready:'.chip-ready',renewed:'.chip-r',hold:'.chip-h'};
+  document.querySelector(chipMap[p.status])?.classList.add('on');
+
+  // Invoice / OR fields
+  const mdInv=document.getElementById('md-invoice');
+  const mdOr=document.getElementById('md-or');
+  if(mdInv) mdInv.value=p.invoice||'';
+  if(mdOr) mdOr.value=p.ornum||'';
+  document.getElementById('invoice-fields').style.display=(p.status==='ready')?'block':'none';
+
+  // Contact date
+  const cdEl=document.getElementById('md-contact-date');
+  if(cdEl) cdEl.value=p.contactDate||'';
+
+  // Policy received checkbox
+  const prEl=document.getElementById('md-policy-received');
+  if(prEl) prEl.checked=p.policyReceived||false;
+
+  // Set today as default for follow-up date
+  const fuDate=document.getElementById('fu-date');
+  if(fuDate && !fuDate.value) fuDate.value=new Date().toISOString().slice(0,10);
+
+  // Render timeline
+  renderTimeline(p);
+
+  document.getElementById('modal-detail').classList.add('show');
+}
+
+// pickStatus defined in timeline section above
+
+function saveDetail(){
+  const p=policies.find(x=>x.id===editingId);
+  const prevStatus=p.status;
+  const newStatus=p._ts||p.status;
+
+  // Validate: invoice + OR required when Ready to Proceed
+  if(newStatus==='ready'){
+    const inv=(document.getElementById('md-invoice')?.value||'').trim();
+    const orv=(document.getElementById('md-or')?.value||'').trim();
+    const invEl=document.getElementById('md-invoice');
+    const orEl=document.getElementById('md-or');
+    if(!inv){
+      if(invEl){ invEl.style.borderColor='var(--red)'; invEl.focus(); }
+      toast('⚠ Invoice Number is required!'); return;
+    }
+    if(!orv){
+      if(orEl){ orEl.style.borderColor='var(--red)'; orEl.focus(); }
+      toast('⚠ OR Number is required!'); return;
+    }
+    // reset border if ok
+    if(invEl) invEl.style.borderColor='';
+    if(orEl) orEl.style.borderColor='';
+  }
+
+  if(p._ts){ p.status=p._ts; delete p._ts; }
+  p.notes=document.getElementById('md-notes').value;
+  p.quoted=parseFloat(document.getElementById('md-quoted')?.value)||0;
+  p.invoice=document.getElementById('md-invoice')?.value?.trim()||p.invoice||'';
+  p.ornum=document.getElementById('md-or')?.value?.trim()||p.ornum||'';
+  p.contactDate=document.getElementById('md-contact-date')?.value||p.contactDate||'';
+  p.policyReceived=document.getElementById('md-policy-received')?.checked||false;
+  save(p);
+  closeDetailDirect();
+  refresh();
+
+  // If just marked as Renewed AND no next-year record exists yet → prompt
+  if(p.status==='renewed' && prevStatus!=='renewed'){
+    const nextYear=p.year+1;
+    const alreadyExists=policies.some(x=>
+      x.name===p.name && x.year===nextYear && x.insurer===p.insurer && x.category===p.category
+    );
+    if(!alreadyExists) showRenewPrompt(p, nextYear);
+    else toast('✓ Renewed');
+  } else {
+    toast('✓ Saved');
+  }
+}
+
+// ── RENEW PROMPT ─────────────────────────────────────────────
+function showRenewPrompt(p, nextYear){
+  // Build suggested expiry: same day/month next year
+  const orig=new Date(p.expiry);
+  const suggested=new Date(orig);
+  suggested.setFullYear(orig.getFullYear()+1);
+  const suggestedStr=suggested.toISOString().slice(0,10);
+
+  // Inject a mini modal
+  let el=document.getElementById('renew-prompt');
+  if(!el){
+    el=document.createElement('div');
+    el.id='renew-prompt';
+    el.className='overlay';
+    el.innerHTML=`
+      <div class="modal" style="width:480px;">
+        <div class="modal-hd">
+          <div>
+            <div class="modal-title">🎉 Renewed! Create ${nextYear} Record?</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:3px;" id="rp-sub">—</div>
+          </div>
+        </div>
+        <div style="background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Copying from <strong style="color:var(--navy)" id="rp-name">—</strong></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;">
+            <div><span style="color:var(--muted);font-size:10px;text-transform:uppercase;font-weight:700;">Category</span><br><span id="rp-cat">—</span></div>
+            <div><span style="color:var(--muted);font-size:10px;text-transform:uppercase;font-weight:700;">Insurer</span><br><span id="rp-ins">—</span></div>
+            <div><span style="color:var(--muted);font-size:10px;text-transform:uppercase;font-weight:700;">Last Premium</span><br><span id="rp-prem">—</span></div>
+            <div><span style="color:var(--muted);font-size:10px;text-transform:uppercase;font-weight:700;">Contact</span><br><span id="rp-contact">—</span></div>
+          </div>
+        </div>
+        <div class="ff">
+          <label>New Expiry Date (${nextYear}) *</label>
+          <input id="rp-expiry" type="date" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:14px;font-family:Inter,sans-serif;outline:none;font-weight:700;">
+        </div>
+        <div class="ff" style="margin-top:6px;">
+          <label>New Premium (RM) — leave blank to keep same</label>
+          <input id="rp-premium" type="number" step="0.01" placeholder="Same as last year" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:Inter,sans-serif;outline:none;">
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost btn-sm" onclick="skipRenewPrompt()">Skip, don't create</button>
+          <button class="btn btn-gold" onclick="confirmRenew()">✓ Create ${nextYear} Record</button>
+        </div>
+      </div>`;
+    document.body.appendChild(el);
+  }
+
+  // Store reference
+  el._sourcePolicy=p;
+  el._nextYear=nextYear;
+
+  // Fill in details
+  document.getElementById('rp-sub').textContent=`Auto-fill ${nextYear} record from this policy`;
+  document.getElementById('rp-name').textContent=p.name;
+  document.getElementById('rp-cat').textContent=p.category;
+  document.getElementById('rp-ins').textContent=p.insurer;
+  document.getElementById('rp-prem').textContent=fmtRM(p.quoted||p.premium);
+  document.getElementById('rp-contact').textContent=p.contact||'—';
+  document.getElementById('rp-expiry').value=suggestedStr;
+  document.getElementById('rp-premium').value='';
+  el.classList.add('show');
+}
+
+function skipRenewPrompt(){
+  document.getElementById('renew-prompt')?.classList.remove('show');
+  toast('✓ Renewed — no new record created');
+}
+
+function confirmRenew(){
+  const el=document.getElementById('renew-prompt');
+  const p=el._sourcePolicy;
+  const nextYear=el._nextYear;
+  const newExpiry=document.getElementById('rp-expiry').value;
+  if(!newExpiry){ toast('⚠ Please enter the new expiry date'); return; }
+  const newPremium=parseFloat(document.getElementById('rp-premium').value)||p.quoted||p.premium;
+  const nid=policies.length?Math.max(...policies.map(x=>x.id))+1:0;
+  policies.push({
+    id:nid, name:p.name, expiry:newExpiry,
+    premium:newPremium, category:p.category,
+    insurer:p.insurer, contact:p.contact,
+    remark:p.remark, year:nextYear,
+    status:'contact', notes:'', quoted:0, contactDate:'', policyReceived:false, followups:[],
+  });
+  const _rp = policies[policies.length-1];
+  save(_rp);
+  el.classList.remove('show');
+  refresh();
+  toast(`✓ ${nextYear} record created for ${p.name}!`);
+}
+
+function closeDetail(e){ if(e.target.id==='modal-detail') closeDetailDirect(); }
+function closeDetailDirect(){ document.getElementById('modal-detail').classList.remove('show'); editingId=null; }
+
+// ═══════════ ADD MODAL ════════════════════════════════════════
+function showAdd(){ document.getElementById('modal-add').classList.add('show'); }
+function closeAdd(e){ if(e.target.id==='modal-add') closeAddDirect(); }
+function closeAddDirect(){ document.getElementById('modal-add').classList.remove('show'); }
+
+function doAdd(){
+  const name=document.getElementById('a-name').value.trim().toUpperCase();
+  const expiry=document.getElementById('a-expiry').value;
+  if(!name||!expiry){ toast('⚠ Name & Expiry Date required'); return; }
+  const nid=policies.length?Math.max(...policies.map(p=>p.id))+1:0;
+  policies.push({
+    id:nid, name, expiry,
+    premium:parseFloat(document.getElementById('a-premium').value)||0,
+    category:document.getElementById('a-cat').value,
+    insurer:document.getElementById('a-insurer').value,
+    contact:document.getElementById('a-contact').value.trim(),
+    remark:document.getElementById('a-notes').value.trim(),
+    year:parseInt(document.getElementById('a-year').value),
+    status:document.getElementById('a-status').value,
+    notes:'',
+    quoted:parseFloat(document.getElementById('a-quoted').value)||0,
+    contactDate:'', policyReceived:false, followups:[],
+  });
+  const _newP = policies[policies.length-1];
+  save(_newP);
+  closeAddDirect();
+  refresh();
+  toast('✓ New record added');
+  ['a-name','a-expiry','a-premium','a-contact','a-notes','a-quoted'].forEach(id=>document.getElementById(id).value='');
+}
+
+// ═══════════ EXPORT ════════════════════════════════════════════
+function exportCSV(){
+  const data=filtered();
+  const h=['Name','Expiry','Days','Premium','Quoted','Invoice No','OR No','Category','Insurer','Contact','Year','Status','Notes','Remark'];
+  const rows=data.map(p=>[p.name,p.expiry,days(p.expiry),p.premium,p.quoted||'',p.invoice||'',p.ornum||'',p.category,p.insurer,p.contact,p.year,p.status,p.notes,p.remark].map(v=>`"${v||''}"`).join(','));
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([[h.join(','),...rows].join('\n')],{type:'text/csv'}));
+  a.download=`chin-hock-${activeYear||'all'}-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click(); toast('✓ Exported');
+}
+
+// ═══════════ TOAST ════════════════════════════════════════════
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
+
+
+
+// ═══════════ FOLLOW-UP TIMELINE ════════════════════════════
+const STATUS_LABELS = {
+  contact:'📞 Need to Contact', waiting:'⏳ Waiting Reply',
+  payment:'💰 Pending Payment', ready:'🚀 Ready to Proceed',
+  renewed:'✅ Renewed', hold:'⏸ Hold'
+};
+
+function renderTimeline(p) {
+  const tl = document.getElementById('md-timeline');
+  if (!tl) return;
+  const entries = p.followups || [];
+  if (!entries.length) {
+    tl.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:6px 0;font-style:italic;">No follow-up entries yet.</div>';
+    return;
+  }
+  tl.innerHTML = entries.map((e,i) => `
+    <div class="tl-entry">
+      <div class="tl-dot dot-${e.status||'contact'}"></div>
+      <div class="tl-date">${e.date||''}</div>
+      <div class="tl-content">
+        <div class="tl-status">${STATUS_LABELS[e.status]||e.status||''}</div>
+        ${e.note?`<div class="tl-note">${e.note}</div>`:''}
+      </div>
+      <button class="tl-del" onclick="deleteFollowup(${i})" title="Remove">✕</button>
+    </div>`).join('');
+}
+
+function addFollowup() {
+  if(editingId===null) return;
+  const date = document.getElementById('fu-date').value;
+  const note = document.getElementById('fu-note').value.trim();
+  const p = policies.find(x=>x.id===editingId);
+  if(!p.followups) p.followups=[];
+  if(!date){ toast('⚠ Please pick a date'); return; }
+  // Get current selected status chip
+  const activeChip = document.querySelector('#modal-detail .chip.on');
+  const chipStatus = activeChip ? (p._ts||p.status) : p.status;
+  p.followups.push({ date, note, status: chipStatus });
+  document.getElementById('fu-note').value='';
+  renderTimeline(p);
+  save(p);
+  toast('✓ Follow-up recorded');
+}
+
+function deleteFollowup(idx) {
+  if(editingId===null) return;
+  const p = policies.find(x=>x.id===editingId);
+  if(!p.followups) return;
+  p.followups.splice(idx,1);
+  renderTimeline(p);
+  save(p);
+}
+
+// Auto-log status change as follow-up entry
+function pickStatus(s,el){
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  if(editingId!==null) policies.find(p=>p.id===editingId)._ts=s;
+  const invBox=document.getElementById('invoice-fields');
+  if(invBox) invBox.style.display=(s==='ready')?'block':'none';
+}
+
+// ═══════════ PENDING POLICY ═══════════════════════════════
+let ppFilter = 'pending';
+
+function filterPP(f) {
+  ppFilter = f;
+  ['all','pending','received'].forEach(x => {
+    const btn = document.getElementById('pp-f-'+x);
+    if(btn) btn.style.borderColor = x===f ? 'var(--navy)' : '';
+    if(btn) btn.style.color = x===f ? 'var(--navy)' : '';
+    if(btn) btn.style.fontWeight = x===f ? '700' : '';
+  });
+  renderPendingPolicy();
+}
+
+function renderPendingPolicy() {
+  // Show policies that are renewed OR ready-to-proceed
+  let data = policies.filter(p => p.status==='renewed' || p.status==='ready');
+  if(ppFilter==='pending') data = data.filter(p=>!p.policyReceived);
+  if(ppFilter==='received') data = data.filter(p=>p.policyReceived);
+
+  // Sort: not received first, then by expiry
+  data.sort((a,b)=>{
+    if(a.policyReceived!==b.policyReceived) return a.policyReceived?1:-1;
+    return new Date(a.expiry)-new Date(b.expiry);
+  });
+
+  const countEl = document.getElementById('pp-count');
+  const notRcv = data.filter(p=>!p.policyReceived).length;
+  if(countEl) countEl.textContent = `${notRcv} pending · ${data.filter(p=>p.policyReceived).length} received`;
+
+  const list = document.getElementById('pp-list');
+  if(!list) return;
+  if(!data.length){
+    const msg = ppFilter==='pending'
+      ? '<div class="pipe-empty" style="color:var(--green);font-size:15px;">🎉 All policies received! Nothing pending.</div>'
+      : ppFilter==='received'
+      ? '<div class="pipe-empty">No received policies yet.</div>'
+      : '<div class="pipe-empty">No policies here.</div>';
+    list.innerHTML=msg; return;
+  }
+
+  list.innerHTML = data.map(p => `
+    <div class="pending-row ${p.policyReceived?'received':''}" onclick="togglePolicyReceived(${p.id})">
+      <div class="pending-check ${p.policyReceived?'checked':''}">${p.policyReceived?'✓':''}</div>
+      <div class="pending-info">
+        <div class="pending-name">${p.name}</div>
+        <div class="pending-meta">
+          ${catTag(p.category)} &nbsp;${p.insurer} &nbsp;
+          <span class="td-mono" style="font-size:11px;">${fmtRM(p.premium)}</span>
+          ${p.invoice?` &nbsp;🧾 ${p.invoice}`:''}
+          ${p.ornum?` &nbsp;OR: ${p.ornum}`:''}
+        </div>
+        <div class="pending-meta" style="margin-top:3px;">
+          Expiry: ${fmtDate(p.expiry)} &nbsp;·&nbsp; ${p.year}
+          ${p.policyReceived?'<span style="color:var(--green);font-weight:600;margin-left:8px;">✓ Policy received</span>':'<span style="color:var(--orange);font-weight:600;margin-left:8px;">⏳ Waiting for policy doc</span>'}
+        </div>
+        ${p.notes?`<div style="font-size:11px;color:var(--muted);margin-top:4px;font-style:italic;">📝 ${p.notes}</div>`:''}
+      </div>
+      <button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();openDetail(${p.id})" style="flex-shrink:0;">Edit</button>
+    </div>`).join('');
+}
+
+function togglePolicyReceived(id) {
+  const p = policies.find(x=>x.id===id);
+  if(!p) return;
+  p.policyReceived = !p.policyReceived;
+  save(p);
+  // Always re-render pending policy view immediately
+  renderPendingPolicy();
+  refresh();
+  toast(p.policyReceived ? '✓ Policy received — removed from list!' : 'Marked as pending');
+}
+
+// ═══════════ GOOGLE SHEET SYNC ════════════════════════════════
+let sheetSyncUrl = '';
+try { sheetSyncUrl = localStorage.getItem('cha_sheet_url') || ''; } catch(e) {}
+
+function showSyncSetup() {
+  const input = document.getElementById('sync-url-input');
+  if (input) input.value = sheetSyncUrl;
+  updateSyncStatusBox();
+  document.getElementById('disconnect-btn').style.display = sheetSyncUrl ? 'inline-flex' : 'none';
+  document.getElementById('modal-sync').classList.add('show');
+}
+function closeSyncModal(e) { if(e.target.id==='modal-sync') closeSyncDirect(); }
+function closeSyncDirect() { document.getElementById('modal-sync').classList.remove('show'); }
+
+function updateSyncStatusBox() {
+  const box = document.getElementById('sync-status-box');
+  const ind = document.getElementById('sync-indicator');
+  if (!box) return;
+  if (sheetSyncUrl) {
+    box.style.background = 'var(--green-bg)';
+    box.style.color = 'var(--green)';
+    box.textContent = '✅ Connected — changes auto-sync to Google Sheet';
+    if (ind) { ind.textContent = '✅ Syncing'; ind.style.background = 'var(--green-bg)'; ind.style.color = 'var(--green)'; }
+  } else {
+    box.style.background = '#f0e8cc';
+    box.style.color = 'var(--muted)';
+    box.textContent = '○ Not connected — paste your Apps Script URL below';
+    if (ind) { ind.textContent = '⚙ No Sync'; ind.style.background = '#f0e8cc'; ind.style.color = 'var(--muted)'; }
+  }
+}
+
+async function saveSyncUrl() {
+  const url = (document.getElementById('sync-url-input').value || '').trim();
+  if (!url) { toast('⚠ Please paste your Apps Script URL'); return; }
+
+  // Test connection by hitting doGet
+  const ind = document.getElementById('sync-indicator');
+  if (ind) { ind.textContent = '⟳ Testing...'; }
+  try {
+    const res = await fetch(url, { method: 'GET', mode: 'no-cors' });
+    // no-cors means we can't read response but if no error, it reached
+    sheetSyncUrl = url;
+    localStorage.setItem('cha_sheet_url', url);
+    updateSyncStatusBox();
+    document.getElementById('disconnect-btn').style.display = 'inline-flex';
+    closeSyncDirect();
+    toast('✅ Connected! Changes will now auto-sync to Google Sheet');
+    // Sync all current policies to sheet
+    syncAllToSheet();
+  } catch(err) {
+    if (ind) { ind.textContent = '⚙ No Sync'; }
+    toast('❌ Could not reach that URL. Check and try again.');
+  }
+}
+
+function disconnectSync() {
+  sheetSyncUrl = '';
+  localStorage.removeItem('cha_sheet_url');
+  updateSyncStatusBox();
+  document.getElementById('disconnect-btn').style.display = 'none';
+  closeSyncDirect();
+  toast('Sync disconnected');
+}
+
+async function syncToSheet(policy) {
+  if (!sheetSyncUrl) return;
+  try {
+    fetch(sheetSyncUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'upsert', ...policy })
+    });
+  } catch(e) { /* silent fail, data is safe in localStorage */ }
+}
+
+async function syncAllToSheet() {
+  if (!sheetSyncUrl) return;
+  // Stagger to avoid hammering the script
+  const all = policies;
+  for (let i = 0; i < all.length; i++) {
+    setTimeout(() => syncToSheet(all[i]), i * 80);
+  }
+  toast(`⟳ Syncing ${all.length} records to Sheet...`);
+}
+
+// Init sync state on load
+setTimeout(updateSyncStatusBox, 100);
+
+// ═══════════ INIT ════════════════════════════════════════════
+initPolicies();
+const days_arr=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+document.getElementById('today-str').textContent=days_arr[TODAY.getDay()]+', '+TODAY.toLocaleDateString('en-MY',{day:'numeric',month:'long',year:'numeric'});
+
+// Init All Records filter
+setARYear(2027); // init year buttons
+filterPP('pending');
+gotoView('all');
+</script>
+
+<!-- ═══════════ PWA + LIVE SHEET READ (added) ═══════════ -->
+<script>
+// ---- Register service worker (makes the app installable + offline) ----
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('service-worker.js').catch(()=>{}));
+}
+
+// ---- "Install App" button (uses the browser's native install prompt) ----
+let chDeferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault(); chDeferredPrompt = e;
+  if (document.getElementById('pwa-install-btn')) return;
+  const b = document.createElement('button');
+  b.id = 'pwa-install-btn'; b.textContent = '⬇ Install App';
+  b.className = 'btn btn-primary btn-sm';
+  b.style.cssText = 'position:fixed;bottom:22px;left:22px;z-index:400;box-shadow:0 4px 16px rgba(0,0,0,0.2);';
+  b.onclick = async () => { if(!chDeferredPrompt) return; chDeferredPrompt.prompt(); await chDeferredPrompt.userChoice; chDeferredPrompt=null; b.remove(); };
+  document.body.appendChild(b);
+});
+window.addEventListener('appinstalled', () => { const b=document.getElementById('pwa-install-btn'); if(b) b.remove(); });
+
+// ---- Live READ from Google Sheet (non-destructive; only fills due dates) ----
+// Activates automatically once a Sheet Sync URL is saved (⚙ Sheet Sync).
+// Uses JSONP so it works from any static host without CORS issues.
+function chNorm(s){ return String(s||'').toUpperCase().replace(/\b(SDN|BHD|PLT|ENTERPRISE|TRADING|SERVICE|SERVICES)\b/g,'').replace(/[^A-Z0-9 ]/g,' ').replace(/\s+/g,' ').trim(); }
+function chParseSheetDate(v){
+  if(!v) return '';
+  const iso = String(v).match(/^(\d{4})-(\d{2})-(\d{2})/); if(iso) return iso[1]+'-'+iso[2]+'-'+iso[3];
+  const us  = String(v).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if(us){ return us[3]+'-'+('0'+us[1]).slice(-2)+'-'+('0'+us[2]).slice(-2); }
+  return '';
+}
+function chLoadFromSheet(){
+  let url=''; try{ url = localStorage.getItem('cha_sheet_url')||''; }catch(e){}
+  if(!url) return;                        // not configured -> keep built-in data
+  const cb = 'chSheetCb_' + Math.abs((url.length*97) ^ policies.length);
+  window[cb] = function(resp){
+    try{
+      if(!resp || !resp.records) return;
+      const byName = {}; policies.forEach(p => byName[chNorm(p.name)] = p);
+      let updated = 0;
+      resp.records.forEach(r => {
+        const nm  = chNorm(r['Name'] || r['name'] || '');
+        const exp = chParseSheetDate(r['Expired Date'] || r['Expiry'] || r['expiry'] || '');
+        if(nm && byName[nm] && exp && byName[nm].expiry !== exp){ byName[nm].expiry = exp; updated++; }
+      });
+      if(updated){ if(typeof save==='function') save(); if(typeof refresh==='function') refresh();
+                   if(typeof toast==='function') toast('↻ '+updated+' due date(s) synced from Sheet'); }
+    }catch(e){} finally{ try{ delete window[cb]; }catch(_){} }
+  };
+  const s = document.createElement('script');
+  s.src = url + (url.includes('?')?'&':'?') + 'callback=' + cb;
+  s.onerror = function(){ try{ delete window[cb]; }catch(_){} };
+  document.body.appendChild(s);
+}
+setTimeout(chLoadFromSheet, 500);
+</script>
+</body>
+</html>
