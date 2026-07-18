@@ -632,7 +632,10 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
   <div class="modal">
     <div class="modal-hd">
       <div>
-        <div class="modal-title" id="md-name">—</div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <div class="modal-title" id="md-name">—</div>
+          <button class="btn btn-ghost btn-xs" id="md-viewpolicy" onclick="viewPolicy()" title="Open policy document" style="white-space:nowrap;">📄 View Policy</button>
+        </div>
         <div style="font-size:12px;color:var(--muted);margin-top:3px;" id="md-meta">—</div>
       </div>
       <button class="modal-close" onclick="closeDetailDirect()">✕</button>
@@ -646,16 +649,27 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
       <div><label>Year</label><span id="md-year">—</span></div>
       <div class="dg-full" id="md-remark-row"><label>Remark</label><span id="md-remark" style="color:var(--muted);">—</span></div>
     </div>
+    <!-- Policy Number + Policy Document Link -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+      <div class="ff" style="margin-bottom:0;">
+        <label>Policy Number <span style="color:var(--red);">*</span></label>
+        <input id="md-policyno" placeholder="e.g. FHE-F6047191-12" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:Inter,sans-serif;outline:none;width:100%;">
+      </div>
+      <div class="ff" style="margin-bottom:0;">
+        <label>Policy Document Link <span style="color:var(--muted);font-size:9px;text-transform:none;letter-spacing:0;">(for the 📄 View Policy button)</span></label>
+        <input id="md-policyurl" placeholder="Paste Google Drive / PDF link" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:Inter,sans-serif;outline:none;width:100%;">
+      </div>
+    </div>
     <hr class="divider">
     <div class="sec-lbl">Update Status</div>
-    <div class="chips">
-      <span class="chip chip-c" onclick="pickStatus('contact',this)">📞 Need to Contact</span>
-      <span class="chip chip-w" onclick="pickStatus('waiting',this)">⏳ Waiting Reply</span>
-      <span class="chip chip-p" onclick="pickStatus('payment',this)">💰 Pending Payment</span>
-      <span class="chip chip-ready" onclick="pickStatus('ready',this)">🚀 Ready to Proceed</span>
-      <span class="chip chip-r" onclick="pickStatus('renewed',this)">✅ Renewed</span>
-      <span class="chip chip-h" onclick="pickStatus('hold',this)">⏸ Hold</span>
-    </div>
+    <select id="md-status" onchange="pickStatusSelect(this.value)" class="tb-select" style="width:100%;padding:9px 11px;font-size:13px;">
+      <option value="contact">📞 Need to Contact</option>
+      <option value="waiting">⏳ Waiting Reply</option>
+      <option value="payment">💰 Pending Payment</option>
+      <option value="ready">🚀 Ready to Proceed</option>
+      <option value="renewed">✅ Renewed</option>
+      <option value="hold">⏸ Hold</option>
+    </select>
     <hr class="divider">
     <!-- Contact Date -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
@@ -1027,7 +1041,7 @@ function initPolicies(){
     const saved=JSON.parse(localStorage.getItem('cha_v3')||'[]');
     policies=all.map((r,i)=>{
       const s=saved.find(x=>x.id===i);
-      return{id:i,...r,status:s?.status||guessStatus(r),notes:s?.notes||'',quoted:s?.quoted||0,invoice:s?.invoice||'',ornum:s?.ornum||'',contactDate:s?.contactDate||'',policyReceived:s?.policyReceived||false,followups:s?.followups||[]};
+      return{id:i,...r,status:s?.status||guessStatus(r),notes:s?.notes||'',quoted:s?.quoted||0,invoice:s?.invoice||'',ornum:s?.ornum||'',contactDate:s?.contactDate||'',policyReceived:s?.policyReceived||false,followups:s?.followups||[],policyNumber:s?.policyNumber||'',policyUrl:s?.policyUrl||''};
     });
     const extras=saved.filter(s=>s.id>=all.length);
     policies=[...policies,...extras];
@@ -1037,7 +1051,7 @@ function initPolicies(){
 }
 
 function save(changedPolicy){
-  try{ localStorage.setItem('cha_v3',JSON.stringify(policies.map(p=>({id:p.id,status:p.status,notes:p.notes,quoted:p.quoted,invoice:p.invoice||'',ornum:p.ornum||'',contactDate:p.contactDate||'',policyReceived:p.policyReceived||false,followups:p.followups||[],name:p.name,expiry:p.expiry,premium:p.premium,category:p.category,insurer:p.insurer,contact:p.contact,remark:p.remark,year:p.year})))); }catch(e){}
+  try{ localStorage.setItem('cha_v3',JSON.stringify(policies.map(p=>({id:p.id,status:p.status,notes:p.notes,quoted:p.quoted,invoice:p.invoice||'',ornum:p.ornum||'',contactDate:p.contactDate||'',policyReceived:p.policyReceived||false,followups:p.followups||[],policyNumber:p.policyNumber||'',policyUrl:p.policyUrl||'',name:p.name,expiry:p.expiry,premium:p.premium,category:p.category,insurer:p.insurer,contact:p.contact,remark:p.remark,year:p.year})))); }catch(e){}
   if(changedPolicy) syncToSheet(changedPolicy);
 }
 
@@ -1393,10 +1407,14 @@ function openDetail(id){
   }
   document.getElementById('md-quoted').value=p.quoted||'';
 
-  // Status chips
-  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
-  const chipMap={contact:'.chip-c',waiting:'.chip-w',payment:'.chip-p',ready:'.chip-ready',renewed:'.chip-r',hold:'.chip-h'};
-  document.querySelector(chipMap[p.status])?.classList.add('on');
+  // Status dropdown
+  delete p._ts;
+  const stSel=document.getElementById('md-status');
+  if(stSel) stSel.value=p.status;
+
+  // Policy number + document link
+  const pnEl=document.getElementById('md-policyno'); if(pnEl){ pnEl.value=p.policyNumber||''; pnEl.style.borderColor=''; }
+  const puEl=document.getElementById('md-policyurl'); if(puEl){ puEl.value=p.policyUrl||''; puEl.style.borderColor=''; }
 
   // Invoice / OR fields
   const mdInv=document.getElementById('md-invoice');
@@ -1449,8 +1467,20 @@ function saveDetail(){
     if(orEl) orEl.style.borderColor='';
   }
 
+  // Policy Number required once a policy is issued (Ready to Proceed / Renewed)
+  if(newStatus==='ready' || newStatus==='renewed'){
+    const pno=(document.getElementById('md-policyno')?.value||'').trim();
+    if(!pno){
+      const pnEl=document.getElementById('md-policyno');
+      if(pnEl){ pnEl.style.borderColor='var(--red)'; pnEl.focus(); }
+      toast('⚠ Policy Number is required for Ready / Renewed'); return;
+    }
+  }
+
   if(p._ts){ p.status=p._ts; delete p._ts; }
   p.notes=document.getElementById('md-notes').value;
+  p.policyNumber=document.getElementById('md-policyno')?.value?.trim()||'';
+  p.policyUrl=document.getElementById('md-policyurl')?.value?.trim()||'';
   p.quoted=parseFloat(document.getElementById('md-quoted')?.value)||0;
   p.invoice=document.getElementById('md-invoice')?.value?.trim()||p.invoice||'';
   p.ornum=document.getElementById('md-or')?.value?.trim()||p.ornum||'';
@@ -1673,6 +1703,25 @@ function pickStatus(s,el){
   if(editingId!==null) policies.find(p=>p.id===editingId)._ts=s;
   const invBox=document.getElementById('invoice-fields');
   if(invBox) invBox.style.display=(s==='ready')?'block':'none';
+}
+
+// Status dropdown handler
+function pickStatusSelect(s){
+  if(editingId!==null) policies.find(p=>p.id===editingId)._ts=s;
+  const invBox=document.getElementById('invoice-fields');
+  if(invBox) invBox.style.display=(s==='ready')?'block':'none';
+}
+
+// Open the policy document for the record being viewed
+function viewPolicy(){
+  const p=policies.find(x=>x.id===editingId);
+  if(!p) return;
+  const url=(p.policyUrl||document.getElementById('md-policyurl')?.value||'').trim();
+  if(url){ window.open(/^https?:\/\//i.test(url)?url:('https://'+url),'_blank'); }
+  else {
+    toast('No policy link yet — paste one in "Policy Document Link" below');
+    const el=document.getElementById('md-policyurl'); if(el){ el.focus(); el.style.borderColor='var(--gold)'; }
+  }
 }
 
 // ═══════════ PENDING POLICY ═══════════════════════════════
