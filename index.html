@@ -1940,8 +1940,14 @@ function chLoadFromSheet(){
       let updated = 0;
       resp.records.forEach(r => {
         const nm  = chNorm(r['Name'] || r['name'] || '');
+        if(!nm || !byName[nm]) return;
+        const rec = byName[nm];
         const exp = chParseSheetDate(r['Expired Date'] || r['Expiry'] || r['expiry'] || '');
-        if(nm && byName[nm] && exp && byName[nm].expiry !== exp){ byName[nm].expiry = exp; updated++; }
+        const pno = String(r['Policy Number'] || r['policyNumber'] || '').trim();
+        const purl= String(r['Policy Link'] || r['Policy Document Link'] || r['policyUrl'] || '').trim();
+        if(exp  && rec.expiry !== exp)        { rec.expiry = exp;        updated++; }
+        if(pno  && rec.policyNumber !== pno)  { rec.policyNumber = pno;  updated++; }
+        if(purl && rec.policyUrl !== purl)    { rec.policyUrl = purl;    updated++; }
       });
       if(updated){ if(typeof save==='function') save(); if(typeof refresh==='function') refresh();
                    if(typeof toast==='function') toast('↻ '+updated+' due date(s) synced from Sheet'); }
