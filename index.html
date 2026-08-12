@@ -701,30 +701,49 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
           <div class="modal-title" id="md-name">—</div>
           <button class="btn btn-ghost btn-xs" id="md-viewpolicy" onclick="viewPolicy()" title="Open policy document" style="white-space:nowrap;">📄 View Policy</button>
+          <button class="btn btn-ghost btn-xs" id="md-edit-pencil" onclick="toggleCardEdit()" title="Amend expiry, premium, insurer, contact">✏️</button>
+          <button class="btn btn-primary btn-xs" id="md-edit-save" onclick="saveCardEdit()" style="display:none;">✓ Save</button>
+          <button class="btn btn-ghost btn-xs" id="md-edit-cancel" onclick="cancelCardEdit()" style="display:none;">✕ Cancel</button>
         </div>
         <div style="font-size:12px;color:var(--muted);margin-top:3px;" id="md-meta">—</div>
       </div>
       <button class="modal-close" onclick="closeDetailDirect()">✕</button>
     </div>
+    <div class="sec-lbl">Policy Details</div>
     <div class="dg">
-      <div><label>Expiry Date</label><span id="md-expiry">—</span></div>
+      <div><label>Expiry Date</label>
+        <span id="md-expiry-view">—</span>
+        <input id="md-expiry-input" type="date" style="display:none;background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:6px 9px;color:var(--text);font-size:13px;font-family:inherit;outline:none;width:100%;">
+      </div>
       <div><label>Days Left</label><span id="md-days">—</span></div>
-      <div><label>Last Year Premium</label><span id="md-premium" class="td-mono">—</span></div>
-      <div><label>Insurance Co.</label><span id="md-insurer">—</span></div>
-      <div><label>Contact No.</label><span id="md-contact" class="td-mono">—</span></div>
-      <div><label>Year</label><span id="md-year">—</span></div>
+      <div><label>Last Year Premium</label>
+        <span id="md-premium-view" class="td-mono">—</span>
+        <input id="md-premium-input" type="number" step="0.01" style="display:none;background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:6px 9px;color:var(--text);font-size:13px;font-family:inherit;outline:none;width:100%;">
+      </div>
+      <div><label>Ins Company</label>
+        <span id="md-insurer-view">—</span>
+        <input id="md-insurer-input" type="text" style="display:none;background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:6px 9px;color:var(--text);font-size:13px;font-family:inherit;outline:none;width:100%;">
+      </div>
+      <div><label>Contact No.</label>
+        <span id="md-contact-view" class="td-mono">—</span>
+        <input id="md-contact-input" type="text" style="display:none;background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:6px 9px;color:var(--text);font-size:13px;font-family:inherit;outline:none;width:100%;">
+      </div>
+      <div>
+        <label>Policy Number <span style="color:var(--red);">*</span></label>
+        <input id="md-policyno" placeholder="e.g. FHE-F6047191-12" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:6px 9px;color:var(--text);font-size:13px;font-family:inherit;outline:none;width:100%;">
+      </div>
+      <div><label>Insurance Type</label><span id="md-instype">—</span></div>
       <div class="dg-full" id="md-remark-row"><label>Remark</label><span id="md-remark" style="color:var(--muted);">—</span></div>
     </div>
-    <!-- Policy Number + Policy Document Link -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
-      <div class="ff" style="margin-bottom:0;">
-        <label>Policy Number <span style="color:var(--red);">*</span></label>
-        <input id="md-policyno" placeholder="e.g. FHE-F6047191-12" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:Inter,sans-serif;outline:none;width:100%;">
-      </div>
-      <div class="ff" style="margin-bottom:0;">
-        <label>Policy Document Link <span style="color:var(--muted);font-size:9px;text-transform:none;letter-spacing:0;">(for the 📄 View Policy button)</span></label>
-        <input id="md-policyurl" placeholder="Paste Google Drive / PDF link" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:Inter,sans-serif;outline:none;width:100%;">
-      </div>
+    <!-- Policy Document Link + Upload -->
+    <div class="ff" style="margin-bottom:10px;">
+      <label>Policy Document Link <span style="color:var(--muted);font-size:9px;text-transform:none;letter-spacing:0;">(for the 📄 View Policy button)</span></label>
+      <input id="md-policyurl" placeholder="Paste Google Drive / PDF link, or upload below" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:inherit;outline:none;width:100%;">
+    </div>
+    <div class="ff" style="margin-bottom:14px;">
+      <button class="btn btn-gold btn-sm" id="md-upload-btn" onclick="triggerUploadPolicy()" style="width:fit-content;">📤 Upload Policy</button>
+      <input type="file" id="md-upload-file" accept="application/pdf" style="display:none;" onchange="handleUploadPolicy(event)">
+      <div style="font-size:11px;color:var(--muted);margin-top:5px;">Uploads straight to your Drive, sorted into a folder by Insurance Type.</div>
     </div>
     <hr class="divider">
     <div class="sec-lbl">Update Status</div>
@@ -1537,14 +1556,22 @@ function openDetail(id){
   const d=days(p.expiry);
   document.getElementById('md-name').textContent=p.name;
   document.getElementById('md-meta').innerHTML=`${catTag(p.category)} &nbsp;${p.insurer} &nbsp;<span style="color:var(--muted)">${p.year}</span>`;
-  document.getElementById('md-expiry').textContent=fmtDate(p.expiry);
+  document.getElementById('md-expiry-view').textContent=fmtDate(p.expiry);
   document.getElementById('md-days').innerHTML=tblDayBadge(d)+` &nbsp;(${fmtDate(p.expiry)})`;
-  document.getElementById('md-premium').textContent=fmtRM(p.premium);
-  document.getElementById('md-insurer').textContent=p.insurer;
-  document.getElementById('md-contact').textContent=p.contact||'—';
-  document.getElementById('md-year').textContent=p.year;
+  document.getElementById('md-premium-view').textContent=fmtRM(p.premium);
+  document.getElementById('md-insurer-view').textContent=p.insurer;
+  document.getElementById('md-contact-view').textContent=p.contact||'—';
+  document.getElementById('md-instype').innerHTML=catTag(p.category)||'—';
   document.getElementById('md-remark').textContent=p.remark||'—';
   document.getElementById('md-notes').value=p.notes||'';
+  cardEditMode=false;
+  ['expiry','premium','insurer','contact'].forEach(k=>{
+    document.getElementById('md-'+k+'-view').style.display='';
+    document.getElementById('md-'+k+'-input').style.display='none';
+  });
+  document.getElementById('md-edit-pencil').style.display='';
+  document.getElementById('md-edit-save').style.display='none';
+  document.getElementById('md-edit-cancel').style.display='none';
 
   // Add quoted price field dynamically
   let qRow=document.getElementById('md-quoted-row');
@@ -1746,6 +1773,119 @@ function confirmRenew(){
 
 function closeDetail(e){ if(e.target.id==='modal-detail') closeDetailDirect(); }
 function closeDetailDirect(){ document.getElementById('modal-detail').classList.remove('show'); editingId=null; }
+
+// ═══════════ CARD PENCIL EDIT (expiry / premium / insurer / contact) ══
+let cardEditMode=false;
+function toggleCardEdit(){
+  const p=policies.find(x=>x.id===editingId); if(!p) return;
+  cardEditMode=true;
+  document.getElementById('md-expiry-input').value=p.expiry||'';
+  document.getElementById('md-premium-input').value=p.premium||0;
+  document.getElementById('md-insurer-input').value=p.insurer||'';
+  document.getElementById('md-contact-input').value=p.contact||'';
+  ['expiry','premium','insurer','contact'].forEach(k=>{
+    document.getElementById('md-'+k+'-view').style.display='none';
+    document.getElementById('md-'+k+'-input').style.display='';
+  });
+  document.getElementById('md-edit-pencil').style.display='none';
+  document.getElementById('md-edit-save').style.display='';
+  document.getElementById('md-edit-cancel').style.display='';
+}
+function saveCardEdit(){
+  const p=policies.find(x=>x.id===editingId); if(!p) return;
+  const exp=document.getElementById('md-expiry-input').value;
+  if(!exp){ toast('⚠ Expiry Date is required'); return; }
+  p.expiry=exp;
+  p.premium=parseFloat(document.getElementById('md-premium-input').value)||0;
+  p.insurer=document.getElementById('md-insurer-input').value.trim();
+  p.contact=document.getElementById('md-contact-input').value.trim();
+  save(p);
+  refresh();
+  openDetail(editingId);
+  toast('✓ Updated');
+}
+function cancelCardEdit(){ openDetail(editingId); }
+
+// ═══════════ POLICY PDF UPLOAD → GOOGLE DRIVE ══════════════════
+const FULL_MONTHS=['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+function policyFileDateLabel(expiry){
+  const d=new Date(expiry);
+  return `${String(d.getDate()).padStart(2,'0')} ${FULL_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+}
+function productFolderLabel(category){
+  if(!category) return 'Other';
+  if(category.includes('Fire')) return 'Fire';
+  if(category.includes('Travel')) return 'Travel';
+  if(category.includes('Group Medical')) return 'G.Med';
+  if(category.includes('GPA')||category.includes('Group PA')) return 'GPA';
+  return 'PA';
+}
+function productFolderName(category){ return 'Product : '+productFolderLabel(category); }
+function policyFileName(p){ return `POLICY (${p.name}) ${policyFileDateLabel(p.expiry)}.pdf`; }
+
+function arrayBufferToBase64(buffer){
+  let binary=''; const bytes=new Uint8Array(buffer); const len=bytes.byteLength; const chunk=0x8000;
+  for(let i=0;i<len;i+=chunk){ binary+=String.fromCharCode.apply(null,bytes.subarray(i,i+chunk)); }
+  return btoa(binary);
+}
+async function driveFindOrCreateFolder(name,parentId){
+  const safe=name.replace(/'/g,"\\'");
+  const q=encodeURIComponent(`name='${safe}' and mimeType='application/vnd.google-apps.folder' and '${parentId}' in parents and trashed=false`);
+  const res=await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)`,{headers:{Authorization:'Bearer '+driveAccessToken}});
+  if(!res.ok) throw new Error('Drive folder lookup failed ('+res.status+')');
+  const data=await res.json();
+  if(data.files&&data.files.length) return data.files[0].id;
+  const createRes=await fetch('https://www.googleapis.com/drive/v3/files?fields=id',{
+    method:'POST',
+    headers:{Authorization:'Bearer '+driveAccessToken,'Content-Type':'application/json'},
+    body:JSON.stringify({name,mimeType:'application/vnd.google-apps.folder',parents:[parentId]})
+  });
+  if(!createRes.ok) throw new Error('Drive folder creation failed ('+createRes.status+')');
+  const created=await createRes.json();
+  return created.id;
+}
+async function driveUploadFile(name,parentId,file){
+  const metadata={name,parents:[parentId]};
+  const boundary='-------314159265358979323846';
+  const delimiter="\r\n--"+boundary+"\r\n";
+  const closeDelim="\r\n--"+boundary+"--";
+  const base64Data=arrayBufferToBase64(await file.arrayBuffer());
+  const body=delimiter+'Content-Type: application/json\r\n\r\n'+JSON.stringify(metadata)+
+    delimiter+'Content-Type: '+(file.type||'application/pdf')+'\r\nContent-Transfer-Encoding: base64\r\n\r\n'+base64Data+closeDelim;
+  const res=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink',{
+    method:'POST',
+    headers:{Authorization:'Bearer '+driveAccessToken,'Content-Type':'multipart/related; boundary="'+boundary+'"'},
+    body
+  });
+  if(!res.ok) throw new Error('Drive upload failed ('+res.status+')');
+  return res.json();
+}
+function triggerUploadPolicy(){
+  if(!getPolicyFolderId()){ toast('Please Connect Drive and select your "Non Motor" folder first (Settings)'); return; }
+  if(!driveConnected()){ toast('Click "Connect Drive" in Settings first'); return; }
+  document.getElementById('md-upload-file').click();
+}
+async function handleUploadPolicy(e){
+  const file=e.target.files[0]; if(!file) return;
+  const p=policies.find(x=>x.id===editingId); if(!p) return;
+  const btn=document.getElementById('md-upload-btn');
+  if(btn){ btn.disabled=true; btn.textContent='⏳ Uploading…'; }
+  try{
+    const rootId=getPolicyFolderId();
+    const subId=await driveFindOrCreateFolder(productFolderName(p.category),rootId);
+    const fname=policyFileName(p);
+    const result=await driveUploadFile(fname,subId,file);
+    p.policyUrl=result.webViewLink||('https://drive.google.com/file/d/'+result.id+'/view');
+    const puEl=document.getElementById('md-policyurl'); if(puEl) puEl.value=p.policyUrl;
+    save(p);
+    toast('✓ Uploaded to Drive: '+fname);
+  }catch(err){
+    toast('❌ Upload failed: '+((err&&err.message)||'try Connect Drive again in Settings'));
+  }finally{
+    if(btn){ btn.disabled=false; btn.textContent='📤 Upload Policy'; }
+    e.target.value='';
+  }
+}
 
 // ═══════════ ADD MODAL ════════════════════════════════════════
 function showAdd(){ document.getElementById('modal-add').classList.add('show'); }
