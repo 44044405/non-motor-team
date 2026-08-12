@@ -412,6 +412,11 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
   box-shadow:-20px 0 60px rgba(22,39,63,.22);
 }
 #modal-detail.show .modal{ transform:translateX(0); }
+#modal-detail .modal-hd{
+  position:sticky; top:-26px; margin:-26px -26px 16px -26px; padding:20px 26px 16px;
+  background:var(--card); backdrop-filter:blur(26px) saturate(180%); -webkit-backdrop-filter:blur(26px) saturate(180%);
+  z-index:5; border-bottom:1px solid var(--border2);
+}
 
 /* Login overlay (shared-team Supabase login — matches Puspakom Dashboard) */
 .login-overlay{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;
@@ -697,15 +702,18 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
 <div class="overlay" id="modal-detail" onclick="closeDetail(event)">
   <div class="modal">
     <div class="modal-hd">
-      <div>
+      <div style="min-width:0;flex:1;">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
           <div class="modal-title" id="md-name">—</div>
-          <button class="btn btn-ghost btn-xs" id="md-viewpolicy" onclick="viewPolicy()" title="Open policy document" style="white-space:nowrap;">📄 View Policy</button>
-          <button class="btn btn-ghost btn-xs" id="md-edit-pencil" onclick="toggleCardEdit()" title="Amend expiry, premium, insurer, contact">✏️</button>
-          <button class="btn btn-primary btn-xs" id="md-edit-save" onclick="saveCardEdit()" style="display:none;">✓ Save</button>
-          <button class="btn btn-ghost btn-xs" id="md-edit-cancel" onclick="cancelCardEdit()" style="display:none;">✕ Cancel</button>
         </div>
         <div style="font-size:12px;color:var(--muted);margin-top:3px;" id="md-meta">—</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;">
+          <button class="btn btn-ghost btn-xs" id="md-viewpolicy" onclick="viewPolicy()" title="Open policy document" style="white-space:nowrap;">📄 View Policy</button>
+          <button class="btn btn-ghost btn-xs" id="md-edit-pencil" onclick="toggleCardEdit()" title="Amend expiry, premium, insurer, contact">✏️ Edit</button>
+          <button class="btn btn-primary btn-xs" id="md-edit-save" onclick="saveCardEdit()" style="display:none;">✓ Save</button>
+          <button class="btn btn-ghost btn-xs" id="md-edit-cancel" onclick="cancelCardEdit()" style="display:none;">✕ Cancel</button>
+          <button class="btn btn-primary btn-xs" onclick="saveDetail()" style="margin-left:auto;white-space:nowrap;">💾 Save</button>
+        </div>
       </div>
       <button class="modal-close" onclick="closeDetailDirect()">✕</button>
     </div>
@@ -735,15 +743,23 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
       <div><label>Insurance Type</label><span id="md-instype">—</span></div>
       <div class="dg-full" id="md-remark-row"><label>Remark</label><span id="md-remark" style="color:var(--muted);">—</span></div>
     </div>
-    <!-- Policy Document Link + Upload -->
+    <input type="hidden" id="md-policyurl">
     <div class="ff" style="margin-bottom:10px;">
-      <label>Policy Document Link <span style="color:var(--muted);font-size:9px;text-transform:none;letter-spacing:0;">(for the 📄 View Policy button)</span></label>
-      <input id="md-policyurl" placeholder="Paste Google Drive / PDF link, or upload below" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:inherit;outline:none;width:100%;">
-    </div>
-    <div class="ff" style="margin-bottom:14px;">
       <button class="btn btn-gold btn-sm" id="md-upload-btn" onclick="triggerUploadPolicy()" style="width:fit-content;">📤 Upload Policy</button>
       <input type="file" id="md-upload-file" accept="application/pdf" style="display:none;" onchange="handleUploadPolicy(event)">
       <div style="font-size:11px;color:var(--muted);margin-top:5px;">Uploads straight to your Drive, sorted into a folder by Insurance Type.</div>
+    </div>
+    <div class="ff" style="margin-bottom:14px;">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <select id="md-doctype" class="tb-select" onchange="onDocTypeChange()">
+          <option value="">+ Upload other document…</option>
+          <option value="Cover Note">Cover Note</option>
+          <option value="Quotation">Quotation</option>
+          <option value="Renewal Notice">Renewal Notice</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" id="md-doctype-upload-btn" style="display:none;" onclick="triggerUploadDoc()">📤 Upload</button>
+        <input type="file" id="md-doctype-file" accept="application/pdf" style="display:none;" onchange="handleUploadDoc(event)">
+      </div>
     </div>
     <hr class="divider">
     <div class="sec-lbl">Update Status</div>
@@ -1130,7 +1146,7 @@ function initPolicies(savedArr){
   try{
     policies=all.map((r,i)=>{
       const s=saved.find(x=>x.id===i);
-      return{id:i,...r,status:s?.status||guessStatus(r),notes:s?.notes||'',quoted:s?.quoted||0,invoice:s?.invoice||'',ornum:s?.ornum||'',contactDate:s?.contactDate||'',policyReceived:s?.policyReceived||false,followups:s?.followups||[],policyNumber:s?.policyNumber||'',policyUrl:s?.policyUrl||''};
+      return{id:i,...r,status:s?.status||guessStatus(r),notes:s?.notes||'',quoted:s?.quoted||0,invoice:s?.invoice||'',ornum:s?.ornum||'',contactDate:s?.contactDate||'',policyReceived:s?.policyReceived||false,followups:s?.followups||[],policyNumber:s?.policyNumber||'',policyUrl:s?.policyUrl||'',coverNoteUrl:s?.coverNoteUrl||'',quotationUrl:s?.quotationUrl||'',renewalNoticeUrl:s?.renewalNoticeUrl||''};
     });
     const extras=saved.filter(s=>s.id>=all.length);
     policies=[...policies,...extras];
@@ -1140,7 +1156,7 @@ function initPolicies(savedArr){
 }
 
 function policiesSnapshot(){
-  return policies.map(p=>({id:p.id,status:p.status,notes:p.notes,quoted:p.quoted,invoice:p.invoice||'',ornum:p.ornum||'',contactDate:p.contactDate||'',policyReceived:p.policyReceived||false,followups:p.followups||[],policyNumber:p.policyNumber||'',policyUrl:p.policyUrl||'',name:p.name,expiry:p.expiry,premium:p.premium,category:p.category,insurer:p.insurer,contact:p.contact,remark:p.remark,year:p.year}));
+  return policies.map(p=>({id:p.id,status:p.status,notes:p.notes,quoted:p.quoted,invoice:p.invoice||'',ornum:p.ornum||'',contactDate:p.contactDate||'',policyReceived:p.policyReceived||false,followups:p.followups||[],policyNumber:p.policyNumber||'',policyUrl:p.policyUrl||'',coverNoteUrl:p.coverNoteUrl||'',quotationUrl:p.quotationUrl||'',renewalNoticeUrl:p.renewalNoticeUrl||'',name:p.name,expiry:p.expiry,premium:p.premium,category:p.category,insurer:p.insurer,contact:p.contact,remark:p.remark,year:p.year}));
 }
 function cacheLocally(){ try{ localStorage.setItem('cha_v3',JSON.stringify(policiesSnapshot())); }catch(e){} }
 
@@ -1555,7 +1571,7 @@ function openDetail(id){
   const p=policies.find(x=>x.id===id);
   const d=days(p.expiry);
   document.getElementById('md-name').textContent=p.name;
-  document.getElementById('md-meta').innerHTML=`${catTag(p.category)} &nbsp;${p.insurer} &nbsp;<span style="color:var(--muted)">${p.year}</span>`;
+  document.getElementById('md-meta').innerHTML=`${catTag(p.category)} &nbsp;${p.insurer} &nbsp;<span style="color:var(--muted)">Due: ${fmtDate(p.expiry)}</span>`;
   document.getElementById('md-expiry-view').textContent=fmtDate(p.expiry);
   document.getElementById('md-days').innerHTML=tblDayBadge(d)+` &nbsp;(${fmtDate(p.expiry)})`;
   document.getElementById('md-premium-view').textContent=fmtRM(p.premium);
@@ -1572,6 +1588,8 @@ function openDetail(id){
   document.getElementById('md-edit-pencil').style.display='';
   document.getElementById('md-edit-save').style.display='none';
   document.getElementById('md-edit-cancel').style.display='none';
+  document.getElementById('md-doctype').value='';
+  document.getElementById('md-doctype-upload-btn').style.display='none';
 
   // Add quoted price field dynamically
   let qRow=document.getElementById('md-quoted-row');
@@ -1720,6 +1738,10 @@ function showRenewPrompt(p, nextYear){
           <label>New Premium (RM) — leave blank to keep same</label>
           <input id="rp-premium" type="number" step="0.01" placeholder="Same as last year" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:Inter,sans-serif;outline:none;">
         </div>
+        <div class="ff" style="margin-top:6px;">
+          <label>New Policy Number <span style="color:var(--red);">*</span></label>
+          <input id="rp-policyno" placeholder="e.g. FHE-F6047191-13" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:Inter,sans-serif;outline:none;">
+        </div>
         <div class="modal-footer">
           <button class="btn btn-ghost btn-sm" onclick="skipRenewPrompt()">Skip, don't create</button>
           <button class="btn btn-gold" onclick="confirmRenew()">✓ Create ${nextYear} Record</button>
@@ -1741,6 +1763,8 @@ function showRenewPrompt(p, nextYear){
   document.getElementById('rp-contact').textContent=p.contact||'—';
   document.getElementById('rp-expiry').value=suggestedStr;
   document.getElementById('rp-premium').value='';
+  document.getElementById('rp-policyno').value='';
+  document.getElementById('rp-policyno').style.borderColor='';
   el.classList.add('show');
 }
 
@@ -1755,13 +1779,19 @@ function confirmRenew(){
   const nextYear=el._nextYear;
   const newExpiry=document.getElementById('rp-expiry').value;
   if(!newExpiry){ toast('⚠ Please enter the new expiry date'); return; }
+  const newPolicyNo=(document.getElementById('rp-policyno').value||'').trim();
+  if(!newPolicyNo){
+    const pnEl=document.getElementById('rp-policyno');
+    pnEl.style.borderColor='var(--red)'; pnEl.focus();
+    toast('⚠ New Policy Number is required to create the record'); return;
+  }
   const newPremium=parseFloat(document.getElementById('rp-premium').value)||p.quoted||p.premium;
   const nid=policies.length?Math.max(...policies.map(x=>x.id))+1:0;
   policies.push({
     id:nid, name:p.name, expiry:newExpiry,
     premium:newPremium, category:p.category,
     insurer:p.insurer, contact:p.contact,
-    remark:p.remark, year:nextYear,
+    remark:p.remark, year:nextYear, policyNumber:newPolicyNo,
     status:'contact', notes:'', quoted:0, contactDate:'', policyReceived:false, followups:[],
   });
   const _rp = policies[policies.length-1];
@@ -1884,6 +1914,38 @@ async function handleUploadPolicy(e){
   }finally{
     if(btn){ btn.disabled=false; btn.textContent='📤 Upload Policy'; }
     e.target.value='';
+  }
+}
+function onDocTypeChange(){
+  const v=document.getElementById('md-doctype').value;
+  document.getElementById('md-doctype-upload-btn').style.display=v?'':'none';
+}
+function triggerUploadDoc(){
+  if(!getPolicyFolderId()){ toast('Please Connect Drive and select your "Non Motor" folder first (Settings)'); return; }
+  if(!driveConnected()){ toast('Click "Connect Drive" in Settings first'); return; }
+  document.getElementById('md-doctype-file').click();
+}
+async function handleUploadDoc(e){
+  const file=e.target.files[0]; if(!file) return;
+  const p=policies.find(x=>x.id===editingId); if(!p) return;
+  const docType=document.getElementById('md-doctype').value; if(!docType) return;
+  const btn=document.getElementById('md-doctype-upload-btn');
+  if(btn){ btn.disabled=true; btn.textContent='⏳ Uploading…'; }
+  try{
+    const rootId=getPolicyFolderId();
+    const subId=await driveFindOrCreateFolder(productFolderName(p.category),rootId);
+    const fname=`${docType.toUpperCase()} (${p.name}) ${policyFileDateLabel(p.expiry)}.pdf`;
+    const result=await driveUploadFile(fname,subId,file);
+    const url=result.webViewLink||('https://drive.google.com/file/d/'+result.id+'/view');
+    const key=docType==='Cover Note'?'coverNoteUrl':docType==='Quotation'?'quotationUrl':'renewalNoticeUrl';
+    p[key]=url;
+    save(p);
+    toast('✓ Uploaded '+docType+' to Drive: '+fname);
+  }catch(err){
+    toast('❌ Upload failed: '+((err&&err.message)||'try Connect Drive again in Settings'));
+  }finally{
+    if(btn){ btn.disabled=false; btn.textContent='📤 Upload'; btn.style.display='none'; }
+    e.target.value=''; document.getElementById('md-doctype').value='';
   }
 }
 
