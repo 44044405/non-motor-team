@@ -94,6 +94,9 @@ body {
 }
 .nav-count.alert { background: var(--red); color: #fff; animation: blink 2s infinite; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.6} }
+.sb-new { margin-bottom:10px; border:0; cursor:pointer; font:inherit; font-size:13.5px; font-weight:600; color:#fff; width:100%; padding:12px; border-radius:13px;
+  background:linear-gradient(145deg,#4a72a8,#345788); box-shadow:0 4px 14px rgba(0,0,0,.22), inset 0 1px 1px rgba(255,255,255,.25); transition:.2s; }
+.sb-new:hover { transform:translateY(-1px); }
 
 .sidebar-bottom { padding: 14px 18px; border-top: 1px solid rgba(255,255,255,0.1); margin-top: auto; }
 .year-switch { display: flex; gap: 4px; }
@@ -399,25 +402,39 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
 .vt-btn { padding: 5px 13px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; color: var(--muted); border: none; background: none; font-family: inherit; }
 .vt-btn.active { background: var(--navy); color: #fff; }
 
-/* Login overlay (shared-team Supabase login) */
-.login-overlay{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;background:rgba(16,27,44,0.55);backdrop-filter:blur(4px);}
-.login-card{width:min(380px,90vw);background:var(--card);backdrop-filter:blur(26px) saturate(180%);-webkit-backdrop-filter:blur(26px) saturate(180%);border:1px solid rgba(255,255,255,.75);border-radius:var(--radius);padding:32px 28px;text-align:center;box-shadow:var(--shadow-lift);}
-.login-card h2{font-size:19px;font-weight:700;color:var(--navy);letter-spacing:-.3px;margin-top:4px;}
+/* Detail modal slides in from the right, like Puspakom's card panel */
+#modal-detail{ justify-content:flex-end; align-items:stretch; background:rgba(22,39,63,.36); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); }
+#modal-detail .modal{
+  position:fixed; top:0; right:0; height:100%; width:min(560px,96vw);
+  margin:0; border-radius:0; max-height:100%; max-width:none;
+  border-top:none; border-right:none; border-bottom:none;
+  transform:translateX(102%); transition:transform .38s cubic-bezier(.22,.85,.25,1);
+  box-shadow:-20px 0 60px rgba(22,39,63,.22);
+}
+#modal-detail.show .modal{ transform:translateX(0); }
+
+/* Login overlay (shared-team Supabase login — matches Puspakom Dashboard) */
+.login-overlay{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;
+  background:linear-gradient(170deg,rgba(31,54,86,.97),rgba(18,32,52,.98));backdrop-filter:blur(8px);}
+.login-card{width:min(400px,90vw);background:var(--card);backdrop-filter:blur(26px) saturate(180%);-webkit-backdrop-filter:blur(26px) saturate(180%);border:1px solid rgba(255,255,255,.72);border-radius:var(--radius);box-shadow:var(--shadow-lift);padding:32px 30px;text-align:center;}
+.login-card .lc-logo-img{width:190px;max-width:72%;height:auto;display:block;margin:0 auto 14px;}
+.login-card h2{font-size:19px;font-weight:700;color:var(--navy);letter-spacing:-.3px;}
 .login-card p{font-size:12.5px;color:var(--muted);margin-top:6px;}
-.login-card input{width:100%;margin-top:14px;font:inherit;font-size:14px;text-align:center;padding:10px 12px;border-radius:9px;border:1.5px solid var(--border);background:rgba(255,255,255,.55);font-family:inherit;}
-.login-card input:focus{outline:none;border-color:var(--navy);background:#fff;}
-.login-card button{width:100%;margin-top:14px;border:0;cursor:pointer;font:inherit;font-size:14px;font-weight:700;color:#fff;background:var(--navy);border-radius:11px;padding:11px 0;transition:opacity .2s;box-shadow:var(--shadow);}
-.login-card button:hover{opacity:.88;}
-.login-card #loginMsg{margin-top:14px;font-size:12.5px;color:var(--muted);min-height:18px;}
+.login-card input{width:100%;margin-top:16px;font:inherit;font-size:15px;text-align:center;letter-spacing:1px;padding:12px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:#fff;color:var(--navy);outline:none;}
+.login-card input:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(44,74,115,.15);}
+.login-card button{width:100%;margin-top:14px;border:0;cursor:pointer;font:inherit;font-size:14px;font-weight:640;color:#fff;background:var(--navy);border-radius:var(--radius-sm);padding:13px 0;transition:transform .2s;box-shadow:var(--shadow);}
+.login-card button:hover{transform:translateY(-1px);}
+.login-card #loginMsg{margin-top:14px;font-size:13px;color:var(--muted);min-height:18px;}
 </style>
 </head>
 <body>
 <div class="login-overlay" id="loginOverlay">
   <div class="login-card">
-    <div class="logo-name" style="color:var(--navy);font-size:16px;">Chin Hock Agency</div>
+    <img class="lc-logo-img" src="chinhock-logo.jpg" alt="Chin Hock Agency">
     <h2>Renewal Manager</h2>
-    <p>Team login — same account for everyone</p>
-    <input id="loginEmail" type="email" placeholder="Team email" onkeydown="if(event.key==='Enter')document.getElementById('loginPass').focus()" autocomplete="username">
+    <p>CHIN HOCK AGENCY (M) SDN BHD</p>
+    <input id="loginEmail" type="email" placeholder="Team email" onkeydown="if(event.key==='Enter')document.getElementById('loginName').focus()" autocomplete="username">
+    <input id="loginName" type="text" placeholder="Your name (shown on everything you do)" onkeydown="if(event.key==='Enter')document.getElementById('loginPass').focus()" autocomplete="name">
     <input id="loginPass" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')submitLogin()" autocomplete="current-password">
     <button id="loginBtn" onclick="submitLogin()">Log In</button>
     <div id="loginMsg"></div>
@@ -428,12 +445,14 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
 <!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="logo">
+    <img src="chinhock-logo.jpg" alt="Chin Hock Agency" style="width:56px;height:56px;border-radius:12px;object-fit:cover;display:block;margin-bottom:8px;box-shadow:0 4px 12px rgba(0,0,0,.18);">
     <div class="logo-name">Chin Hock Agency</div>
     <div class="logo-sub">Renewal Manager</div>
   </div>
   <nav class="nav">
+    <button class="sb-new" onclick="showAdd()">＋ New Record</button>
     <button class="nav-btn active" onclick="gotoView('all')" id="nb-all">
-      <span class="nav-icon">📋</span> All Records
+      <span class="nav-icon">📋</span> Master List
     </button>
     <button class="nav-btn" onclick="gotoView('pipeline')" id="nb-pipeline">
       <span class="nav-icon">📊</span> Pipeline
@@ -444,25 +463,8 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
       <span class="nav-count alert" id="nc-today">0</span>
     </button>
     <div style="margin: 10px 18px; border-top: 1px solid rgba(255,255,255,0.07);"></div>
-    <button class="nav-btn" onclick="gotoView('contact')" id="nb-contact">
-      <span class="nav-icon">📞</span> Need to Contact
-      <span class="nav-count" id="nc-contact">0</span>
-    </button>
-    <button class="nav-btn" onclick="gotoView('waiting')" id="nb-waiting">
-      <span class="nav-icon">⏳</span> Waiting Reply
-      <span class="nav-count" id="nc-waiting">0</span>
-    </button>
-    <button class="nav-btn" onclick="gotoView('payment')" id="nb-payment">
-      <span class="nav-icon">💰</span> Pending Payment
-      <span class="nav-count" id="nc-payment">0</span>
-    </button>
-    <button class="nav-btn" onclick="gotoView('ready')" id="nb-ready">
-      <span class="nav-icon">🚀</span> Ready to Proceed
-      <span class="nav-count" id="nc-ready">0</span>
-    </button>
-    <button class="nav-btn" onclick="gotoView('renewed')" id="nb-renewed">
-      <span class="nav-icon">✅</span> Renewed
-      <span class="nav-count" id="nc-renewed">0</span>
+    <button class="nav-btn" onclick="gotoView('settings')" id="nb-settings">
+      <span class="nav-icon">⚙️</span> Settings
     </button>
 
   </nav>
@@ -478,27 +480,8 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
     <div class="topbar-date">
       <strong id="today-str">—</strong>
     </div>
-    <div style="display:flex;align-items:center;gap:6px;flex:1;justify-content:center;">
-      <button class="yr-btn-top" onclick="setARYear(2025)" id="yr-ar-2025">2025</button>
-      <button class="yr-btn-top" onclick="setARYear(2026)" id="yr-ar-2026">2026</button>
-      <button class="yr-btn-top active-top" onclick="setARYear(2027)" id="yr-ar-2027">2027</button>
-      <button class="yr-btn-top" onclick="setARYear(0)" id="yr-ar-all">All</button>
-      <div style="width:1px;height:18px;background:var(--border);margin:0 2px;"></div>
-      <select class="tb-select" id="ar-month" onchange="applyARFilter()" style="font-size:12px;padding:5px 8px;min-width:110px;">
-        <option value="">All Months</option>
-        <option value="1">January</option><option value="2">February</option>
-        <option value="3">March</option><option value="4">April</option>
-        <option value="5">May</option><option value="6">June</option>
-        <option value="7">July</option><option value="8">August</option>
-        <option value="9">September</option><option value="10">October</option>
-        <option value="11">November</option><option value="12">December</option>
-      </select>
-    </div>
     <div class="topbar-actions">
-      <span id="sync-indicator" style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;background:#f0e8cc;color:var(--muted);">⚙ No Sync</span>
-      <button class="btn btn-ghost btn-sm" onclick="showSyncSetup()" title="Google Sheet Sync Settings">⚙ Sheet Sync</button>
-      <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ Export</button>
-      <button class="btn btn-gold" onclick="showAdd()">+ New Record</button>
+      <button class="btn btn-ghost btn-sm" onclick="gotoView('settings')" title="Sheet Sync, Backup, Connect Drive">⚙ Settings</button>
     </div>
   </div>
 
@@ -609,8 +592,20 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
     <!-- ══ ALL RECORDS VIEW ══ -->
     <div id="view-all" class="table-section">
       <div class="section-head">
-        <div class="section-title">All Records</div>
-        <div style="font-size:12px;color:var(--muted);" id="all-count">—</div>
+        <div>
+          <div class="section-title">Master List</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;">All policies · filter by year &amp; month</div>
+        </div>
+      </div>
+
+      <div class="toolbar" style="margin-bottom:10px;">
+        <select class="tb-select" id="mst-year" onchange="mstSetYear()"></select>
+        <select class="tb-select" id="mst-month" onchange="mstSetMonth()"></select>
+        <div class="view-toggle">
+          <button class="vt-btn" onclick="mstStep(-1)" title="Previous month">‹</button>
+          <button class="vt-btn" onclick="mstStep(1)" title="Next month">›</button>
+        </div>
+        <span style="font-size:12.5px;color:var(--muted);font-weight:600;white-space:nowrap;" id="all-count">—</span>
       </div>
 
       <div class="toolbar">
@@ -662,6 +657,34 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
         </tr></thead>
         <tbody id="fv-tbody"></tbody></table>
         <div class="pipe-empty" id="fv-empty" style="display:none;">— None in this stage —</div>
+      </div>
+    </div>
+
+    <!-- ══ SETTINGS VIEW ══ -->
+    <div id="view-settings" style="display:none;">
+      <div class="section-head" style="margin-bottom:16px;">
+        <div class="section-title">Settings</div>
+      </div>
+      <div class="tbl-wrap" style="padding:20px 22px;max-width:520px;margin-bottom:16px;">
+        <div class="sec-lbl">Google Sheet Sync</div>
+        <div style="font-size:12.5px;color:var(--muted);margin-bottom:12px;">Auto-sync due dates from your Google Sheet.</div>
+        <span id="sync-indicator" style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;background:#f0e8cc;color:var(--muted);display:inline-block;margin-bottom:10px;">⚙ No Sync</span><br>
+        <button class="btn btn-ghost btn-sm" onclick="showSyncSetup()">⚙ Sheet Sync Settings</button>
+      </div>
+      <div class="tbl-wrap" style="padding:20px 22px;max-width:520px;margin-bottom:16px;">
+        <div class="sec-lbl">Backup &amp; Export</div>
+        <div style="font-size:12.5px;color:var(--muted);margin-bottom:12px;">Download a copy of all workflow data, or export the current list to CSV.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-ghost btn-sm" onclick="exportBackup()">💾 Backup (JSON)</button>
+          <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+        </div>
+      </div>
+      <div class="tbl-wrap" style="padding:20px 22px;max-width:520px;">
+        <div class="sec-lbl">Google Drive</div>
+        <div style="font-size:12.5px;color:var(--muted);margin-bottom:10px;">Connect your Google account for policy document uploads.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-ghost btn-sm" id="driveBtn" onclick="connectDrive()">🔗 Connect Drive</button>
+        </div>
       </div>
     </div>
 </div><!-- /content -->
@@ -865,6 +888,8 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://apis.google.com/js/api.js" async defer></script>
 <script>
 // ═══════════ DATA ════════════════════════════════════════════════
 const RAW_2026 = [
@@ -1154,18 +1179,21 @@ function showLogin(msg){
   el.style.display='flex';
   const m=document.getElementById('loginMsg'); if(m&&msg)m.textContent=msg;
   const em=document.getElementById('loginEmail'); if(em&&!em.value)em.value=localStorage.getItem('ch_nm_email')||'';
+  const nm=document.getElementById('loginName'); if(nm&&!nm.value)nm.value=localStorage.getItem('ch_nm_name')||'';
   setTimeout(()=>{ (em&&!em.value?em:document.getElementById('loginPass'))?.focus(); },50);
 }
 function hideLogin(){ const el=document.getElementById('loginOverlay'); if(el)el.style.display='none'; }
 async function submitLogin(){
   const email=(((document.getElementById('loginEmail')||{}).value)||'').trim();
+  const name=(((document.getElementById('loginName')||{}).value)||'').trim();
   const pass=((document.getElementById('loginPass')||{}).value)||'';
-  if(!email||!pass){ showLogin('Please enter email and password'); return; }
+  if(!email||!name||!pass){ showLogin('Please enter email, your name, and password'); return; }
   const btn=document.getElementById('loginBtn'); if(btn){btn.disabled=true;btn.textContent='Logging in…';}
   const {error}=await sb.auth.signInWithPassword({email,password:pass});
   if(btn){btn.disabled=false;btn.textContent='Log In';}
   if(error){ showLogin('Login failed: '+(error.message||'Please check your email and password')); return; }
   localStorage.setItem('ch_nm_email',email);
+  localStorage.setItem('ch_nm_name',name);
   boot();
 }
 async function logout(){ try{await sb.auth.signOut();}catch(e){} if(pollTimer)clearInterval(pollTimer); showLogin('Logged out'); }
@@ -1242,7 +1270,7 @@ function filtered(){
 }
 
 // ═══════════ VIEWS ════════════════════════════════════════════
-const VIEWS=['today','pipeline','all','contact','waiting','payment','ready','renewed'];
+const VIEWS=['today','pipeline','all','contact','waiting','payment','ready','renewed','settings'];
 function gotoView(v){
   activeView=v;
   VIEWS.forEach(x=>{
@@ -1253,11 +1281,13 @@ function gotoView(v){
   document.getElementById('view-pipeline').style.display=(v==='pipeline')?'block':'none';
   document.getElementById('view-all').style.display='none';
   document.getElementById('view-filtered').style.display='none';
+  document.getElementById('view-settings').style.display=(v==='settings')?'block':'none';
   document.querySelector('#view-all')?.classList.remove('show');
   if(v==='all'){ document.getElementById('view-all').style.display='block'; }
   else if(['contact','waiting','payment','ready','renewed'].includes(v)){
     document.getElementById('view-filtered').style.display='block';
   }
+  if(v==='settings') updateDriveButtonUI();
   refresh();
 }
 
@@ -1279,11 +1309,6 @@ function refresh(){
   // Sidebar badges
   document.getElementById('nc-today').textContent=nToday;
   document.getElementById('nc-today').className='nav-count'+(nToday>0?' alert':'');
-  document.getElementById('nc-contact').textContent=nContact;
-  document.getElementById('nc-waiting').textContent=nWaiting;
-  document.getElementById('nc-payment').textContent=nPayment;
-  document.getElementById('nc-ready').textContent=nReady;
-  document.getElementById('nc-renewed').textContent=nRenewed;
   const _ppEl=document.getElementById('nc-pendingpol');
   if(_ppEl){ if(nPendingPol>0){_ppEl.textContent=nPendingPol;_ppEl.style.display='';_ppEl.className='nav-count alert';}else{_ppEl.style.display='none';} }
 
@@ -1371,13 +1396,20 @@ function renderToday(d){
 }
 
 // ═══════════ PIPELINE VIEW ════════════════════════════════════
+function inNext2Months(expiry){
+  const e=new Date(expiry);
+  const m0=TODAY.getFullYear()*12+TODAY.getMonth();
+  const m1=e.getFullYear()*12+e.getMonth();
+  return m1>=m0 && m1<=m0+1;
+}
 function renderPipeline(d){
   const cols={contact:[],waiting:[],payment:[],ready:[],renewed:[],pendingpol:[]};
   d.filter(p=>p.status!=='hold').sort((a,b)=>a.d-b.d).forEach(p=>{
     if(p.status==='renewed' && !p.policyReceived){
       cols.pendingpol.push(p);
     }
-    if(cols[p.status]) cols[p.status].push(p);
+    if(p.status==='contact'){ if(inNext2Months(p.expiry)) cols.contact.push(p); }
+    else if(cols[p.status]) cols[p.status].push(p);
   });
   ['contact','waiting','payment','ready','renewed'].forEach(st=>{
     const list=cols[st];
@@ -1405,49 +1437,38 @@ function renderPipeline(d){
 }
 
 
-// ═══════════ ALL RECORDS LOCAL FILTER (year + month) ══════════
+// ═══════════ ALL RECORDS LOCAL FILTER (year + month, Puspakom-style) ══
 let arYear = 2027;
 let arMonth = 0;
-
-function setARYear(y) {
-  arYear = y;
-  ['2025','2026','2027','all'].forEach(x => {
-    const el = document.getElementById('yr-ar-'+x);
-    if(el){
-      const isActive = (y==2025&&x=='2025')||(y==2026&&x=='2026')||(y==2027&&x=='2027')||(y==0&&x=='all');
-      el.classList.toggle('active-ar', isActive);
-      el.classList.toggle('active-top', isActive);
-    }
-  });
-  updateARFilterTag();
-  refresh(); // refresh ALL views, not just renderAll
-}
-
-function applyARFilter() {
-  const m = document.getElementById('ar-month');
-  arMonth = m ? parseInt(m.value)||0 : 0;
-  updateARFilterTag();
-  renderAll();
-}
-
-function clearARFilter() {
-  arYear = 2027; arMonth = 0;
-  setARYear(2027); // init year buttons
-  const m = document.getElementById('ar-month');
-  if(m) m.value = '';
-  updateARFilterTag();
-  renderAll();
-}
-
 const AR_MONTHS = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-function updateARFilterTag() {
-  const tag = document.getElementById('ar-filter-tag');
-  const btn = document.getElementById('ar-clear-btn');
-  const parts = [];
-  if(arYear) parts.push(arYear);
-  if(arMonth) parts.push(AR_MONTHS[arMonth]);
-  if(tag) { tag.textContent = parts.length ? '📅 '+parts.join(' · ') : ''; tag.style.display = parts.length?'inline-flex':'none'; }
-  if(btn) btn.style.display = parts.length ? 'inline-flex' : 'none';
+
+function mstYearOptions(){
+  const ys=new Set([2025,2026,2027]); policies.forEach(p=>{ if(p.year) ys.add(p.year); });
+  return '<option value="0">All years</option>'+[...ys].sort().map(y=>`<option value="${y}"${arYear==y?' selected':''}>${y}</option>`).join('');
+}
+function mstMonthOptions(){
+  let o='<option value="0">All months</option>';
+  for(let i=1;i<=12;i++) o+=`<option value="${i}"${arMonth==i?' selected':''}>${MONTHS[i]}</option>`;
+  return o;
+}
+function initMstFilterBar(){
+  const y=document.getElementById('mst-year'); if(y) y.innerHTML=mstYearOptions();
+  const m=document.getElementById('mst-month'); if(m) m.innerHTML=mstMonthOptions();
+}
+function mstSyncControls(){
+  const y=document.getElementById('mst-year'); if(y){ if(!Array.from(y.options).some(o=>+o.value===arYear)) y.innerHTML=mstYearOptions(); y.value=arYear; }
+  const m=document.getElementById('mst-month'); if(m) m.value=arMonth;
+}
+function mstSetYear(){ arYear=+document.getElementById('mst-year').value; refresh(); }
+function mstSetMonth(){ arMonth=+document.getElementById('mst-month').value; refresh(); }
+function mstStep(n){
+  if(!arYear) arYear=TODAY.getFullYear();
+  if(!arMonth) arMonth=TODAY.getMonth()+1;
+  arMonth+=n;
+  if(arMonth<1){ arMonth=12; arYear--; }
+  if(arMonth>12){ arMonth=1; arYear++; }
+  mstSyncControls();
+  refresh();
 }
 
 // ═══════════ ALL RECORDS ═════════════════════════════════════
@@ -1472,8 +1493,8 @@ function renderAll(){
     if(typeof av==='string')av=av.toLowerCase(),bv=bv.toLowerCase();
     return av<bv?-allSortDir:av>bv?allSortDir:0;
   });
-  const arTotal = arYear ? policies.filter(p=>p.year===arYear).length : policies.length;
-  document.getElementById('all-count').textContent=`${data.length} of ${arTotal} records`;
+  const periodTxt = arMonth ? `due in ${MONTHS[arMonth]}${arYear?' '+arYear:''}` : (arYear ? `in ${arYear}` : '(all years)');
+  document.getElementById('all-count').textContent = `${data.length} polic${data.length===1?'y':'ies'} ${periodTxt}`;
   document.getElementById('all-empty').style.display=data.length?'none':'';
   document.getElementById('all-tbody').innerHTML=data.map(p=>`<tr onclick="openDetail(${p.id})">
     <td class="td-name">${p.name}<div class="td-sub">${p.remark||''}</div></td>
@@ -1925,6 +1946,72 @@ function togglePolicyReceived(id) {
   toast(p.policyReceived ? '✓ Policy received — removed from list!' : 'Marked as pending');
 }
 
+// ═══════════ GOOGLE DRIVE CONNECT ══════════════════════════════
+// Reuses the SAME Google Cloud OAuth client as the Puspakom dashboard.
+// One-time setup needed for THIS site's domain: Google Cloud Console →
+// APIs & Services → Credentials → edit this OAuth Client ID → add this
+// site's URL under "Authorized JavaScript origins" (and the API key's
+// "Website restrictions"), or Connect Drive will fail with an origin error.
+const DRIVE_CLIENT_ID='959507503596-dde4o0pmbt1ndvbnsprcn2bqn9fgjeib.apps.googleusercontent.com';
+const DRIVE_API_KEY='AIzaSyAKeaxHaJQUcGUtguScMS1Zq6AUwX3_CWY';
+const DRIVE_SCOPE='https://www.googleapis.com/auth/drive';
+const POLICY_FOLDER_KEY='ch_nm_policyFolderId',POLICY_FOLDER_NAME_KEY='ch_nm_policyFolderName';
+let driveTokenClient=null,driveAccessToken=null,driveTokenExpiry=0,pickerLoaded=false;
+function driveReady(){ return !!DRIVE_CLIENT_ID; }
+function pickerReady(){ return !!DRIVE_API_KEY; }
+function getPolicyFolderId(){ return localStorage.getItem(POLICY_FOLDER_KEY)||''; }
+function driveConnected(){ return !!(driveAccessToken && Date.now()<driveTokenExpiry); }
+function updateDriveButtonUI(){
+  const btn=document.getElementById('driveBtn'); if(!btn) return;
+  if(driveConnected()){ btn.textContent='🟢 Drive Connected'; btn.title=localStorage.getItem(POLICY_FOLDER_NAME_KEY)?('Folder: '+localStorage.getItem(POLICY_FOLDER_NAME_KEY)):'Connected — click to pick a policy folder'; }
+  else { btn.textContent='🔗 Connect Drive'; btn.title='Connect your Google account for policy document uploads'; }
+}
+function initDriveAuth(){
+  if(!driveReady()||!window.google||!google.accounts||driveTokenClient) return;
+  driveTokenClient=google.accounts.oauth2.initTokenClient({client_id:DRIVE_CLIENT_ID,scope:DRIVE_SCOPE,callback:()=>{}});
+}
+function initPicker(){
+  if(!pickerReady()||!window.gapi||pickerLoaded) return;
+  gapi.load('picker',()=>{pickerLoaded=true});
+}
+function connectDrive(){
+  if(driveConnected()){ selectPolicyFolder(); return; }
+  if(!driveTokenClient) initDriveAuth();
+  if(!driveTokenClient){ toast('Google sign-in script hasn\'t loaded yet — try again in a moment'); return; }
+  driveTokenClient.callback=(resp)=>{
+    if(resp.error){ toast('Google Drive connection failed: '+resp.error+' — this site\'s URL may need adding to the Google Cloud OAuth client'); return; }
+    driveAccessToken=resp.access_token; driveTokenExpiry=Date.now()+(resp.expires_in||3600)*1000-30000;
+    updateDriveButtonUI();
+    toast('Google Drive connected ✓ — click again to pick a policy folder');
+  };
+  driveTokenClient.requestAccessToken({prompt:driveAccessToken?'':'consent'});
+}
+function selectPolicyFolder(){
+  if(!pickerReady()){ toast('Folder picker isn\'t configured yet'); return; }
+  if(!pickerLoaded){ initPicker(); toast('Loading folder picker — try again in a moment'); return; }
+  const view=new google.picker.DocsView(google.picker.ViewId.FOLDERS)
+    .setSelectFolderEnabled(true).setIncludeFolders(true).setMimeTypes('application/vnd.google-apps.folder');
+  new google.picker.PickerBuilder()
+    .setOAuthToken(driveAccessToken).setDeveloperKey(DRIVE_API_KEY)
+    .addView(view).setTitle('Select your policy documents folder')
+    .setCallback(data=>{
+      if(data.action===google.picker.Action.PICKED && data.docs && data.docs[0]){
+        const folder=data.docs[0];
+        localStorage.setItem(POLICY_FOLDER_KEY,folder.id);
+        localStorage.setItem(POLICY_FOLDER_NAME_KEY,folder.name);
+        updateDriveButtonUI(); toast('Policy folder set: '+folder.name+' ✓');
+      }
+    }).build().setVisible(true);
+}
+
+// ═══════════ BACKUP / EXPORT ════════════════════════════════════
+function exportBackup(){
+  const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),policies:policiesSnapshot()},null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download='nonmotor_backup_'+TODAY.toISOString().slice(0,10)+'.json'; a.click();
+  toast('✓ Backup downloaded');
+}
+
 // ═══════════ GOOGLE SHEET SYNC ════════════════════════════════
 let sheetSyncUrl = '';
 try { sheetSyncUrl = localStorage.getItem('cha_sheet_url') || ''; } catch(e) {}
@@ -2018,8 +2105,9 @@ setTimeout(updateSyncStatusBox, 100);
 const days_arr=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 function startAppUI(){
   document.getElementById('today-str').textContent=days_arr[TODAY.getDay()]+', '+TODAY.toLocaleDateString('en-MY',{day:'numeric',month:'long',year:'numeric'});
-  // Init All Records filter
-  setARYear(2027); // init year buttons
+  updateDriveButtonUI();
+  // Init Master List year/month filter
+  initMstFilterBar();
   filterPP('pending');
   gotoView('all');
 }
