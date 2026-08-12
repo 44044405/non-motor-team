@@ -17,8 +17,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
 
 :root {
-  --card: rgba(255,255,255,.62);
-  --card2: rgba(255,255,255,.4);
+  --card: rgba(255,255,255,.88);
+  --card2: rgba(255,255,255,.72);
   --border: rgba(40,70,110,.16);
   --border2: rgba(40,70,110,.09);
   --navy: #16273f;
@@ -201,7 +201,7 @@ body {
 
 /* ── PIPELINE CARD ── */
 .pcard {
-  background: rgba(255,255,255,.55); border: 1px solid var(--border2);
+  background: rgba(255,255,255,.86); border: 1px solid var(--border2);
   border-radius: 11px; padding: 10px 12px; margin-bottom: 8px;
   cursor: pointer; transition: all 0.18s;
 }
@@ -227,10 +227,10 @@ body {
 
 .tbl-wrap { background: var(--card); backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); border: 1px solid rgba(255,255,255,.7); box-shadow: var(--shadow); border-radius: var(--radius-sm); overflow: hidden; }
 table { width: 100%; border-collapse: collapse; }
-thead th { background: rgba(255,255,255,.35); padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid var(--border); cursor: pointer; white-space: nowrap; }
+thead th { background: rgba(255,255,255,.6); padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid var(--border); cursor: pointer; white-space: nowrap; }
 thead th:hover { color: var(--navy); }
 tbody tr { border-bottom: 1px solid var(--border2); cursor: pointer; transition: background 0.1s; }
-tbody tr:hover { background: rgba(255,255,255,.5); }
+tbody tr:hover { background: rgba(255,255,255,.75); }
 tbody tr:last-child { border-bottom: none; }
 td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
 .td-name { font-weight: 600; color: var(--navy); max-width: 180px; }
@@ -257,9 +257,9 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
 
 /* ── TOOLBAR ── */
 .toolbar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
-.tb-search { flex: 1; min-width: 180px; background: rgba(255,255,255,.5); border: 1.5px solid var(--border); border-radius: 10px; padding: 8px 12px; color: var(--text); font-size: 13px; font-family: inherit; outline: none; }
+.tb-search { flex: 1; min-width: 180px; background: rgba(255,255,255,.8); border: 1.5px solid var(--border); border-radius: 10px; padding: 8px 12px; color: var(--text); font-size: 13px; font-family: inherit; outline: none; }
 .tb-search:focus { border-color: var(--navy); background: #fff; }
-.tb-select { background: rgba(255,255,255,.5); border: 1.5px solid var(--border); border-radius: 10px; padding: 8px 10px; color: var(--text); font-size: 12px; font-family: inherit; outline: none; cursor: pointer; }
+.tb-select { background: rgba(255,255,255,.8); border: 1.5px solid var(--border); border-radius: 10px; padding: 8px 10px; color: var(--text); font-size: 12px; font-family: inherit; outline: none; cursor: pointer; }
 
 /* ── MODAL ── */
 .overlay { display: none; position: fixed; inset: 0; background: rgba(16,27,44,0.5); backdrop-filter: blur(2px); z-index: 100; align-items: center; justify-content: center; }
@@ -302,7 +302,7 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
 .ff.full { grid-column: 1/-1; }
 .ff label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
 .ff input, .ff select, .ff textarea {
-  background: rgba(255,255,255,.55); border: 1.5px solid var(--border);
+  background: rgba(255,255,255,.85); border: 1.5px solid var(--border);
   border-radius: 9px; padding: 8px 11px; color: var(--text);
   font-size: 13px; font-family: inherit; outline: none;
 }
@@ -310,7 +310,7 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
 .ff textarea { resize: vertical; min-height: 60px; }
 
 /* Notes textarea in modal */
-.notes-ta { width: 100%; background: rgba(255,255,255,.55); border: 1.5px solid var(--border); border-radius: 10px; padding: 9px 12px; color: var(--text); font-size: 13px; font-family: inherit; resize: vertical; min-height: 65px; outline: none; }
+.notes-ta { width: 100%; background: rgba(255,255,255,.85); border: 1.5px solid var(--border); border-radius: 10px; padding: 9px 12px; color: var(--text); font-size: 13px; font-family: inherit; resize: vertical; min-height: 65px; outline: none; }
 .notes-ta:focus { border-color: var(--navy); background: #fff; }
 
 /* Section label */
@@ -363,7 +363,7 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
 
 /* ── ADD FOLLOW-UP FORM ── */
 .followup-form {
-  background: rgba(255,255,255,.4); border: 1.5px solid var(--border);
+  background: rgba(255,255,255,.75); border: 1.5px solid var(--border);
   border-radius: 12px; padding: 12px 14px; margin-top: 10px;
 }
 .followup-row { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
@@ -379,7 +379,7 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
 
 .pending-row {
   display: flex; align-items: center; gap: 10px;
-  padding: 10px 14px; background: rgba(255,255,255,.5);
+  padding: 10px 14px; background: rgba(255,255,255,.8);
   border: 1px solid var(--border); border-radius: 11px; margin-bottom: 8px;
   cursor: pointer; transition: all 0.15s;
 }
@@ -676,6 +676,8 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
         <div style="font-size:12.5px;color:var(--muted);margin-bottom:12px;">Download a copy of all workflow data, or export the current list to CSV.</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button class="btn btn-ghost btn-sm" onclick="exportBackup()">💾 Backup (JSON)</button>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('restoreFile').click()">⬆ Restore</button>
+          <input type="file" id="restoreFile" accept=".json" style="display:none" onchange="importBackup(event)">
           <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
         </div>
       </div>
@@ -2010,6 +2012,26 @@ function exportBackup(){
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob); a.download='nonmotor_backup_'+TODAY.toISOString().slice(0,10)+'.json'; a.click();
   toast('✓ Backup downloaded');
+}
+function importBackup(e){
+  const f=e.target.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{
+      const d=JSON.parse(rd.result);
+      const restored=Array.isArray(d)?d:(d&&Array.isArray(d.policies)?d.policies:null);
+      if(!restored){ toast('❌ Wrong file format — expected a backup from "💾 Backup"'); return; }
+      const ok=confirm('This will replace all current workflow data (status/notes/follow-ups) with the backup file'+(d.exportedAt?(' from '+new Date(d.exportedAt).toLocaleString()):'')+'.\n\nContinue?');
+      if(!ok){ toast('Restore cancelled'); return; }
+      initPolicies(restored);
+      cacheLocally();
+      queueSync();
+      refresh();
+      toast('✓ Restored from backup');
+    }catch(err){ toast('❌ Could not read that file: '+(err.message||'invalid JSON')); }
+    finally{ e.target.value=''; }
+  };
+  rd.readAsText(f);
 }
 
 // ═══════════ GOOGLE SHEET SYNC ════════════════════════════════
