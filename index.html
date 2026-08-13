@@ -763,41 +763,39 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
     </div>
     <hr class="divider">
     <div class="sec-lbl">Update Status</div>
-    <select id="md-status" onchange="pickStatusSelect(this.value)" class="tb-select" style="width:100%;padding:9px 11px;font-size:13px;">
-      <option value="contact">📞 Need to Contact</option>
-      <option value="waiting">⏳ Waiting Reply</option>
-      <option value="payment">💰 Pending Payment</option>
-      <option value="ready">🚀 Ready to Proceed</option>
-      <option value="renewed">✅ Renewed</option>
-      <option value="hold">⏸ Hold</option>
-    </select>
-    <hr class="divider">
-    <!-- Contact Date -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
       <div class="ff" style="margin-bottom:0;">
-        <label>Date Contacted <span style="color:var(--muted);font-size:9px;">(when you first called/whatsapp)</span></label>
-        <input id="md-contact-date" type="date" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:Inter,sans-serif;outline:none;width:100%;">
+        <select id="md-status" onchange="pickStatusSelect(this.value)" class="tb-select" style="width:100%;padding:9px 11px;font-size:13px;">
+          <option value="contact">📞 Need to Contact</option>
+          <option value="waiting">⏳ Waiting Reply</option>
+          <option value="payment">💰 Pending Payment</option>
+          <option value="ready">🚀 Ready to Proceed</option>
+          <option value="renewed">✅ Renewed</option>
+          <option value="hold">⏸ Hold</option>
+        </select>
       </div>
       <div class="ff" style="margin-bottom:0;">
-        <label>Policy Doc Received?</label>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
-          <input type="checkbox" id="md-policy-received" style="width:18px;height:18px;cursor:pointer;accent-color:var(--green);">
-          <label for="md-policy-received" style="font-size:13px;font-weight:600;color:var(--text);cursor:pointer;text-transform:none;letter-spacing:0;">Tick when policy doc received</label>
-        </div>
+        <label>Date Contacted <span style="color:var(--muted);font-size:9px;">(auto-fills when status changes)</span></label>
+        <input id="md-contact-date" type="date" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:inherit;outline:none;width:100%;">
       </div>
     </div>
 
-    <!-- Follow-up Timeline -->
-    <div class="sec-lbl" style="margin-bottom:6px;">Follow-up History <span style="color:var(--muted);font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;">(stays even after status changes)</span></div>
-    <div class="timeline" id="md-timeline"></div>
-
     <!-- Add follow-up entry -->
-    <div class="followup-form">
-      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:8px;">+ Add Follow-up Entry</div>
-      <div class="followup-row">
-        <div class="ff"><label>Date</label><input type="date" id="fu-date" style="background:#fff;border:1.5px solid var(--border);border-radius:7px;padding:7px 10px;font-size:12px;font-family:Inter,sans-serif;outline:none;width:100%;"></div>
-        <div class="ff" style="flex:2;"><label>Note</label><input type="text" id="fu-note" placeholder="e.g. Called, will reply tmr / Quoted RM280 / Waiting IC copy..." style="background:#fff;border:1.5px solid var(--border);border-radius:7px;padding:7px 10px;font-size:12px;font-family:Inter,sans-serif;outline:none;width:100%;"></div>
-        <button class="btn btn-primary btn-sm" onclick="addFollowup()" style="flex-shrink:0;height:34px;">Add</button>
+    <div class="sec-lbl" style="margin-bottom:6px;">Follow-up</div>
+    <div class="followup-row" style="margin-bottom:14px;">
+      <div class="ff"><label>Follow-up Date</label><input type="date" id="fu-date" style="background:#fff;border:1.5px solid var(--border);border-radius:7px;padding:7px 10px;font-size:12px;font-family:inherit;outline:none;width:100%;"></div>
+      <div class="ff" style="flex:2;"><label>Follow-up Note</label><input type="text" id="fu-note" placeholder="e.g. Called, will reply tmr / Quoted RM280 / Waiting IC copy..." style="background:#fff;border:1.5px solid var(--border);border-radius:7px;padding:7px 10px;font-size:12px;font-family:inherit;outline:none;width:100%;"></div>
+      <button class="btn btn-primary btn-sm" onclick="addFollowup()" style="flex-shrink:0;height:34px;">Add</button>
+    </div>
+
+    <!-- Follow-up Timeline -->
+    <div class="timeline" id="md-timeline" style="margin-bottom:14px;"></div>
+
+    <div class="ff" style="margin-bottom:14px;">
+      <label>Policy Doc Received?</label>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+        <input type="checkbox" id="md-policy-received" style="width:18px;height:18px;cursor:pointer;accent-color:var(--green);">
+        <label for="md-policy-received" style="font-size:13px;font-weight:600;color:var(--text);cursor:pointer;text-transform:none;letter-spacing:0;">Tick when policy doc received</label>
       </div>
     </div>
 
@@ -1158,7 +1156,14 @@ function initPolicies(savedArr){
 function policiesSnapshot(){
   return policies.map(p=>({id:p.id,status:p.status,notes:p.notes,quoted:p.quoted,invoice:p.invoice||'',ornum:p.ornum||'',contactDate:p.contactDate||'',policyReceived:p.policyReceived||false,followups:p.followups||[],policyNumber:p.policyNumber||'',policyUrl:p.policyUrl||'',coverNoteUrl:p.coverNoteUrl||'',quotationUrl:p.quotationUrl||'',renewalNoticeUrl:p.renewalNoticeUrl||'',name:p.name,expiry:p.expiry,premium:p.premium,category:p.category,insurer:p.insurer,contact:p.contact,remark:p.remark,year:p.year}));
 }
-function cacheLocally(){ try{ localStorage.setItem('cha_v3',JSON.stringify(policiesSnapshot())); }catch(e){} }
+function cacheLocally(){ try{ localStorage.setItem('cha_v3',JSON.stringify(policiesSnapshot())); localStorage.setItem('cha_activity',JSON.stringify(ACTIVITY)); }catch(e){} }
+
+// ═══════════ CHANGE HISTORY (kept, not shown in the UI) ════════
+let ACTIVITY=[];
+function logActivity(action,detail,policy){
+  ACTIVITY.push({ts:new Date().toISOString(),who:localStorage.getItem('ch_nm_name')||'Unknown',policyId:policy?policy.id:null,policyName:policy?policy.name:'',action,detail:detail||''});
+  if(ACTIVITY.length>1000) ACTIVITY=ACTIVITY.slice(-1000);
+}
 
 function save(changedPolicy){
   cacheLocally();
@@ -1174,11 +1179,15 @@ const SUPABASE_ANON_KEY='sb_publishable_ZoX2XxOdZKAdpQvExq3SpA_ixtWw-db';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 let currentRev=0,dirtyPending=false,savingInFlight=false,pollTimer=null;
 
+function unwrapPayload(payload){
+  if(Array.isArray(payload)) return {policies:payload,activity:[]}; // legacy shape (before activity log existed)
+  return {policies:Array.isArray(payload?.policies)?payload.policies:[],activity:Array.isArray(payload?.activity)?payload.activity:[]};
+}
 async function loadFromServer(){
   const {data,error}=await sb.from('app_state_nonmotor').select('rev,data').eq('id',1).single();
   if(error)throw error;
   currentRev=data.rev||0;
-  return Array.isArray(data.data)?data.data:[];
+  return unwrapPayload(data.data);
 }
 function queueSync(){ dirtyPending=true; if(queueSync._t)clearTimeout(queueSync._t); queueSync._t=setTimeout(pushNow,600); }
 async function pushNow(){
@@ -1187,13 +1196,13 @@ async function pushNow(){
   try{
     const nextRev=currentRev+1;
     const {data,error}=await sb.from('app_state_nonmotor')
-      .update({data:policiesSnapshot(),rev:nextRev,updated_at:new Date().toISOString()})
+      .update({data:{policies:policiesSnapshot(),activity:ACTIVITY},rev:nextRev,updated_at:new Date().toISOString()})
       .eq('id',1).eq('rev',currentRev).select('rev,data');
     if(error){ if(/JWT|auth|permission|token/i.test(error.message||''))showLogin('Login expired — please log in again'); return; }
     if(!data||!data.length){
       // conflict: someone else already saved (rev moved) — reload their version
       const cur=await sb.from('app_state_nonmotor').select('rev,data').eq('id',1).single();
-      if(cur.data){ initPolicies(Array.isArray(cur.data.data)?cur.data.data:[]); cacheLocally(); currentRev=cur.data.rev||0; if(typeof refresh==='function')refresh(); toast('⚠️ Data was updated by someone else — latest version loaded, please recheck your recent changes'); }
+      if(cur.data){ const u=unwrapPayload(cur.data.data); initPolicies(u.policies); ACTIVITY=u.activity; cacheLocally(); currentRev=cur.data.rev||0; if(typeof refresh==='function')refresh(); toast('⚠️ Data was updated by someone else — latest version loaded, please recheck your recent changes'); }
       return;
     }
     currentRev=data[0].rev;
@@ -1207,7 +1216,7 @@ function startPolling(){
     try{
       const {data,error}=await sb.from('app_state_nonmotor').select('rev,data').eq('id',1).single();
       if(error||!data)return;
-      if((data.rev||0)!==currentRev){ initPolicies(Array.isArray(data.data)?data.data:[]); cacheLocally(); currentRev=data.rev||0; if(typeof refresh==='function')refresh(); }
+      if((data.rev||0)!==currentRev){ const u=unwrapPayload(data.data); initPolicies(u.policies); ACTIVITY=u.activity; cacheLocally(); currentRev=data.rev||0; if(typeof refresh==='function')refresh(); }
     }catch(e){}
   },7000);
 }
@@ -1240,8 +1249,8 @@ async function boot(){
     if(!session){ showLogin('Please log in'); return; }
     let remote=null;
     try{ remote=await loadFromServer(); }catch(e){ remote=null; /* offline: fall back to local cache */ }
-    initPolicies(remote||undefined);
-    if(remote)cacheLocally();
+    if(remote){ initPolicies(remote.policies); ACTIVITY=remote.activity; cacheLocally(); }
+    else{ initPolicies(); try{ ACTIVITY=JSON.parse(localStorage.getItem('cha_activity')||'[]'); }catch(e){ ACTIVITY=[]; } }
     hideLogin();
     startAppUI();
     startPolling();
@@ -1682,6 +1691,7 @@ function saveDetail(){
   p.ornum=document.getElementById('md-or')?.value?.trim()||p.ornum||'';
   p.contactDate=document.getElementById('md-contact-date')?.value||p.contactDate||'';
   p.policyReceived=document.getElementById('md-policy-received')?.checked||false;
+  logActivity('Saved card',prevStatus!==p.status?`Status ${prevStatus} → ${p.status}`:'Notes/fields updated',p);
   save(p);
   closeDetailDirect();
   refresh();
@@ -1795,6 +1805,7 @@ function confirmRenew(){
     status:'contact', notes:'', quoted:0, contactDate:'', policyReceived:false, followups:[],
   });
   const _rp = policies[policies.length-1];
+  logActivity('Created renewal record',`${nextYear} record, policy no. ${newPolicyNo}`,_rp);
   save(_rp);
   el.classList.remove('show');
   refresh();
@@ -1829,6 +1840,7 @@ function saveCardEdit(){
   p.premium=parseFloat(document.getElementById('md-premium-input').value)||0;
   p.insurer=document.getElementById('md-insurer-input').value.trim();
   p.contact=document.getElementById('md-contact-input').value.trim();
+  logActivity('Amended card',`Expiry ${p.expiry}, Premium ${p.premium}, Insurer ${p.insurer}, Contact ${p.contact}`,p);
   save(p);
   refresh();
   openDetail(editingId);
@@ -1907,6 +1919,7 @@ async function handleUploadPolicy(e){
     const result=await driveUploadFile(fname,subId,file);
     p.policyUrl=result.webViewLink||('https://drive.google.com/file/d/'+result.id+'/view');
     const puEl=document.getElementById('md-policyurl'); if(puEl) puEl.value=p.policyUrl;
+    logActivity('Uploaded policy PDF',fname,p);
     save(p);
     toast('✓ Uploaded to Drive: '+fname);
   }catch(err){
@@ -1939,6 +1952,7 @@ async function handleUploadDoc(e){
     const url=result.webViewLink||('https://drive.google.com/file/d/'+result.id+'/view');
     const key=docType==='Cover Note'?'coverNoteUrl':docType==='Quotation'?'quotationUrl':'renewalNoticeUrl';
     p[key]=url;
+    logActivity('Uploaded '+docType,fname,p);
     save(p);
     toast('✓ Uploaded '+docType+' to Drive: '+fname);
   }catch(err){
@@ -2063,17 +2077,18 @@ function pickStatusSelect(s){
   if(editingId!==null) policies.find(p=>p.id===editingId)._ts=s;
   const invBox=document.getElementById('invoice-fields');
   if(invBox) invBox.style.display=(s==='ready')?'block':'none';
+  const cdEl=document.getElementById('md-contact-date');
+  if(cdEl && !cdEl.value) cdEl.value=new Date().toISOString().slice(0,10);
 }
 
 // Open the policy document for the record being viewed
 function viewPolicy(){
   const p=policies.find(x=>x.id===editingId);
   if(!p) return;
-  const url=(p.policyUrl||document.getElementById('md-policyurl')?.value||'').trim();
+  const url=(p.policyUrl||'').trim();
   if(url){ window.open(/^https?:\/\//i.test(url)?url:('https://'+url),'_blank'); }
   else {
-    toast('No policy link yet — paste one in "Policy Document Link" below');
-    const el=document.getElementById('md-policyurl'); if(el){ el.focus(); el.style.borderColor='var(--gold)'; }
+    toast('No policy uploaded yet — use "📤 Upload Policy" below');
   }
 }
 
@@ -2210,7 +2225,7 @@ function selectPolicyFolder(){
 
 // ═══════════ BACKUP / EXPORT ════════════════════════════════════
 function exportBackup(){
-  const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),policies:policiesSnapshot()},null,2)],{type:'application/json'});
+  const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),policies:policiesSnapshot(),activity:ACTIVITY},null,2)],{type:'application/json'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob); a.download='nonmotor_backup_'+TODAY.toISOString().slice(0,10)+'.json'; a.click();
   toast('✓ Backup downloaded');
@@ -2226,6 +2241,7 @@ function importBackup(e){
       const ok=confirm('This will replace all current workflow data (status/notes/follow-ups) with the backup file'+(d.exportedAt?(' from '+new Date(d.exportedAt).toLocaleString()):'')+'.\n\nContinue?');
       if(!ok){ toast('Restore cancelled'); return; }
       initPolicies(restored);
+      if(Array.isArray(d.activity)) ACTIVITY=d.activity;
       cacheLocally();
       queueSync();
       refresh();
