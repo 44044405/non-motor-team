@@ -41,6 +41,9 @@
   --teal: #4a90a4;
   --teal-bg: rgba(74,144,164,.14);
   --teal-border: rgba(74,144,164,.32);
+  --sky: #3d7ea6;
+  --sky-bg: rgba(61,126,166,.14);
+  --sky-border: rgba(61,126,166,.32);
   --radius: 20px;
   --radius-sm: 13px;
   --shadow: 0 8px 28px rgba(22,39,63,.1), inset 0 1px 1px rgba(255,255,255,.7);
@@ -162,7 +165,7 @@ body {
 .ac-sub { font-size: 11px; color: var(--muted2); margin-top: 3px; }
 
 /* ── PIPELINE VIEW ── */
-.pipeline { display: grid; grid-template-columns: repeat(6,1fr); gap: 10px; margin-bottom: 24px; }
+.pipeline { display: grid; grid-template-columns: repeat(7,minmax(150px,1fr)); gap: 10px; margin-bottom: 24px; overflow-x: auto; }
 .pipe-col { background: var(--card); backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); border: 1px solid rgba(255,255,255,.7); box-shadow: var(--shadow); border-radius: var(--radius-sm); overflow: hidden; }
 .pipe-head {
   padding: 12px 16px; display: flex; align-items: center; gap: 8px;
@@ -172,6 +175,10 @@ body {
 .pipe-count { margin-left: auto; font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 700; padding: 2px 7px; border-radius: 8px; }
 
 /* pipe colors */
+.pipe-reqquote .pipe-head { background: var(--sky-bg); color: var(--sky); }
+.pipe-reqquote .ph-dot { background: var(--sky); }
+.pipe-reqquote .pipe-count { background: var(--sky-bg); color: var(--sky); }
+
 .pipe-contact .pipe-head { background: var(--orange-bg); color: var(--orange); }
 .pipe-contact .ph-dot { background: var(--orange); }
 .pipe-contact .pipe-count { background: var(--orange-bg); color: var(--orange); }
@@ -247,6 +254,7 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
 .b-gray { background: rgba(107,118,134,.14); color: var(--muted); }
 .b-navy { background: var(--navy); color: #fff; }
 .b-teal { background: var(--teal-bg); color: var(--teal); border: 1px solid var(--teal-border); }
+.b-sky { background: var(--sky-bg); color: var(--sky); border: 1px solid var(--sky-border); }
 
 .tag { display: inline-block; padding: 1px 6px; border-radius: 5px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
 .tag-fire { background: var(--orange-bg); color: var(--orange); }
@@ -287,6 +295,7 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
   font-family: inherit;
 }
 .chip:hover { opacity: 0.82; }
+.chip-rq { background: var(--sky-bg); color: var(--sky); }
 .chip-c { background: var(--orange-bg); color: var(--orange); }
 .chip-w { background: var(--gold-bg); color: var(--gold); }
 .chip-p { background: var(--purple-bg); color: var(--purple); }
@@ -567,6 +576,10 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
         <div style="font-size:12px;color:var(--muted);">Click any card to update status</div>
       </div>
       <div class="pipeline">
+        <div class="pipe-col pipe-reqquote">
+          <div class="pipe-head"><span class="ph-dot"></span>Request Quotation<span class="pipe-count" id="pc-reqquote">0</span></div>
+          <div class="pipe-body" id="pb-reqquote"><div class="pipe-empty">—</div></div>
+        </div>
         <div class="pipe-col pipe-contact">
           <div class="pipe-head"><span class="ph-dot"></span>Need to Contact<span class="pipe-count" id="pc-contact">0</span></div>
           <div class="pipe-body" id="pb-contact"><div class="pipe-empty">—</div></div>
@@ -603,6 +616,8 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
         </div>
       </div>
 
+      <div id="rq-alert"></div>
+
       <div class="toolbar" style="margin-bottom:10px;">
         <select class="tb-select" id="mst-year" onchange="mstSetYear()"></select>
         <select class="tb-select" id="mst-month" onchange="mstSetMonth()"></select>
@@ -627,6 +642,7 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
         </select>
 <select class="tb-select" id="tbl-st" onchange="renderAll()">
           <option value="">All Status</option>
+          <option value="reqquote">Request Quotation</option>
           <option value="contact">Need to Contact</option>
           <option value="waiting">Waiting Reply</option>
           <option value="payment">Pending Payment</option>
@@ -766,6 +782,7 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
       <div class="ff" style="margin-bottom:0;">
         <select id="md-status" onchange="pickStatusSelect(this.value)" class="tb-select" style="width:100%;padding:9px 11px;font-size:13px;">
+          <option value="reqquote">📝 Request Quotation</option>
           <option value="contact">📞 Need to Contact</option>
           <option value="waiting">⏳ Waiting Reply</option>
           <option value="payment">💰 Pending Payment</option>
@@ -833,8 +850,10 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
       <button class="modal-close" onclick="closeAddDirect()">✕</button>
     </div>
 
-    <div class="frow">
-      <div class="ff full"><label>Customer Name *</label><input id="a-name" placeholder="e.g. TAN AH KOW"></div>
+    <div class="frow-3">
+      <div class="ff"><label>Customer Name *</label><input id="a-name" placeholder="e.g. TAN AH KOW"></div>
+      <div class="ff"><label>ID Number *</label><input id="a-ic" placeholder="e.g. 900101-14-5566"></div>
+      <div class="ff"><label>Contact Number</label><input id="a-contact" placeholder="601XXXXXXXX"></div>
     </div>
     <div class="frow">
       <div class="ff"><label>Expiry Date *</label><input id="a-expiry" type="date"></div>
@@ -858,7 +877,7 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
       </div>
     </div>
     <div class="frow">
-      <div class="ff"><label>Contact No.</label><input id="a-contact" placeholder="601XXXXXXXX"></div>
+      <div class="ff"><label>Request Quotation Date</label><input id="a-rqdate" type="date"></div>
       <div class="ff"><label>Year</label>
         <select id="a-year"><option value="2025">2025</option><option value="2026">2026</option><option value="2027" selected>2027</option></select>
       </div>
@@ -866,6 +885,7 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
     <div class="frow">
       <div class="ff"><label>Initial Status</label>
         <select id="a-status">
+          <option value="reqquote">📝 Request Quotation</option>
           <option value="contact">📞 Need to Contact</option>
           <option value="waiting">⏳ Waiting Reply</option>
           <option value="payment">💰 Pending Payment</option>
@@ -875,6 +895,13 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
         </select>
       </div>
       <div class="ff"><label>Quoted Price (RM)</label><input id="a-quoted" type="number" placeholder="0.00" step="0.01"></div>
+    </div>
+    <div class="ff">
+      <label>Previous Policy <span style="color:var(--muted);font-size:9px;text-transform:none;letter-spacing:0;">(creates a Drive folder to upload it into)</span></label>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <button class="btn btn-ghost btn-sm" type="button" onclick="generateQuotationDriveLink(event)" style="width:fit-content;">📁 Generate Drive Link</button>
+        <a id="a-prevpolicy-link" href="#" target="_blank" style="display:none;font-size:12px;color:var(--navy);font-weight:600;">Open folder ↗</a>
+      </div>
     </div>
     <div class="ff"><label>Notes / Remark</label><textarea id="a-notes" placeholder="e.g. AUTO RENEW / BURGLARY / referred by..."></textarea></div>
 
@@ -1144,7 +1171,7 @@ function initPolicies(savedArr){
   try{
     policies=all.map((r,i)=>{
       const s=saved.find(x=>x.id===i);
-      return{id:i,...r,status:s?.status||guessStatus(r),notes:s?.notes||'',quoted:s?.quoted||0,invoice:s?.invoice||'',ornum:s?.ornum||'',contactDate:s?.contactDate||'',policyReceived:s?.policyReceived||false,followups:s?.followups||[],policyNumber:s?.policyNumber||'',policyUrl:s?.policyUrl||'',coverNoteUrl:s?.coverNoteUrl||'',quotationUrl:s?.quotationUrl||'',renewalNoticeUrl:s?.renewalNoticeUrl||''};
+      return{id:i,...r,status:s?.status||guessStatus(r),notes:s?.notes||'',quoted:s?.quoted||0,invoice:s?.invoice||'',ornum:s?.ornum||'',contactDate:s?.contactDate||'',policyReceived:s?.policyReceived||false,followups:s?.followups||[],policyNumber:s?.policyNumber||'',policyUrl:s?.policyUrl||'',coverNoteUrl:s?.coverNoteUrl||'',quotationUrl:s?.quotationUrl||'',renewalNoticeUrl:s?.renewalNoticeUrl||'',icNumber:s?.icNumber||'',requestQuotationDate:s?.requestQuotationDate||'',previousPolicyUrl:s?.previousPolicyUrl||''};
     });
     const extras=saved.filter(s=>s.id>=all.length);
     policies=[...policies,...extras];
@@ -1154,7 +1181,7 @@ function initPolicies(savedArr){
 }
 
 function policiesSnapshot(){
-  return policies.map(p=>({id:p.id,status:p.status,notes:p.notes,quoted:p.quoted,invoice:p.invoice||'',ornum:p.ornum||'',contactDate:p.contactDate||'',policyReceived:p.policyReceived||false,followups:p.followups||[],policyNumber:p.policyNumber||'',policyUrl:p.policyUrl||'',coverNoteUrl:p.coverNoteUrl||'',quotationUrl:p.quotationUrl||'',renewalNoticeUrl:p.renewalNoticeUrl||'',name:p.name,expiry:p.expiry,premium:p.premium,category:p.category,insurer:p.insurer,contact:p.contact,remark:p.remark,year:p.year}));
+  return policies.map(p=>({id:p.id,status:p.status,notes:p.notes,quoted:p.quoted,invoice:p.invoice||'',ornum:p.ornum||'',contactDate:p.contactDate||'',policyReceived:p.policyReceived||false,followups:p.followups||[],policyNumber:p.policyNumber||'',policyUrl:p.policyUrl||'',coverNoteUrl:p.coverNoteUrl||'',quotationUrl:p.quotationUrl||'',renewalNoticeUrl:p.renewalNoticeUrl||'',icNumber:p.icNumber||'',requestQuotationDate:p.requestQuotationDate||'',previousPolicyUrl:p.previousPolicyUrl||'',name:p.name,expiry:p.expiry,premium:p.premium,category:p.category,insurer:p.insurer,contact:p.contact,remark:p.remark,year:p.year}));
 }
 function cacheLocally(){ try{ localStorage.setItem('cha_v3',JSON.stringify(policiesSnapshot())); localStorage.setItem('cha_activity',JSON.stringify(ACTIVITY)); }catch(e){} }
 
@@ -1274,7 +1301,8 @@ function tblDayBadge(d){
   return `<span class="badge b-green">${d}d</span>`;
 }
 function statusBadge(s){
-  return{contact:`<span class="badge b-red">Need Contact</span>`,
+  return{reqquote:`<span class="badge b-sky">📝 Request Quotation</span>`,
+    contact:`<span class="badge b-red">Need Contact</span>`,
     waiting:`<span class="badge b-gold">Waiting Reply</span>`,
     payment:`<span class="badge b-purple">Pending Payment</span>`,
     ready:`<span class="badge b-teal">🚀 Ready to Proceed</span>`,
@@ -1449,7 +1477,7 @@ function inNext2Months(expiry){
   return m1>=m0 && m1<=m0+1;
 }
 function renderPipeline(d){
-  const cols={contact:[],waiting:[],payment:[],ready:[],renewed:[],pendingpol:[]};
+  const cols={reqquote:[],contact:[],waiting:[],payment:[],ready:[],renewed:[],pendingpol:[]};
   d.filter(p=>p.status!=='hold').sort((a,b)=>a.d-b.d).forEach(p=>{
     if(p.status==='renewed' && !p.policyReceived){
       cols.pendingpol.push(p);
@@ -1457,7 +1485,7 @@ function renderPipeline(d){
     if(p.status==='contact'){ if(inNext2Months(p.expiry)) cols.contact.push(p); }
     else if(cols[p.status]) cols[p.status].push(p);
   });
-  ['contact','waiting','payment','ready','renewed'].forEach(st=>{
+  ['reqquote','contact','waiting','payment','ready','renewed'].forEach(st=>{
     const list=cols[st];
     document.getElementById('pc-'+st).textContent=list.length;
     document.getElementById('pb-'+st).innerHTML=list.length?list.map(p=>`
@@ -1520,7 +1548,28 @@ function mstStep(n){
 // ═══════════ ALL RECORDS ═════════════════════════════════════
 let allSortKey='expiry',allSortDir=1;
 function sortBy(k){ if(allSortKey===k)allSortDir*=-1; else{allSortKey=k;allSortDir=1;} renderAll(); }
+function renderReqQuoteAlert(){
+  const el=document.getElementById('rq-alert'); if(!el) return;
+  const nowY=TODAY.getFullYear(), nowM=TODAY.getMonth();
+  const list=policies.filter(p=>p.status==='reqquote' && p.requestQuotationDate && (()=>{
+    const d=new Date(p.requestQuotationDate); return d.getFullYear()===nowY && d.getMonth()===nowM;
+  })());
+  if(!list.length){ el.innerHTML=''; return; }
+  el.innerHTML=`<div class="urgent-banner show" style="background:var(--sky-bg);border-color:var(--sky-border);">
+    <span style="font-size:18px;">📝</span>
+    <span class="ub-text"><strong style="color:var(--sky);">${list.length} new quotation request${list.length===1?'':'s'}</strong> this month — not yet processed!</span>
+  </div>
+  <div style="margin-bottom:16px;">${list.map(p=>`
+    <div class="pending-row" onclick="openDetail(${p.id})">
+      <div class="pending-info">
+        <div class="pending-name">${p.name}</div>
+        <div class="pending-meta">${catTag(p.category)} &nbsp;${p.insurer} &nbsp;Requested ${fmtDate(p.requestQuotationDate)}</div>
+      </div>
+      <button class="btn btn-primary btn-xs" onclick="event.stopPropagation();openDetail(${p.id})">Open</button>
+    </div>`).join('')}</div>`;
+}
 function renderAll(){
+  renderReqQuoteAlert();
   const search=document.getElementById('tbl-search').value.toLowerCase();
   const cat=document.getElementById('tbl-cat').value;
   const ins=document.getElementById('tbl-ins').value;
@@ -1865,6 +1914,32 @@ function productFolderLabel(category){
 function productFolderName(category){ return 'Product : '+productFolderLabel(category); }
 function policyFileName(p){ return `POLICY (${p.name}) ${policyFileDateLabel(p.expiry)}.pdf`; }
 
+async function generateQuotationDriveLink(evt){
+  const name=document.getElementById('a-name').value.trim().toUpperCase();
+  if(!name){ toast('⚠ Please enter Customer Name first'); return; }
+  if(!getPolicyFolderId()){ toast('Please Connect Drive and select your "Non Motor" folder first (Settings)'); return; }
+  if(!driveConnected()){ toast('Click "Connect Drive" in Settings first'); return; }
+  const rqEl=document.getElementById('a-rqdate');
+  if(!rqEl.value) rqEl.value=new Date().toISOString().slice(0,10);
+  const btn=evt?.target;
+  if(btn){ btn.disabled=true; btn.textContent='⏳ Creating…'; }
+  try{
+    const rootId=getPolicyFolderId();
+    const rqRootId=await driveFindOrCreateFolder('Request Quotation',rootId);
+    const custFolderName=`${name} (${policyFileDateLabel(rqEl.value)})`;
+    const custId=await driveFindOrCreateFolder(custFolderName,rqRootId);
+    const url=`https://drive.google.com/drive/folders/${custId}`;
+    const link=document.getElementById('a-prevpolicy-link');
+    link.href=url; link.dataset.url=url; link.style.display='';
+    window.open(url,'_blank');
+    toast('✓ Drive folder ready: '+custFolderName);
+  }catch(err){
+    toast('❌ Could not create Drive folder: '+((err&&err.message)||'try Connect Drive again in Settings'));
+  }finally{
+    if(btn){ btn.disabled=false; btn.textContent='📁 Generate Drive Link'; }
+  }
+}
+
 function arrayBufferToBase64(buffer){
   let binary=''; const bytes=new Uint8Array(buffer); const len=bytes.byteLength; const chunk=0x8000;
   for(let i=0;i<len;i+=chunk){ binary+=String.fromCharCode.apply(null,bytes.subarray(i,i+chunk)); }
@@ -1964,17 +2039,24 @@ async function handleUploadDoc(e){
 }
 
 // ═══════════ ADD MODAL ════════════════════════════════════════
-function showAdd(){ document.getElementById('modal-add').classList.add('show'); }
+function showAdd(){
+  document.getElementById('modal-add').classList.add('show');
+  const rq=document.getElementById('a-rqdate'); if(rq && !rq.value) rq.value=new Date().toISOString().slice(0,10);
+  const link=document.getElementById('a-prevpolicy-link'); if(link){ link.style.display='none'; link.dataset.url=''; }
+}
 function closeAdd(e){ if(e.target.id==='modal-add') closeAddDirect(); }
 function closeAddDirect(){ document.getElementById('modal-add').classList.remove('show'); }
 
 function doAdd(){
   const name=document.getElementById('a-name').value.trim().toUpperCase();
   const expiry=document.getElementById('a-expiry').value;
+  const ic=document.getElementById('a-ic').value.trim();
   if(!name||!expiry){ toast('⚠ Name & Expiry Date required'); return; }
+  if(!ic){ toast('⚠ ID Number is required'); return; }
   const nid=policies.length?Math.max(...policies.map(p=>p.id))+1:0;
+  const linkEl=document.getElementById('a-prevpolicy-link');
   policies.push({
-    id:nid, name, expiry,
+    id:nid, name, expiry, icNumber:ic,
     premium:parseFloat(document.getElementById('a-premium').value)||0,
     category:document.getElementById('a-cat').value,
     insurer:document.getElementById('a-insurer').value,
@@ -1984,14 +2066,17 @@ function doAdd(){
     status:document.getElementById('a-status').value,
     notes:'',
     quoted:parseFloat(document.getElementById('a-quoted').value)||0,
+    requestQuotationDate:document.getElementById('a-rqdate').value||'',
+    previousPolicyUrl:(linkEl&&linkEl.dataset.url)||'',
     contactDate:'', policyReceived:false, followups:[],
   });
   const _newP = policies[policies.length-1];
+  logActivity('Created record',`Status: ${_newP.status}`,_newP);
   save(_newP);
   closeAddDirect();
   refresh();
   toast('✓ New record added');
-  ['a-name','a-expiry','a-premium','a-contact','a-notes','a-quoted'].forEach(id=>document.getElementById(id).value='');
+  ['a-name','a-ic','a-expiry','a-premium','a-contact','a-notes','a-quoted','a-rqdate'].forEach(id=>document.getElementById(id).value='');
 }
 
 // ═══════════ EXPORT ════════════════════════════════════════════
