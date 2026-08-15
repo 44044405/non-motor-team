@@ -1296,6 +1296,21 @@ function statusBadge(s){
     renewed:`<span class="badge b-green">✓ Renewed</span>`,
     hold:`<span class="badge b-gray">Hold</span>`}[s]||'';
 }
+const DEFAULT_CATEGORIES=['Fire / Business Ins','Individual PA / Medical','Annual Travel Ins','Group Medical','Group PA / GPA'];
+function getCategoryList(){
+  const set=new Set(DEFAULT_CATEGORIES);
+  policies.forEach(p=>{ if(p.category) set.add(p.category); });
+  return [...set].sort((a,b)=>a.localeCompare(b));
+}
+function populateCatSelect(){
+  const sel=document.getElementById('a-cat'); if(!sel) return;
+  sel.innerHTML=getCategoryList().map(c=>`<option value="${c.replace(/"/g,'&quot;')}">${c}</option>`).join('')+'<option value="__custom__">+ Add new type…</option>';
+}
+function populateCatFilterSelect(){
+  const sel=document.getElementById('tbl-cat'); if(!sel) return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">All Categories</option>'+getCategoryList().map(c=>`<option value="${c.replace(/"/g,'&quot;')}"${c===cur?' selected':''}>${c}</option>`).join('');
+}
 function catTag(c){
   if(!c)return'';
   if(c.includes('Fire'))return`<span class="tag tag-fire">Fire</span>`;
@@ -1558,6 +1573,7 @@ function renderReqQuoteAlert(){
 }
 function renderAll(){
   renderReqQuoteAlert();
+  populateCatFilterSelect();
   const search=document.getElementById('tbl-search').value.toLowerCase();
   const cat=document.getElementById('tbl-cat').value;
   const ins=document.getElementById('tbl-ins').value;
@@ -2032,6 +2048,7 @@ function showAdd(){
   document.getElementById('modal-add').classList.add('show');
   const rq=document.getElementById('a-rqdate'); if(rq && !rq.value) rq.value=new Date().toISOString().slice(0,10);
   const link=document.getElementById('a-prevpolicy-link'); if(link){ link.style.display='none'; link.dataset.url=''; }
+  populateCatSelect();
   document.getElementById('a-cat').value='Fire / Business Ins';
   const custom=document.getElementById('a-cat-custom'); custom.style.display='none'; custom.value='';
 }
