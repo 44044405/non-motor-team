@@ -858,13 +858,15 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
     <div class="frow">
       <div class="ff"><label>Expiry Date *</label><input id="a-expiry" type="date"></div>
       <div class="ff"><label>Product Category *</label>
-        <select id="a-cat">
+        <select id="a-cat" onchange="onCatSelectChange()">
           <option value="Fire / Business Ins">Fire / Business Ins</option>
           <option value="Individual PA / Medical">Individual PA / Medical</option>
           <option value="Annual Travel Ins">Annual Travel Ins</option>
           <option value="Group Medical">Group Medical</option>
           <option value="Group PA / GPA">Group PA / GPA</option>
+          <option value="__custom__">+ Add new type…</option>
         </select>
+        <input id="a-cat-custom" placeholder="Type your own category" style="display:none;margin-top:8px;">
       </div>
     </div>
     <div class="frow">
@@ -1300,7 +1302,8 @@ function catTag(c){
   if(c.includes('Travel'))return`<span class="tag tag-travel">Travel</span>`;
   if(c.includes('Group Medical'))return`<span class="tag tag-med">G.Med</span>`;
   if(c.includes('GPA')||c.includes('Group PA'))return`<span class="tag tag-gpa">GPA</span>`;
-  return`<span class="tag tag-pa">PA</span>`;
+  if(c.includes('PA')||c.includes('Medical'))return`<span class="tag tag-pa">PA</span>`;
+  return`<span class="tag tag-pa">${c}</span>`;
 }
 function fmtDate(d){ return new Date(d).toLocaleDateString('en-MY',{day:'2-digit',month:'short',year:'numeric'}); }
 function fmtRM(n){ return 'RM '+Number(n).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2}); }
@@ -1894,7 +1897,8 @@ function productFolderLabel(category){
   if(category.includes('Travel')) return 'Travel';
   if(category.includes('Group Medical')) return 'G.Med';
   if(category.includes('GPA')||category.includes('Group PA')) return 'GPA';
-  return 'PA';
+  if(category.includes('PA')||category.includes('Medical')) return 'PA';
+  return category;
 }
 function productFolderName(category){ return 'Product : '+productFolderLabel(category); }
 function policyFileName(p){ return `POLICY (${p.name}) ${policyFileDateLabel(p.expiry)}.pdf`; }
@@ -2028,6 +2032,12 @@ function showAdd(){
   document.getElementById('modal-add').classList.add('show');
   const rq=document.getElementById('a-rqdate'); if(rq && !rq.value) rq.value=new Date().toISOString().slice(0,10);
   const link=document.getElementById('a-prevpolicy-link'); if(link){ link.style.display='none'; link.dataset.url=''; }
+  document.getElementById('a-cat').value='Fire / Business Ins';
+  const custom=document.getElementById('a-cat-custom'); custom.style.display='none'; custom.value='';
+}
+function onCatSelectChange(){
+  const v=document.getElementById('a-cat').value;
+  document.getElementById('a-cat-custom').style.display=(v==='__custom__')?'':'none';
 }
 function closeAdd(e){ if(e.target.id==='modal-add') closeAddDirect(); }
 function closeAddDirect(){ document.getElementById('modal-add').classList.remove('show'); }
@@ -2038,12 +2048,15 @@ function doAdd(){
   const ic=document.getElementById('a-ic').value.trim();
   if(!name||!expiry){ toast('⚠ Name & Expiry Date required'); return; }
   if(!ic){ toast('⚠ ID Number is required'); return; }
+  const catSel=document.getElementById('a-cat').value;
+  const category=catSel==='__custom__'?document.getElementById('a-cat-custom').value.trim():catSel;
+  if(!category){ toast('⚠ Please type your custom category'); return; }
   const nid=policies.length?Math.max(...policies.map(p=>p.id))+1:0;
   const linkEl=document.getElementById('a-prevpolicy-link');
   policies.push({
     id:nid, name, expiry, icNumber:ic,
     premium:0,
-    category:document.getElementById('a-cat').value,
+    category,
     insurer:'',
     contact:document.getElementById('a-contact').value.trim(),
     remark:document.getElementById('a-notes').value.trim(),
@@ -2061,7 +2074,8 @@ function doAdd(){
   closeAddDirect();
   refresh();
   toast('✓ New record added');
-  ['a-name','a-ic','a-expiry','a-contact','a-notes','a-rqdate'].forEach(id=>document.getElementById(id).value='');
+  ['a-name','a-ic','a-expiry','a-contact','a-notes','a-rqdate','a-cat-custom'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('a-cat-custom').style.display='none';
 }
 
 // ═══════════ EXPORT ════════════════════════════════════════════
