@@ -857,9 +857,6 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
     </div>
     <div class="frow">
       <div class="ff"><label>Expiry Date *</label><input id="a-expiry" type="date"></div>
-      <div class="ff"><label>Last Year Premium (RM)</label><input id="a-premium" type="number" placeholder="0.00" step="0.01"></div>
-    </div>
-    <div class="frow">
       <div class="ff"><label>Product Category *</label>
         <select id="a-cat">
           <option value="Fire / Business Ins">Fire / Business Ins</option>
@@ -869,20 +866,9 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
           <option value="Group PA / GPA">Group PA / GPA</option>
         </select>
       </div>
-      <div class="ff"><label>Insurance Company *</label>
-        <select id="a-insurer">
-          <option>Allianz</option><option>Generali</option><option>Liberty</option>
-          <option>Pacific</option><option>Kurnia</option><option>Rhb</option><option>Lonpac</option>
-        </select>
-      </div>
     </div>
     <div class="frow">
       <div class="ff"><label>Request Quotation Date</label><input id="a-rqdate" type="date"></div>
-      <div class="ff"><label>Year</label>
-        <select id="a-year"><option value="2025">2025</option><option value="2026">2026</option><option value="2027" selected>2027</option></select>
-      </div>
-    </div>
-    <div class="frow">
       <div class="ff"><label>Initial Status</label>
         <select id="a-status">
           <option value="reqquote">📝 Request Quotation</option>
@@ -894,7 +880,6 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
           <option value="hold">⏸ Hold</option>
         </select>
       </div>
-      <div class="ff"><label>Quoted Price (RM)</label><input id="a-quoted" type="number" placeholder="0.00" step="0.01"></div>
     </div>
     <div class="ff">
       <label>Previous Policy <span style="color:var(--muted);font-size:9px;text-transform:none;letter-spacing:0;">(creates a Drive folder to upload it into)</span></label>
@@ -2057,15 +2042,15 @@ function doAdd(){
   const linkEl=document.getElementById('a-prevpolicy-link');
   policies.push({
     id:nid, name, expiry, icNumber:ic,
-    premium:parseFloat(document.getElementById('a-premium').value)||0,
+    premium:0,
     category:document.getElementById('a-cat').value,
-    insurer:document.getElementById('a-insurer').value,
+    insurer:'',
     contact:document.getElementById('a-contact').value.trim(),
     remark:document.getElementById('a-notes').value.trim(),
-    year:parseInt(document.getElementById('a-year').value),
+    year:new Date(expiry).getFullYear(),
     status:document.getElementById('a-status').value,
     notes:'',
-    quoted:parseFloat(document.getElementById('a-quoted').value)||0,
+    quoted:0,
     requestQuotationDate:document.getElementById('a-rqdate').value||'',
     previousPolicyUrl:(linkEl&&linkEl.dataset.url)||'',
     contactDate:'', policyReceived:false, followups:[],
@@ -2076,7 +2061,7 @@ function doAdd(){
   closeAddDirect();
   refresh();
   toast('✓ New record added');
-  ['a-name','a-ic','a-expiry','a-premium','a-contact','a-notes','a-quoted','a-rqdate'].forEach(id=>document.getElementById(id).value='');
+  ['a-name','a-ic','a-expiry','a-contact','a-notes','a-rqdate'].forEach(id=>document.getElementById(id).value='');
 }
 
 // ═══════════ EXPORT ════════════════════════════════════════════
