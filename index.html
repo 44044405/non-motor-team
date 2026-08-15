@@ -44,6 +44,12 @@
   --sky: #3d7ea6;
   --sky-bg: rgba(61,126,166,.14);
   --sky-border: rgba(61,126,166,.32);
+  --brown: #8a6d3b;
+  --brown-bg: rgba(138,109,59,.14);
+  --brown-border: rgba(138,109,59,.32);
+  --pink: #a64a7a;
+  --pink-bg: rgba(166,74,122,.14);
+  --pink-border: rgba(166,74,122,.32);
   --radius: 20px;
   --radius-sm: 13px;
   --shadow: 0 8px 28px rgba(22,39,63,.1), inset 0 1px 1px rgba(255,255,255,.7);
@@ -165,7 +171,7 @@ body {
 .ac-sub { font-size: 11px; color: var(--muted2); margin-top: 3px; }
 
 /* ── PIPELINE VIEW ── */
-.pipeline { display: grid; grid-template-columns: repeat(7,minmax(150px,1fr)); gap: 10px; margin-bottom: 24px; overflow-x: auto; }
+.pipeline { display: grid; grid-template-columns: repeat(12,minmax(150px,1fr)); gap: 10px; margin-bottom: 24px; overflow-x: auto; }
 .pipe-col { background: var(--card); backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); border: 1px solid rgba(255,255,255,.7); box-shadow: var(--shadow); border-radius: var(--radius-sm); overflow: hidden; }
 .pipe-head {
   padding: 12px 16px; display: flex; align-items: center; gap: 8px;
@@ -174,34 +180,54 @@ body {
 .pipe-head .ph-dot { width: 8px; height: 8px; border-radius: 50%; }
 .pipe-count { margin-left: auto; font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 700; padding: 2px 7px; border-radius: 8px; }
 
-/* pipe colors */
+/* pipe colors (12-stage funnel) */
+.pipe-expiredsoon .pipe-head { background: var(--red-bg); color: var(--red); }
+.pipe-expiredsoon .ph-dot { background: var(--red); }
+.pipe-expiredsoon .pipe-count { background: var(--red-bg); color: var(--red); }
+
 .pipe-reqquote .pipe-head { background: var(--sky-bg); color: var(--sky); }
 .pipe-reqquote .ph-dot { background: var(--sky); }
 .pipe-reqquote .pipe-count { background: var(--sky-bg); color: var(--sky); }
 
-.pipe-contact .pipe-head { background: var(--orange-bg); color: var(--orange); }
-.pipe-contact .ph-dot { background: var(--orange); }
-.pipe-contact .pipe-count { background: var(--orange-bg); color: var(--orange); }
+.pipe-quotready .pipe-head { background: var(--teal-bg); color: var(--teal); }
+.pipe-quotready .ph-dot { background: var(--teal); }
+.pipe-quotready .pipe-count { background: var(--teal-bg); color: var(--teal); }
 
-.pipe-waiting .pipe-head { background: var(--gold-bg); color: var(--gold); }
-.pipe-waiting .ph-dot { background: var(--gold); }
-.pipe-waiting .pipe-count { background: var(--gold-bg); color: var(--gold); }
+.pipe-contactpending .pipe-head { background: var(--orange-bg); color: var(--orange); }
+.pipe-contactpending .ph-dot { background: var(--orange); }
+.pipe-contactpending .pipe-count { background: var(--orange-bg); color: var(--orange); }
 
-.pipe-payment .pipe-head { background: var(--purple-bg); color: var(--purple); }
-.pipe-payment .ph-dot { background: var(--purple); }
-.pipe-payment .pipe-count { background: var(--purple-bg); color: var(--purple); }
+.pipe-followup .pipe-head { background: var(--gold-bg); color: var(--gold); }
+.pipe-followup .ph-dot { background: var(--gold); }
+.pipe-followup .pipe-count { background: var(--gold-bg); color: var(--gold); }
 
-.pipe-done .pipe-head { background: var(--green-bg); color: var(--green); }
-.pipe-done .ph-dot { background: var(--green); }
-.pipe-done .pipe-count { background: var(--green-bg); color: var(--green); }
+.pipe-confirmqt .pipe-head { background: var(--purple-bg); color: var(--purple); }
+.pipe-confirmqt .ph-dot { background: var(--purple); }
+.pipe-confirmqt .pipe-count { background: var(--purple-bg); color: var(--purple); }
 
-.pipe-ready .pipe-head { background: var(--teal-bg); color: var(--teal); }
-.pipe-ready .ph-dot { background: var(--teal); }
-.pipe-ready .pipe-count { background: var(--teal-bg); color: var(--teal); }
+.pipe-paymentready .pipe-head { background: var(--green-bg); color: var(--green); }
+.pipe-paymentready .ph-dot { background: var(--green); }
+.pipe-paymentready .pipe-count { background: var(--green-bg); color: var(--green); }
 
-.pipe-pendingpol .pipe-head { background: rgba(169,118,63,.14); color: #8a5a25; }
-.pipe-pendingpol .ph-dot { background: #a9763f; }
-.pipe-pendingpol .pipe-count { background: rgba(169,118,63,.14); color: #8a5a25; }
+.pipe-pendingpolicy .pipe-head { background: var(--brown-bg); color: var(--brown); }
+.pipe-pendingpolicy .ph-dot { background: var(--brown); }
+.pipe-pendingpolicy .pipe-count { background: var(--brown-bg); color: var(--brown); }
+
+.pipe-policydone .pipe-head { background: var(--pink-bg); color: var(--pink); }
+.pipe-policydone .ph-dot { background: var(--pink); }
+.pipe-policydone .pipe-count { background: var(--pink-bg); color: var(--pink); }
+
+.pipe-renewaldone .pipe-head { background: var(--green-bg); color: var(--green); }
+.pipe-renewaldone .ph-dot { background: var(--green); }
+.pipe-renewaldone .pipe-count { background: var(--green-bg); color: var(--green); }
+
+.pipe-onhold .pipe-head { background: rgba(107,118,134,.14); color: var(--muted); }
+.pipe-onhold .ph-dot { background: var(--muted); }
+.pipe-onhold .pipe-count { background: rgba(107,118,134,.14); color: var(--muted); }
+
+.pipe-noneed .pipe-head { background: rgba(107,118,134,.14); color: var(--muted); }
+.pipe-noneed .ph-dot { background: var(--muted); }
+.pipe-noneed .pipe-count { background: rgba(107,118,134,.14); color: var(--muted); }
 
 .pipe-body { padding: 10px; max-height: 420px; overflow-y: auto; }
 .pipe-empty { text-align: center; padding: 24px 10px; color: var(--muted2); font-size: 12px; }
@@ -255,6 +281,8 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
 .b-navy { background: var(--navy); color: #fff; }
 .b-teal { background: var(--teal-bg); color: var(--teal); border: 1px solid var(--teal-border); }
 .b-sky { background: var(--sky-bg); color: var(--sky); border: 1px solid var(--sky-border); }
+.b-brown { background: var(--brown-bg); color: var(--brown); border: 1px solid var(--brown-border); }
+.b-pink { background: var(--pink-bg); color: var(--pink); border: 1px solid var(--pink-border); }
 
 .tag { display: inline-block; padding: 1px 6px; border-radius: 5px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
 .tag-fire { background: var(--orange-bg); color: var(--orange); }
@@ -358,11 +386,17 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
 }
 .tl-entry:last-child { border-bottom: none; }
 .tl-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--navy); flex-shrink: 0; margin-top: 4px; }
-.tl-dot.dot-contact { background: var(--orange); }
-.tl-dot.dot-waiting { background: var(--gold); }
-.tl-dot.dot-payment { background: var(--purple); }
-.tl-dot.dot-ready { background: var(--teal); }
-.tl-dot.dot-renewed { background: var(--green); }
+.tl-dot.dot-contact,.tl-dot.dot-contactpending { background: var(--orange); }
+.tl-dot.dot-waiting,.tl-dot.dot-followup { background: var(--gold); }
+.tl-dot.dot-payment,.tl-dot.dot-confirmqt { background: var(--purple); }
+.tl-dot.dot-ready,.tl-dot.dot-paymentready { background: var(--green); }
+.tl-dot.dot-renewed,.tl-dot.dot-renewaldone { background: var(--green); }
+.tl-dot.dot-expiredsoon { background: var(--red); }
+.tl-dot.dot-reqquote { background: var(--sky); }
+.tl-dot.dot-quotready { background: var(--teal); }
+.tl-dot.dot-pendingpolicy { background: var(--brown); }
+.tl-dot.dot-policydone { background: var(--pink); }
+.tl-dot.dot-onhold,.tl-dot.dot-noneed { background: var(--muted); }
 .tl-date { font-family: 'DM Mono', monospace; color: var(--muted); font-size: 11px; width: 86px; flex-shrink: 0; padding-top: 1px; }
 .tl-content { flex: 1; }
 .tl-status { font-weight: 700; color: var(--navy); }
@@ -523,29 +557,29 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
 
       <!-- KPI strip -->
       <div class="action-strip">
-        <div class="action-card c-red" onclick="gotoView('contact')">
-          <div class="ac-num" id="kpi-contact">0</div>
-          <div class="ac-label">📞 Need to Contact</div>
+        <div class="action-card c-red" onclick="gotoView('contactpending')">
+          <div class="ac-num" id="kpi-contactpending">0</div>
+          <div class="ac-label">📞 Contact, Pending Reply</div>
           <div class="ac-sub">Expiring ≤ 30 days, not contacted</div>
         </div>
-        <div class="action-card c-orange" onclick="gotoView('waiting')">
-          <div class="ac-num" id="kpi-waiting">0</div>
-          <div class="ac-label">⏳ Waiting Reply</div>
+        <div class="action-card c-orange" onclick="gotoView('followup')">
+          <div class="ac-num" id="kpi-followup">0</div>
+          <div class="ac-label">⏳ Follow Up</div>
           <div class="ac-sub">Contacted, no response yet</div>
         </div>
-        <div class="action-card c-purple" onclick="gotoView('payment')">
-          <div class="ac-num" id="kpi-payment">0</div>
-          <div class="ac-label">💰 Pending Payment</div>
+        <div class="action-card c-purple" onclick="gotoView('confirmqt')">
+          <div class="ac-num" id="kpi-confirmqt">0</div>
+          <div class="ac-label">💰 Confirm QT, Pending Payment</div>
           <div class="ac-sub">Agreed, awaiting payment</div>
         </div>
-        <div class="action-card" style="border-top-color:var(--teal);" onclick="gotoView('ready')">
-          <div class="ac-num" style="color:var(--teal);" id="kpi-ready">0</div>
-          <div class="ac-label" style="color:var(--teal);">🚀 Ready to Proceed</div>
+        <div class="action-card" style="border-top-color:var(--teal);" onclick="gotoView('paymentready')">
+          <div class="ac-num" style="color:var(--teal);" id="kpi-paymentready">0</div>
+          <div class="ac-label" style="color:var(--teal);">🚀 Payment Received, Ready to Proceed</div>
           <div class="ac-sub">Payment received, open policy</div>
         </div>
-        <div class="action-card c-green" onclick="gotoView('renewed')">
-          <div class="ac-num" id="kpi-renewed">0</div>
-          <div class="ac-label">✅ Renewed</div>
+        <div class="action-card c-green" onclick="gotoView('renewaldone')">
+          <div class="ac-num" id="kpi-renewaldone">0</div>
+          <div class="ac-label">✅ Renewal Done</div>
           <div class="ac-sub" id="kpi-renewed-sub">This year</div>
         </div>
       </div>
@@ -576,33 +610,53 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
         <div style="font-size:12px;color:var(--muted);">Click any card to update status</div>
       </div>
       <div class="pipeline">
+        <div class="pipe-col pipe-expiredsoon">
+          <div class="pipe-head"><span class="ph-dot"></span>Expired Soon<span class="pipe-count" id="pc-expiredsoon">0</span></div>
+          <div class="pipe-body" id="pb-expiredsoon"><div class="pipe-empty">—</div></div>
+        </div>
         <div class="pipe-col pipe-reqquote">
           <div class="pipe-head"><span class="ph-dot"></span>Request Quotation<span class="pipe-count" id="pc-reqquote">0</span></div>
           <div class="pipe-body" id="pb-reqquote"><div class="pipe-empty">—</div></div>
         </div>
-        <div class="pipe-col pipe-contact">
-          <div class="pipe-head"><span class="ph-dot"></span>Need to Contact<span class="pipe-count" id="pc-contact">0</span></div>
-          <div class="pipe-body" id="pb-contact"><div class="pipe-empty">—</div></div>
+        <div class="pipe-col pipe-quotready">
+          <div class="pipe-head"><span class="ph-dot"></span>Quotation Ready<span class="pipe-count" id="pc-quotready">0</span></div>
+          <div class="pipe-body" id="pb-quotready"><div class="pipe-empty">—</div></div>
         </div>
-        <div class="pipe-col pipe-waiting">
-          <div class="pipe-head"><span class="ph-dot"></span>Waiting Reply<span class="pipe-count" id="pc-waiting">0</span></div>
-          <div class="pipe-body" id="pb-waiting"><div class="pipe-empty">—</div></div>
+        <div class="pipe-col pipe-contactpending">
+          <div class="pipe-head"><span class="ph-dot"></span>Contact, Pending Reply<span class="pipe-count" id="pc-contactpending">0</span></div>
+          <div class="pipe-body" id="pb-contactpending"><div class="pipe-empty">—</div></div>
         </div>
-        <div class="pipe-col pipe-payment">
-          <div class="pipe-head"><span class="ph-dot"></span>Pending Payment<span class="pipe-count" id="pc-payment">0</span></div>
-          <div class="pipe-body" id="pb-payment"><div class="pipe-empty">—</div></div>
+        <div class="pipe-col pipe-followup">
+          <div class="pipe-head"><span class="ph-dot"></span>Follow Up<span class="pipe-count" id="pc-followup">0</span></div>
+          <div class="pipe-body" id="pb-followup"><div class="pipe-empty">—</div></div>
         </div>
-        <div class="pipe-col pipe-ready">
-          <div class="pipe-head"><span class="ph-dot"></span>Ready to Proceed<span class="pipe-count" id="pc-ready">0</span></div>
-          <div class="pipe-body" id="pb-ready"><div class="pipe-empty">—</div></div>
+        <div class="pipe-col pipe-confirmqt">
+          <div class="pipe-head"><span class="ph-dot"></span>Confirm QT, Pending Payment<span class="pipe-count" id="pc-confirmqt">0</span></div>
+          <div class="pipe-body" id="pb-confirmqt"><div class="pipe-empty">—</div></div>
         </div>
-        <div class="pipe-col pipe-done">
-          <div class="pipe-head"><span class="ph-dot"></span>Renewed<span class="pipe-count" id="pc-renewed">0</span></div>
-          <div class="pipe-body" id="pb-renewed"><div class="pipe-empty">—</div></div>
+        <div class="pipe-col pipe-paymentready">
+          <div class="pipe-head"><span class="ph-dot"></span>Payment Received, Ready to Proceed<span class="pipe-count" id="pc-paymentready">0</span></div>
+          <div class="pipe-body" id="pb-paymentready"><div class="pipe-empty">—</div></div>
         </div>
-        <div class="pipe-col pipe-pendingpol">
-          <div class="pipe-head"><span class="ph-dot"></span>Pending Policy<span class="pipe-count" id="pc-pendingpol">0</span></div>
-          <div class="pipe-body" id="pb-pendingpol"><div class="pipe-empty">—</div></div>
+        <div class="pipe-col pipe-pendingpolicy">
+          <div class="pipe-head"><span class="ph-dot"></span>Pending Policy<span class="pipe-count" id="pc-pendingpolicy">0</span></div>
+          <div class="pipe-body" id="pb-pendingpolicy"><div class="pipe-empty">—</div></div>
+        </div>
+        <div class="pipe-col pipe-policydone">
+          <div class="pipe-head"><span class="ph-dot"></span>Policy Done<span class="pipe-count" id="pc-policydone">0</span></div>
+          <div class="pipe-body" id="pb-policydone"><div class="pipe-empty">—</div></div>
+        </div>
+        <div class="pipe-col pipe-renewaldone">
+          <div class="pipe-head"><span class="ph-dot"></span>Renewal Done<span class="pipe-count" id="pc-renewaldone">0</span></div>
+          <div class="pipe-body" id="pb-renewaldone"><div class="pipe-empty">—</div></div>
+        </div>
+        <div class="pipe-col pipe-onhold">
+          <div class="pipe-head"><span class="ph-dot"></span>On Hold<span class="pipe-count" id="pc-onhold">0</span></div>
+          <div class="pipe-body" id="pb-onhold"><div class="pipe-empty">—</div></div>
+        </div>
+        <div class="pipe-col pipe-noneed">
+          <div class="pipe-head"><span class="ph-dot"></span>No Need Renew<span class="pipe-count" id="pc-noneed">0</span></div>
+          <div class="pipe-body" id="pb-noneed"><div class="pipe-empty">—</div></div>
         </div>
       </div>
     </div>
@@ -642,13 +696,18 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
         </select>
 <select class="tb-select" id="tbl-st" onchange="renderAll()">
           <option value="">All Status</option>
+          <option value="expiredsoon">Expired Soon</option>
           <option value="reqquote">Request Quotation</option>
-          <option value="contact">Need to Contact</option>
-          <option value="waiting">Waiting Reply</option>
-          <option value="payment">Pending Payment</option>
-          <option value="ready">Ready to Proceed</option>
-          <option value="renewed">Renewed</option>
-          <option value="hold">Hold</option>
+          <option value="quotready">Quotation Ready</option>
+          <option value="contactpending">Contact, Pending Reply</option>
+          <option value="followup">Follow Up</option>
+          <option value="confirmqt">Confirm QT, Pending Payment</option>
+          <option value="paymentready">Payment Received, Ready to Proceed</option>
+          <option value="pendingpolicy">Pending Policy</option>
+          <option value="policydone">Policy Done</option>
+          <option value="renewaldone">Renewal Done</option>
+          <option value="onhold">On Hold</option>
+          <option value="noneed">No Need Renew</option>
         </select>
       </div>
       <div class="tbl-wrap">
@@ -781,56 +840,59 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
     <div class="sec-lbl">Update Status</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
       <div class="ff" style="margin-bottom:0;">
-        <select id="md-status" onchange="pickStatusSelect(this.value)" class="tb-select" style="width:100%;padding:9px 11px;font-size:13px;">
+        <label>Status</label>
+        <select id="md-status" onchange="pickStatusSelect(this.value)" class="tb-select" style="width:100%;padding:9px 11px;font-size:13px;box-sizing:border-box;height:37px;">
+          <option value="expiredsoon">⏰ Expired Soon</option>
           <option value="reqquote">📝 Request Quotation</option>
-          <option value="contact">📞 Need to Contact</option>
-          <option value="waiting">⏳ Waiting Reply</option>
-          <option value="payment">💰 Pending Payment</option>
-          <option value="ready">🚀 Ready to Proceed</option>
-          <option value="renewed">✅ Renewed</option>
-          <option value="hold">⏸ Hold</option>
+          <option value="quotready">Quotation Ready</option>
+          <option value="contactpending">📞 Contact, Pending Reply</option>
+          <option value="followup">⏳ Follow Up</option>
+          <option value="confirmqt">💰 Confirm QT, Pending Payment</option>
+          <option value="paymentready">🚀 Payment Received, Ready to Proceed</option>
+          <option value="pendingpolicy">Pending Policy</option>
+          <option value="policydone">Policy Done</option>
+          <option value="renewaldone">✅ Renewal Done</option>
+          <option value="onhold">⏸ On Hold</option>
+          <option value="noneed">No Need Renew</option>
         </select>
       </div>
       <div class="ff" style="margin-bottom:0;">
-        <label>Date Contacted <span style="color:var(--muted);font-size:9px;">(auto-fills when status changes)</span></label>
-        <input id="md-contact-date" type="date" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:inherit;outline:none;width:100%;">
+        <label>Date Contacted</label>
+        <input id="md-contact-date" type="date" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:inherit;outline:none;width:100%;box-sizing:border-box;height:37px;">
+        <div style="font-size:9px;color:var(--muted);margin-top:3px;">Auto-fills when status changes</div>
       </div>
     </div>
 
     <!-- Add follow-up entry -->
-    <div class="sec-lbl" style="margin-bottom:6px;">Follow-up</div>
-    <div class="followup-row" style="margin-bottom:14px;">
-      <div class="ff"><label>Follow-up Date</label><input type="date" id="fu-date" style="background:#fff;border:1.5px solid var(--border);border-radius:7px;padding:7px 10px;font-size:12px;font-family:inherit;outline:none;width:100%;"></div>
-      <div class="ff" style="flex:2;"><label>Follow-up Note</label><input type="text" id="fu-note" placeholder="e.g. Called, will reply tmr / Quoted RM280 / Waiting IC copy..." style="background:#fff;border:1.5px solid var(--border);border-radius:7px;padding:7px 10px;font-size:12px;font-family:inherit;outline:none;width:100%;"></div>
-      <button class="btn btn-primary btn-sm" onclick="addFollowup()" style="flex-shrink:0;height:34px;">Add</button>
+    <div class="sec-lbl" style="margin-bottom:6px;display:flex;align-items:center;gap:6px;cursor:pointer;" onclick="toggleFollowupPanel()">
+      <span id="fu-toggle-arrow" style="display:inline-block;transition:transform .15s;">▸</span> Follow-up
+      <span id="fu-history-badge" style="display:none;font-size:10px;font-weight:700;background:var(--sky-bg);color:var(--sky);padding:1px 7px;border-radius:9px;text-transform:none;letter-spacing:0;"></span>
     </div>
-
-    <!-- Follow-up Timeline -->
-    <div class="timeline" id="md-timeline" style="margin-bottom:14px;"></div>
-
-    <div class="ff" style="margin-bottom:14px;">
-      <label>Policy Doc Received?</label>
-      <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
-        <input type="checkbox" id="md-policy-received" style="width:18px;height:18px;cursor:pointer;accent-color:var(--green);">
-        <label for="md-policy-received" style="font-size:13px;font-weight:600;color:var(--text);cursor:pointer;text-transform:none;letter-spacing:0;">Tick when policy doc received</label>
+    <div id="fu-panel" style="display:none;">
+      <div class="followup-row" style="margin-bottom:14px;">
+        <div class="ff"><label>Follow-up Date</label><input type="date" id="fu-date" style="background:#fff;border:1.5px solid var(--border);border-radius:7px;padding:7px 10px;font-size:12px;font-family:inherit;outline:none;width:100%;"></div>
+        <div class="ff" style="flex:2;"><label>Follow-up Note</label><input type="text" id="fu-note" placeholder="e.g. Called, will reply tmr / Quoted RM280 / Waiting IC copy..." style="background:#fff;border:1.5px solid var(--border);border-radius:7px;padding:7px 10px;font-size:12px;font-family:inherit;outline:none;width:100%;"></div>
+        <button class="btn btn-primary btn-sm" onclick="addFollowup()" style="flex-shrink:0;height:34px;">Add</button>
       </div>
+      <!-- Follow-up Timeline -->
+      <div class="timeline" id="md-timeline" style="margin-bottom:14px;"></div>
     </div>
 
     <hr class="divider">
-    <div class="sec-lbl">General Notes</div>
-    <textarea class="notes-ta" id="md-notes" placeholder="e.g. Quoted RM 280, waiting payment by 15 Jan..."></textarea>
-    <div id="invoice-fields" style="display:none; margin-top:14px; padding:14px 16px; background:var(--teal-bg); border:1.5px solid var(--teal-border); border-radius:10px;">
-      <div style="font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:10px;">🚀 Ready to Proceed — Fill in Details <span style="color:var(--red);font-size:10px;">(both fields required)</span></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div class="ff" style="margin-bottom:0;">
-          <label>Invoice Number <span style="color:var(--red);">*</span></label>
-          <input id="md-invoice" placeholder="e.g. INV-2027-001" required style="background:#fff;border:1.5px solid var(--teal-border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:Inter,sans-serif;outline:none;">
-        </div>
-        <div class="ff" style="margin-bottom:0;">
-          <label>OR Number (Official Receipt) <span style="color:var(--red);">*</span></label>
-          <input id="md-or" placeholder="e.g. OR-2027-001" required style="background:#fff;border:1.5px solid var(--teal-border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:Inter,sans-serif;outline:none;">
-        </div>
-      </div>
+    <div class="sec-lbl" style="display:flex;align-items:center;gap:6px;">
+      General Notes
+      <span id="notes-count-badge" style="display:none;font-size:10px;font-weight:700;background:var(--red);color:#fff;padding:1px 7px;border-radius:9px;text-transform:none;letter-spacing:0;"></span>
+      <button class="btn btn-ghost btn-xs" id="notes-toggle-btn" onclick="toggleNotesPanel()" style="margin-left:auto;">+ Add Note</button>
+    </div>
+    <div id="notes-panel" style="display:none;">
+      <textarea class="notes-ta" id="md-notes" placeholder="e.g. Quoted RM 280, waiting payment by 15 Jan..." oninput="updateNotesBadge()"></textarea>
+    </div>
+    <hr class="divider">
+    <div class="sec-lbl">Policy Details</div>
+    <div class="frow-3">
+      <div class="ff"><label>Quotation No.</label><input id="md-quotationno" placeholder="e.g. QT-2027-001" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:inherit;outline:none;"></div>
+      <div class="ff"><label>Invoice No. <span style="color:var(--red);">*</span></label><input id="md-invoice" placeholder="e.g. INV-2027-001" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:inherit;outline:none;"></div>
+      <div class="ff"><label>OR No. <span style="color:var(--red);">*</span></label><input id="md-or" placeholder="e.g. OR-2027-001" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:inherit;outline:none;"></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost btn-sm" onclick="closeDetailDirect()">Cancel</button>
@@ -856,7 +918,7 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
       <div class="ff"><label>Contact Number</label><input id="a-contact" placeholder="601XXXXXXXX"></div>
     </div>
     <div class="frow">
-      <div class="ff"><label>Expiry Date *</label><input id="a-expiry" type="date"></div>
+      <div class="ff"><label>Expiry Date *</label><input id="a-expiry" type="date" onchange="onExpiryDateChange()"></div>
       <div class="ff"><label>Product Category *</label>
         <select id="a-cat" onchange="onCatSelectChange()">
           <option value="Fire / Business Ins">Fire / Business Ins</option>
@@ -873,13 +935,18 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
       <div class="ff"><label>Request Quotation Date</label><input id="a-rqdate" type="date"></div>
       <div class="ff"><label>Initial Status</label>
         <select id="a-status">
+          <option value="expiredsoon">⏰ Expired Soon</option>
           <option value="reqquote">📝 Request Quotation</option>
-          <option value="contact">📞 Need to Contact</option>
-          <option value="waiting">⏳ Waiting Reply</option>
-          <option value="payment">💰 Pending Payment</option>
-          <option value="ready">🚀 Ready to Proceed</option>
-          <option value="renewed">✅ Renewed</option>
-          <option value="hold">⏸ Hold</option>
+          <option value="quotready">Quotation Ready</option>
+          <option value="contactpending">📞 Contact, Pending Reply</option>
+          <option value="followup">⏳ Follow Up</option>
+          <option value="confirmqt">💰 Confirm QT, Pending Payment</option>
+          <option value="paymentready">🚀 Payment Received, Ready to Proceed</option>
+          <option value="pendingpolicy">Pending Policy</option>
+          <option value="policydone">Policy Done</option>
+          <option value="renewaldone">✅ Renewal Done</option>
+          <option value="onhold">⏸ On Hold</option>
+          <option value="noneed">No Need Renew</option>
         </select>
       </div>
     </div>
@@ -1146,9 +1213,9 @@ function days(d){
 
 function guessStatus(r){
   const rk=(r.remark||'').toLowerCase();
-  if(rk.includes('auto renew')||rk.includes('renewed')) return 'renewed';
-  if(rk.includes('hold')||rk.includes('不要')) return 'hold';
-  return 'contact'; // default = needs to be contacted
+  if(rk.includes('auto renew')||rk.includes('renewed')) return 'renewaldone';
+  if(rk.includes('hold')||rk.includes('不要')) return 'onhold';
+  return 'contactpending'; // default = needs to be contacted
 }
 
 function initPolicies(savedArr){
@@ -1257,6 +1324,19 @@ async function submitLogin(){
   boot();
 }
 async function logout(){ try{await sb.auth.signOut();}catch(e){} if(pollTimer)clearInterval(pollTimer); showLogin('Logged out'); }
+// One-time (idempotent) migration from the old 7-status system to the new
+// 12-stage funnel. Per Teoh: every 2027-tagged record becomes Renewal Done;
+// everything else maps by name. Runs on every boot but is a no-op once done.
+const STATUS_MIGRATION_OLD_TO_NEW={contact:'contactpending',waiting:'followup',payment:'confirmqt',ready:'paymentready',renewed:'renewaldone',hold:'onhold',reqquote:'reqquote'};
+function migrateStatuses(){
+  let changed=false;
+  policies.forEach(p=>{
+    if(p.year===2027){ if(p.status!=='renewaldone'){ p.status='renewaldone'; changed=true; } return; }
+    const mapped=STATUS_MIGRATION_OLD_TO_NEW[p.status];
+    if(mapped && mapped!==p.status){ p.status=mapped; changed=true; }
+  });
+  if(changed){ cacheLocally(); queueSync(); }
+}
 async function boot(){
   try{
     const {data:{session}}=await sb.auth.getSession();
@@ -1265,6 +1345,7 @@ async function boot(){
     try{ remote=await loadFromServer(); }catch(e){ remote=null; /* offline: fall back to local cache */ }
     if(remote){ initPolicies(remote.policies); ACTIVITY=remote.activity; cacheLocally(); }
     else{ initPolicies(); try{ ACTIVITY=JSON.parse(localStorage.getItem('cha_activity')||'[]'); }catch(e){ ACTIVITY=[]; } }
+    migrateStatuses();
     hideLogin();
     startAppUI();
     startPolling();
@@ -1288,13 +1369,18 @@ function tblDayBadge(d){
   return `<span class="badge b-green">${d}d</span>`;
 }
 function statusBadge(s){
-  return{reqquote:`<span class="badge b-sky">📝 Request Quotation</span>`,
-    contact:`<span class="badge b-red">Need Contact</span>`,
-    waiting:`<span class="badge b-gold">Waiting Reply</span>`,
-    payment:`<span class="badge b-purple">Pending Payment</span>`,
-    ready:`<span class="badge b-teal">🚀 Ready to Proceed</span>`,
-    renewed:`<span class="badge b-green">✓ Renewed</span>`,
-    hold:`<span class="badge b-gray">Hold</span>`}[s]||'';
+  return{expiredsoon:`<span class="badge b-red">⏰ Expired Soon</span>`,
+    reqquote:`<span class="badge b-sky">📝 Request Quotation</span>`,
+    quotready:`<span class="badge b-teal">Quotation Ready</span>`,
+    contactpending:`<span class="badge b-orange">Contact, Pending Reply</span>`,
+    followup:`<span class="badge b-gold">Follow Up</span>`,
+    confirmqt:`<span class="badge b-purple">Confirm QT, Pending Payment</span>`,
+    paymentready:`<span class="badge b-green">🚀 Payment Received, Ready to Proceed</span>`,
+    pendingpolicy:`<span class="badge b-brown">Pending Policy</span>`,
+    policydone:`<span class="badge b-pink">Policy Done</span>`,
+    renewaldone:`<span class="badge b-green">✓ Renewal Done</span>`,
+    onhold:`<span class="badge b-gray">On Hold</span>`,
+    noneed:`<span class="badge b-gray">No Need Renew</span>`}[s]||'';
 }
 const DEFAULT_CATEGORIES=['Fire / Business Ins','Individual PA / Medical','Annual Travel Ins','Group Medical','Group PA / GPA'];
 function getCategoryList(){
@@ -1322,7 +1408,7 @@ function catTag(c){
 }
 function fmtDate(d){ return new Date(d).toLocaleDateString('en-MY',{day:'2-digit',month:'short',year:'numeric'}); }
 function fmtRM(n){ return 'RM '+Number(n).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2}); }
-function stepIdx(s){ return{contact:0,waiting:1,payment:2,ready:3,renewed:4}[s]??-1; }
+function stepIdx(s){ return{contactpending:0,followup:1,confirmqt:2,paymentready:3,renewaldone:4}[s]??-1; }
 
 // ═══════════ YEAR FILTER ═════════════════════════════════════
 function setYear(y){
@@ -1347,7 +1433,8 @@ function filtered(){
 }
 
 // ═══════════ VIEWS ════════════════════════════════════════════
-const VIEWS=['today','pipeline','all','contact','waiting','payment','ready','renewed','settings'];
+const FILTERED_STATUSES=['expiredsoon','reqquote','quotready','contactpending','followup','confirmqt','paymentready','pendingpolicy','policydone','renewaldone','onhold','noneed'];
+const VIEWS=['today','pipeline','all','settings',...FILTERED_STATUSES];
 function gotoView(v){
   activeView=v;
   VIEWS.forEach(x=>{
@@ -1361,7 +1448,7 @@ function gotoView(v){
   document.getElementById('view-settings').style.display=(v==='settings')?'block':'none';
   document.querySelector('#view-all')?.classList.remove('show');
   if(v==='all'){ document.getElementById('view-all').style.display='block'; }
-  else if(['contact','waiting','payment','ready','renewed'].includes(v)){
+  else if(FILTERED_STATUSES.includes(v)){
     document.getElementById('view-filtered').style.display='block';
   }
   if(v==='settings') updateDriveButtonUI();
@@ -1374,14 +1461,14 @@ function refresh(){
   const d=data.map(p=>({...p,d:days(p.expiry)}));
 
   // Counts
-  const nContact=d.filter(p=>p.status==='contact').length;
-  const nWaiting=d.filter(p=>p.status==='waiting').length;
-  const nPayment=d.filter(p=>p.status==='payment').length;
-  const nReady=d.filter(p=>p.status==='ready').length;
-  const nRenewed=d.filter(p=>p.status==='renewed').length;
-  const nPendingPol=d.filter(p=>p.status==='renewed'&&!p.policyReceived).length;
-  const nToday=d.filter(p=>p.d<=30&&p.status!=='renewed'&&p.status!=='hold').length;
-  const nUrgent=d.filter(p=>p.d<=7&&p.status!=='renewed'&&p.status!=='hold').length;
+  const nContact=d.filter(p=>p.status==='contactpending').length;
+  const nWaiting=d.filter(p=>p.status==='followup').length;
+  const nPayment=d.filter(p=>p.status==='confirmqt').length;
+  const nReady=d.filter(p=>p.status==='paymentready').length;
+  const nRenewed=d.filter(p=>p.status==='renewaldone').length;
+  const nPendingPol=d.filter(p=>p.status==='pendingpolicy').length;
+  const nToday=d.filter(p=>p.d<=30&&!TERMINAL_STATUSES.includes(p.status)).length;
+  const nUrgent=d.filter(p=>p.d<=7&&!TERMINAL_STATUSES.includes(p.status)).length;
 
   // Sidebar badges
   document.getElementById('nc-today').textContent=nToday;
@@ -1390,11 +1477,11 @@ function refresh(){
   if(_ppEl){ if(nPendingPol>0){_ppEl.textContent=nPendingPol;_ppEl.style.display='';_ppEl.className='nav-count alert';}else{_ppEl.style.display='none';} }
 
   // KPI
-  document.getElementById('kpi-contact').textContent=nContact;
-  document.getElementById('kpi-waiting').textContent=nWaiting;
-  document.getElementById('kpi-payment').textContent=nPayment;
-  document.getElementById('kpi-ready').textContent=nReady;
-  document.getElementById('kpi-renewed').textContent=nRenewed;
+  document.getElementById('kpi-contactpending').textContent=nContact;
+  document.getElementById('kpi-followup').textContent=nWaiting;
+  document.getElementById('kpi-confirmqt').textContent=nPayment;
+  document.getElementById('kpi-paymentready').textContent=nReady;
+  document.getElementById('kpi-renewaldone').textContent=nRenewed;
 
   // Urgent banner
   if(nUrgent>0){
@@ -1409,7 +1496,7 @@ function refresh(){
   if(activeView==='today') renderToday(d);
   else if(activeView==='pipeline') renderPipeline(d);
   else if(activeView==='all') renderAll();
-  else if(['contact','waiting','payment','ready','renewed'].includes(activeView)) renderFiltered(activeView,d);
+  else if(FILTERED_STATUSES.includes(activeView)) renderFiltered(activeView,d);
 }
 
 // ═══════════ TODAY VIEW ═══════════════════════════════════════
@@ -1422,9 +1509,10 @@ function switchTodayView(v,el){
   document.getElementById('today-table-wrap').style.display=v==='table'?'block':'none';
 }
 
+const TERMINAL_STATUSES=['renewaldone','onhold','noneed'];
 function renderToday(d){
-  const urgent=d.filter(p=>p.d<=7&&p.status!=='renewed'&&p.status!=='hold').sort((a,b)=>a.d-b.d);
-  const soon=d.filter(p=>p.d>7&&p.d<=30&&p.status!=='renewed'&&p.status!=='hold').sort((a,b)=>a.d-b.d);
+  const urgent=d.filter(p=>p.d<=7&&!TERMINAL_STATUSES.includes(p.status)).sort((a,b)=>a.d-b.d);
+  const soon=d.filter(p=>p.d>7&&p.d<=30&&!TERMINAL_STATUSES.includes(p.status)).sort((a,b)=>a.d-b.d);
   const all=[...urgent,...soon];
 
   document.getElementById('today-list-label').textContent=
@@ -1436,7 +1524,7 @@ function renderToday(d){
   else{
     cardList.innerHTML=all.map(p=>{
       const si=stepIdx(p.status);
-      const steps=['contact','waiting','payment','renewed'];
+      const steps=['contactpending','followup','confirmqt','renewaldone'];
       const prog=steps.map((s,i)=>`<div class="prog-step ${i<si?'done':i===si?'current':''}"></div>`).join('');
       return`<div class="pcard" onclick="openDetail(${p.id})">
         <div class="pcard-name">${p.name}</div>
@@ -1479,16 +1567,14 @@ function inNext2Months(expiry){
   const m1=e.getFullYear()*12+e.getMonth();
   return m1>=m0 && m1<=m0+1;
 }
+const PIPELINE_STATUSES=['expiredsoon','reqquote','quotready','contactpending','followup','confirmqt','paymentready','pendingpolicy','policydone','renewaldone','onhold','noneed'];
 function renderPipeline(d){
-  const cols={reqquote:[],contact:[],waiting:[],payment:[],ready:[],renewed:[],pendingpol:[]};
-  d.filter(p=>p.status!=='hold').sort((a,b)=>a.d-b.d).forEach(p=>{
-    if(p.status==='renewed' && !p.policyReceived){
-      cols.pendingpol.push(p);
-    }
-    if(p.status==='contact'){ if(inNext2Months(p.expiry)) cols.contact.push(p); }
+  const cols={}; PIPELINE_STATUSES.forEach(s=>cols[s]=[]);
+  d.sort((a,b)=>a.d-b.d).forEach(p=>{
+    if(p.status==='contactpending'){ if(inNext2Months(p.expiry)) cols.contactpending.push(p); }
     else if(cols[p.status]) cols[p.status].push(p);
   });
-  ['reqquote','contact','waiting','payment','ready','renewed'].forEach(st=>{
+  PIPELINE_STATUSES.forEach(st=>{
     const list=cols[st];
     document.getElementById('pc-'+st).textContent=list.length;
     document.getElementById('pb-'+st).innerHTML=list.length?list.map(p=>`
@@ -1496,21 +1582,9 @@ function renderPipeline(d){
         <div class="pcard-name">${p.name}</div>
         <div class="pcard-meta">${dayBadge(p.d)}<span class="pcard-premium">${fmtRM(p.premium)}</span>${catTag(p.category)}</div>
         ${p.notes?`<div class="pcard-note">📝 ${p.notes}</div>`:''}
-        ${p.quoted?`<div style="font-size:11px;color:var(--navy);margin-top:4px;font-weight:600;">Quoted: ${fmtRM(p.quoted)}</div>`:''}
         ${p.invoice?`<div style="font-size:11px;color:var(--teal);margin-top:3px;font-weight:600;">🧾 INV: ${p.invoice}${p.ornum?' | OR: '+p.ornum:''}</div>`:''}
       </div>`).join(''):`<div class="pipe-empty">—</div>`;
   });
-  // Pending Policy column — renewed but policy doc not yet received
-  const ppList=cols.pendingpol;
-  document.getElementById('pc-pendingpol').textContent=ppList.length;
-  document.getElementById('pb-pendingpol').innerHTML=ppList.length?ppList.map(p=>`
-    <div class="pcard" onclick="openDetail(${p.id})">
-      <div class="pcard-name">${p.name}</div>
-      <div class="pcard-meta">${dayBadge(p.d)}<span class="pcard-premium">${fmtRM(p.premium)}</span>${catTag(p.category)}</div>
-      ${p.invoice?`<div style="font-size:11px;color:var(--teal);margin-top:4px;font-weight:600;">🧾 ${p.invoice}${p.ornum?' | OR: '+p.ornum:''}</div>`:''}
-      <div style="font-size:11px;color:#a04000;font-weight:600;margin-top:4px;">📄 Waiting for policy doc</div>
-      ${p.notes?`<div class="pcard-note">📝 ${p.notes}</div>`:''}
-    </div>`).join(''):`<div class="pipe-empty" style="color:var(--green);">✓ All policies received</div>`;
 }
 
 
@@ -1610,7 +1684,7 @@ function renderAll(){
 
 // ═══════════ FILTERED VIEW ════════════════════════════════════
 function renderFiltered(v,d){
-  const titles={contact:'📞 Need to Contact',waiting:'⏳ Waiting Reply',payment:'💰 Pending Payment',ready:'🚀 Ready to Proceed',renewed:'✅ Renewed'};
+  const titles={expiredsoon:'⏰ Expired Soon',reqquote:'📝 Request Quotation',quotready:'Quotation Ready',contactpending:'📞 Contact, Pending Reply',followup:'⏳ Follow Up',confirmqt:'💰 Confirm QT, Pending Payment',paymentready:'🚀 Payment Received, Ready to Proceed',pendingpolicy:'Pending Policy',policydone:'Policy Done',renewaldone:'✅ Renewal Done',onhold:'⏸ On Hold',noneed:'No Need Renew'};
   const list=d.filter(p=>p.status===v).sort((a,b)=>a.d-b.d);
   document.getElementById('fv-title').textContent=titles[v];
   document.getElementById('fv-count').textContent=`${list.length} policies`;
@@ -1642,6 +1716,8 @@ function openDetail(id){
   document.getElementById('md-instype').innerHTML=catTag(p.category)||'—';
   document.getElementById('md-remark').textContent=p.remark||'—';
   document.getElementById('md-notes').value=p.notes||'';
+  toggleNotesPanel(!!(p.notes&&p.notes.trim()));
+  updateNotesBadge();
   cardEditMode=false;
   ['expiry','premium','insurer','contact'].forEach(k=>{
     document.getElementById('md-'+k+'-view').style.display='';
@@ -1652,18 +1728,6 @@ function openDetail(id){
   document.getElementById('md-edit-cancel').style.display='none';
   document.getElementById('md-doctype').value='';
   document.getElementById('md-doctype-upload-btn').style.display='none';
-
-  // Add quoted price field dynamically
-  let qRow=document.getElementById('md-quoted-row');
-  if(!qRow){
-    const hr=document.querySelector('#modal-detail .divider');
-    qRow=document.createElement('div');
-    qRow.id='md-quoted-row';
-    qRow.style.cssText='margin-bottom:14px;';
-    qRow.innerHTML='<label style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:4px;">Quoted Price (RM)</label><input id="md-quoted" type="number" step="0.01" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:Inter,sans-serif;outline:none;width:220px;">';
-    hr.parentNode.insertBefore(qRow,hr);
-  }
-  document.getElementById('md-quoted').value=p.quoted||'';
 
   // Status dropdown
   delete p._ts;
@@ -1679,7 +1743,7 @@ function openDetail(id){
   const mdOr=document.getElementById('md-or');
   if(mdInv) mdInv.value=p.invoice||'';
   if(mdOr) mdOr.value=p.ornum||'';
-  document.getElementById('invoice-fields').style.display=(p.status==='ready')?'block':'none';
+  const mdQn=document.getElementById('md-quotationno'); if(mdQn) mdQn.value=p.quotationNo||'';
 
   // Contact date
   const cdEl=document.getElementById('md-contact-date');
@@ -1691,7 +1755,13 @@ function openDetail(id){
 
   // Set today as default for follow-up date
   const fuDate=document.getElementById('fu-date');
-  if(fuDate && !fuDate.value) fuDate.value=new Date().toISOString().slice(0,10);
+  if(fuDate) fuDate.value=new Date().toISOString().slice(0,10);
+
+  // Follow-up panel: collapsed by default, auto-open + badge if there's history
+  const hasHistory=(p.followups||[]).length>0;
+  const badge=document.getElementById('fu-history-badge');
+  if(badge){ if(hasHistory){ badge.textContent=p.followups.length; badge.style.display=''; } else { badge.style.display='none'; } }
+  toggleFollowupPanel(hasHistory);
 
   // Render timeline
   renderTimeline(p);
@@ -1706,8 +1776,8 @@ function saveDetail(){
   const prevStatus=p.status;
   const newStatus=p._ts||p.status;
 
-  // Validate: invoice + OR required when Ready to Proceed
-  if(newStatus==='ready'){
+  // Validate: invoice + OR required when Payment Received, Ready to Proceed
+  if(newStatus==='paymentready'){
     const inv=(document.getElementById('md-invoice')?.value||'').trim();
     const orv=(document.getElementById('md-or')?.value||'').trim();
     const invEl=document.getElementById('md-invoice');
@@ -1725,8 +1795,8 @@ function saveDetail(){
     if(orEl) orEl.style.borderColor='';
   }
 
-  // Policy Number required once a policy is issued (Ready to Proceed / Renewed)
-  if(newStatus==='ready' || newStatus==='renewed'){
+  // Policy Number required once a policy is issued (Payment Received / Renewal Done)
+  if(newStatus==='paymentready' || newStatus==='renewaldone'){
     const pno=(document.getElementById('md-policyno')?.value||'').trim();
     if(!pno){
       const pnEl=document.getElementById('md-policyno');
@@ -1739,18 +1809,18 @@ function saveDetail(){
   p.notes=document.getElementById('md-notes').value;
   p.policyNumber=document.getElementById('md-policyno')?.value?.trim()||'';
   p.policyUrl=document.getElementById('md-policyurl')?.value?.trim()||'';
-  p.quoted=parseFloat(document.getElementById('md-quoted')?.value)||0;
+  p.quotationNo=document.getElementById('md-quotationno')?.value?.trim()||'';
   p.invoice=document.getElementById('md-invoice')?.value?.trim()||p.invoice||'';
   p.ornum=document.getElementById('md-or')?.value?.trim()||p.ornum||'';
   p.contactDate=document.getElementById('md-contact-date')?.value||p.contactDate||'';
-  p.policyReceived=document.getElementById('md-policy-received')?.checked||false;
+  const prCk=document.getElementById('md-policy-received'); if(prCk) p.policyReceived=prCk.checked;
   logActivity('Saved card',prevStatus!==p.status?`Status ${prevStatus} → ${p.status}`:'Notes/fields updated',p);
   save(p);
   closeDetailDirect();
   refresh();
 
-  // If just marked as Renewed AND no next-year record exists yet → prompt
-  if(p.status==='renewed' && prevStatus!=='renewed'){
+  // If just marked as Renewal Done AND no next-year record exists yet → prompt
+  if(p.status==='renewaldone' && prevStatus!=='renewaldone'){
     const nextYear=p.year+1;
     const alreadyExists=policies.some(x=>
       x.name===p.name && x.year===nextYear && x.insurer===p.insurer && x.category===p.category
@@ -1855,7 +1925,7 @@ function confirmRenew(){
     premium:newPremium, category:p.category,
     insurer:p.insurer, contact:p.contact,
     remark:p.remark, year:nextYear, policyNumber:newPolicyNo,
-    status:'contact', notes:'', quoted:0, contactDate:'', policyReceived:false, followups:[],
+    status:'contactpending', notes:'', quoted:0, contactDate:'', policyReceived:false, followups:[],
   });
   const _rp = policies[policies.length-1];
   logActivity('Created renewal record',`${nextYear} record, policy no. ${newPolicyNo}`,_rp);
@@ -2051,6 +2121,20 @@ function showAdd(){
   populateCatSelect();
   document.getElementById('a-cat').value='Fire / Business Ins';
   const custom=document.getElementById('a-cat-custom'); custom.style.display='none'; custom.value='';
+  document.getElementById('a-expiry').value='';
+  document.getElementById('a-status').value='reqquote';
+}
+function isNextCalendarMonth(dateStr){
+  if(!dateStr) return false;
+  const e=new Date(dateStr);
+  const m0=TODAY.getFullYear()*12+TODAY.getMonth();
+  const m1=e.getFullYear()*12+e.getMonth();
+  return m1===m0+1;
+}
+function onExpiryDateChange(){
+  const sel=document.getElementById('a-status');
+  if(isNextCalendarMonth(document.getElementById('a-expiry').value)) sel.value='expiredsoon';
+  else if(sel.value==='expiredsoon') sel.value='reqquote';
 }
 function onCatSelectChange(){
   const v=document.getElementById('a-cat').value;
@@ -2115,7 +2199,13 @@ function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg
 const STATUS_LABELS = {
   contact:'📞 Need to Contact', waiting:'⏳ Waiting Reply',
   payment:'💰 Pending Payment', ready:'🚀 Ready to Proceed',
-  renewed:'✅ Renewed', hold:'⏸ Hold'
+  renewed:'✅ Renewed', hold:'⏸ Hold',
+  expiredsoon:'⏰ Expired Soon', reqquote:'📝 Request Quotation',
+  quotready:'Quotation Ready', contactpending:'📞 Contact, Pending Reply',
+  followup:'⏳ Follow Up', confirmqt:'💰 Confirm QT, Pending Payment',
+  paymentready:'🚀 Payment Received, Ready to Proceed', pendingpolicy:'Pending Policy',
+  policydone:'Policy Done', renewaldone:'✅ Renewal Done',
+  onhold:'⏸ On Hold', noneed:'No Need Renew'
 };
 
 function renderTimeline(p) {
@@ -2138,6 +2228,28 @@ function renderTimeline(p) {
     </div>`).join('');
 }
 
+function toggleNotesPanel(open){
+  const panel=document.getElementById('notes-panel');
+  const btn=document.getElementById('notes-toggle-btn');
+  const isOpen = open!==undefined ? open : (panel.style.display==='none');
+  panel.style.display = isOpen ? '' : 'none';
+  if(btn) btn.textContent = isOpen ? 'Hide' : '+ Add Note';
+}
+function updateNotesBadge(){
+  const p=policies.find(x=>x.id===editingId);
+  const notesVal=document.getElementById('md-notes').value;
+  const remarkVal=p?(p.remark||''):'';
+  const count=[notesVal,remarkVal].filter(v=>v&&v.trim()).length;
+  const badge=document.getElementById('notes-count-badge');
+  if(badge){ if(count>0){ badge.textContent=count+'/2'; badge.style.display=''; } else { badge.style.display='none'; } }
+}
+function toggleFollowupPanel(open){
+  const panel=document.getElementById('fu-panel');
+  const arrow=document.getElementById('fu-toggle-arrow');
+  const isOpen = open!==undefined ? open : (panel.style.display==='none');
+  panel.style.display = isOpen ? '' : 'none';
+  arrow.style.transform = isOpen ? 'rotate(90deg)' : '';
+}
 function addFollowup() {
   if(editingId===null) return;
   const date = document.getElementById('fu-date').value;
@@ -2169,17 +2281,14 @@ function pickStatus(s,el){
   document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
   el.classList.add('on');
   if(editingId!==null) policies.find(p=>p.id===editingId)._ts=s;
-  const invBox=document.getElementById('invoice-fields');
-  if(invBox) invBox.style.display=(s==='ready')?'block':'none';
 }
 
 // Status dropdown handler
 function pickStatusSelect(s){
   if(editingId!==null) policies.find(p=>p.id===editingId)._ts=s;
-  const invBox=document.getElementById('invoice-fields');
-  if(invBox) invBox.style.display=(s==='ready')?'block':'none';
   const cdEl=document.getElementById('md-contact-date');
   if(cdEl && !cdEl.value) cdEl.value=new Date().toISOString().slice(0,10);
+  toggleFollowupPanel(false);
 }
 
 // Open the policy document for the record being viewed
@@ -2208,8 +2317,8 @@ function filterPP(f) {
 }
 
 function renderPendingPolicy() {
-  // Show policies that are renewed OR ready-to-proceed
-  let data = policies.filter(p => p.status==='renewed' || p.status==='ready');
+  // Show policies awaiting or with a completed policy document
+  let data = policies.filter(p => p.status==='pendingpolicy' || p.status==='policydone');
   if(ppFilter==='pending') data = data.filter(p=>!p.policyReceived);
   if(ppFilter==='received') data = data.filter(p=>p.policyReceived);
 
