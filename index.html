@@ -843,7 +843,9 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
     <div class="sec-lbl">Update Status</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
       <div class="ff" style="margin-bottom:0;">
-        <label>Status</label>
+        <label style="display:flex;align-items:center;gap:6px;">Status
+          <button id="quotready-copy-btn" onclick="copyRenewalTemplate()" title="Copy renewal quotation message" style="display:none;border:none;background:var(--sky-bg);color:var(--sky);width:18px;height:18px;border-radius:5px;cursor:pointer;font-size:10px;line-height:1;padding:0;">📋</button>
+        </label>
         <select id="md-status" onchange="pickStatusSelect(this.value)" class="tb-select" style="width:100%;padding:9px 11px;font-size:13px;box-sizing:border-box;height:37px;">
           <option value="expiredsoon">⏰ Expired Soon</option>
           <option value="reqquote">📝 Request Quotation</option>
@@ -866,10 +868,6 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
       </div>
     </div>
 
-    <div id="quotready-template-box" style="display:none;margin-bottom:14px;padding:12px 14px;background:var(--sky-bg);border:1px solid var(--sky-border);border-radius:10px;">
-      <div style="font-size:11px;font-weight:700;color:var(--sky);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:8px;">Renewal Quotation Message</div>
-      <button class="btn btn-primary btn-sm" onclick="copyRenewalTemplate()">📋 Copy Message</button>
-    </div>
 
     <!-- Add follow-up entry -->
     <div class="sec-lbl" style="margin-bottom:6px;display:flex;align-items:center;gap:6px;cursor:pointer;" onclick="toggleFollowupPanel()">
@@ -1783,7 +1781,7 @@ function openDetail(id){
   delete p._ts;
   const stSel=document.getElementById('md-status');
   if(stSel) stSel.value=p.status;
-  const qrBox=document.getElementById('quotready-template-box'); if(qrBox) qrBox.style.display=(p.status==='quotready')?'':'none';
+  const qrBtn=document.getElementById('quotready-copy-btn'); if(qrBtn) qrBtn.style.display=(p.status==='quotready')?'':'none';
 
   // Policy number + document link
   const pnEl=document.getElementById('md-policyno'); if(pnEl){ pnEl.value=p.policyNumber||''; pnEl.style.borderColor=''; }
@@ -2446,7 +2444,7 @@ function pickStatusSelect(s){
   const cdEl=document.getElementById('md-contact-date');
   if(cdEl && !cdEl.value) cdEl.value=new Date().toISOString().slice(0,10);
   toggleFollowupPanel(s==='followup');
-  const qrBox=document.getElementById('quotready-template-box'); if(qrBox) qrBox.style.display=(s==='quotready')?'':'none';
+  const qrBtn=document.getElementById('quotready-copy-btn'); if(qrBtn) qrBtn.style.display=(s==='quotready')?'':'none';
 }
 
 // Open the policy document for the record being viewed
