@@ -500,8 +500,7 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
     <div class="logo-sub">Renewal Manager</div>
   </div>
   <nav class="nav">
-    <button class="sb-new" onclick="showAdd()">＋ New Quotation</button>
-    <button class="sb-new" style="background:linear-gradient(145deg,#5f8a5f,#3d6b3d);margin-top:-4px;" onclick="showAddConfirmed()">＋ New Case (Issued)</button>
+    <button class="sb-new" onclick="showAdd()">＋ New Record</button>
     <button class="nav-btn active" onclick="gotoView('all')" id="nb-all">
       <span class="nav-icon">📋</span> Master List
     </button>
@@ -910,110 +909,101 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
     <div class="modal-hd">
       <div>
         <div class="modal-title">+ New Record</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px;">Add a new policy to track</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;">New policy to track — request a quotation, or record one already issued</div>
       </div>
       <button class="modal-close" onclick="closeAddDirect()">✕</button>
     </div>
 
-    <div class="frow frow-3">
-      <div class="ff"><label>Customer Name *</label><input id="a-name" placeholder="e.g. TAN AH KOW"></div>
-      <div class="ff"><label>ID Number *</label><input id="a-ic" placeholder="e.g. 900101-14-5566"></div>
-      <div class="ff"><label>Contact Number</label><input id="a-contact" placeholder="601XXXXXXXX"></div>
+    <div class="view-toggle" style="margin-bottom:16px;width:100%;">
+      <button class="vt-btn active" id="add-tab-btn-quote" onclick="switchAddTab('quote')" style="flex:1;">📝 Request Quotation</button>
+      <button class="vt-btn" id="add-tab-btn-issued" onclick="switchAddTab('issued')" style="flex:1;">✅ Issued Policy</button>
     </div>
-    <div class="frow">
-      <div class="ff"><label>Expiry Date *</label><input id="a-expiry" type="date" onchange="onExpiryDateChange()"></div>
-      <div class="ff"><label>Product Category *</label>
-        <select id="a-cat" onchange="onCatSelectChange()">
-          <option value="Fire / Business Ins">Fire / Business Ins</option>
-          <option value="Individual PA / Medical">Individual PA / Medical</option>
-          <option value="Annual Travel Ins">Annual Travel Ins</option>
-          <option value="Group Medical">Group Medical</option>
-          <option value="Group PA / GPA">Group PA / GPA</option>
-          <option value="__custom__">+ Add new type…</option>
-        </select>
-        <input id="a-cat-custom" placeholder="Type your own category" style="display:none;margin-top:8px;">
+
+    <div id="add-tab-quote">
+      <div class="frow frow-3">
+        <div class="ff"><label>Customer Name *</label><input id="a-name" placeholder="e.g. TAN AH KOW"></div>
+        <div class="ff"><label>ID Number *</label><input id="a-ic" placeholder="e.g. 900101-14-5566"></div>
+        <div class="ff"><label>Contact Number</label><input id="a-contact" placeholder="601XXXXXXXX"></div>
+      </div>
+      <div class="frow">
+        <div class="ff"><label>Expiry Date *</label><input id="a-expiry" type="date" onchange="onExpiryDateChange()"></div>
+        <div class="ff"><label>Product Category *</label>
+          <select id="a-cat" onchange="onCatSelectChange()">
+            <option value="Fire / Business Ins">Fire / Business Ins</option>
+            <option value="Individual PA / Medical">Individual PA / Medical</option>
+            <option value="Annual Travel Ins">Annual Travel Ins</option>
+            <option value="Group Medical">Group Medical</option>
+            <option value="Group PA / GPA">Group PA / GPA</option>
+            <option value="__custom__">+ Add new type…</option>
+          </select>
+          <input id="a-cat-custom" placeholder="Type your own category" style="display:none;margin-top:8px;">
+        </div>
+      </div>
+      <div class="frow">
+        <div class="ff"><label>Request Quotation Date</label><input id="a-rqdate" type="date"></div>
+        <div class="ff"><label>Initial Status</label>
+          <select id="a-status">
+            <option value="expiredsoon">⏰ Expired Soon</option>
+            <option value="reqquote">📝 Request Quotation</option>
+            <option value="quotready">Quotation Ready</option>
+            <option value="contactpending">📞 Contact, Pending Reply</option>
+            <option value="followup">⏳ Follow Up</option>
+            <option value="confirmqt">💰 Confirm QT, Pending Payment</option>
+            <option value="paymentready">🚀 Payment Received, Ready to Proceed</option>
+            <option value="pendingpolicy">Pending Policy</option>
+            <option value="policydone">Policy Done</option>
+            <option value="renewaldone">✅ Renewal Done</option>
+            <option value="onhold">⏸ On Hold</option>
+            <option value="noneed">No Need Renew</option>
+          </select>
+        </div>
+      </div>
+      <div class="ff">
+        <label>Previous Policy <span style="color:var(--muted);font-size:9px;text-transform:none;letter-spacing:0;">(creates a Drive folder to upload it into)</span></label>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <button class="btn btn-ghost btn-sm" type="button" onclick="generateQuotationDriveLink(event)" style="width:fit-content;">📁 Generate Drive Link</button>
+          <a id="a-prevpolicy-link" href="#" target="_blank" style="display:none;font-size:12px;color:var(--navy);font-weight:600;">Open folder ↗</a>
+        </div>
+      </div>
+      <div class="ff"><label>Notes / Remark</label><textarea id="a-notes" placeholder="e.g. AUTO RENEW / BURGLARY / referred by..."></textarea></div>
+    </div>
+
+    <div id="add-tab-issued" style="display:none;">
+      <div class="frow">
+        <div class="ff"><label>Insured Name *</label><input id="a2-name" placeholder="e.g. TAN AH KOW"></div>
+        <div class="ff"><label>Contact Number</label><input id="a2-contact" placeholder="601XXXXXXXX"></div>
+      </div>
+      <div class="frow">
+        <div class="ff"><label>Policy Start Date *</label><input id="a2-startdate" type="date"></div>
+        <div class="ff"><label>Policy End Date *</label><input id="a2-enddate" type="date"></div>
+      </div>
+      <div class="frow">
+        <div class="ff"><label>Policy Number *</label><input id="a2-policyno" placeholder="e.g. FHE-F6047191-12"></div>
+        <div class="ff"><label>Policy Type *</label>
+          <select id="a2-cat" onchange="onCatSelectChange('a2-cat','a2-cat-custom')">
+            <option value="Fire / Business Ins">Fire / Business Ins</option>
+            <option value="Individual PA / Medical">Individual PA / Medical</option>
+            <option value="Annual Travel Ins">Annual Travel Ins</option>
+            <option value="Group Medical">Group Medical</option>
+            <option value="Group PA / GPA">Group PA / GPA</option>
+            <option value="__custom__">+ Add new type…</option>
+          </select>
+          <input id="a2-cat-custom" placeholder="Type your own category" style="display:none;margin-top:8px;">
+        </div>
+      </div>
+      <div class="ff">
+        <label>Upload Policy</label>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <button class="btn btn-gold btn-sm" type="button" onclick="triggerUploadPolicyConfirmed()" style="width:fit-content;">📤 Upload Policy</button>
+          <input type="file" id="a2-upload-file" accept="application/pdf" style="display:none;" onchange="handleUploadPolicyConfirmed(event)">
+        </div>
+        <div id="a2-upload-status" style="font-size:11px;color:var(--muted);margin-top:5px;"></div>
       </div>
     </div>
-    <div class="frow">
-      <div class="ff"><label>Request Quotation Date</label><input id="a-rqdate" type="date"></div>
-      <div class="ff"><label>Initial Status</label>
-        <select id="a-status">
-          <option value="expiredsoon">⏰ Expired Soon</option>
-          <option value="reqquote">📝 Request Quotation</option>
-          <option value="quotready">Quotation Ready</option>
-          <option value="contactpending">📞 Contact, Pending Reply</option>
-          <option value="followup">⏳ Follow Up</option>
-          <option value="confirmqt">💰 Confirm QT, Pending Payment</option>
-          <option value="paymentready">🚀 Payment Received, Ready to Proceed</option>
-          <option value="pendingpolicy">Pending Policy</option>
-          <option value="policydone">Policy Done</option>
-          <option value="renewaldone">✅ Renewal Done</option>
-          <option value="onhold">⏸ On Hold</option>
-          <option value="noneed">No Need Renew</option>
-        </select>
-      </div>
-    </div>
-    <div class="ff">
-      <label>Previous Policy <span style="color:var(--muted);font-size:9px;text-transform:none;letter-spacing:0;">(creates a Drive folder to upload it into)</span></label>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        <button class="btn btn-ghost btn-sm" type="button" onclick="generateQuotationDriveLink(event)" style="width:fit-content;">📁 Generate Drive Link</button>
-        <a id="a-prevpolicy-link" href="#" target="_blank" style="display:none;font-size:12px;color:var(--navy);font-weight:600;">Open folder ↗</a>
-      </div>
-    </div>
-    <div class="ff"><label>Notes / Remark</label><textarea id="a-notes" placeholder="e.g. AUTO RENEW / BURGLARY / referred by..."></textarea></div>
 
     <div class="modal-footer">
       <button class="btn btn-ghost btn-sm" onclick="closeAddDirect()">Cancel</button>
-      <button class="btn btn-gold" onclick="doAdd()">✓ Add Record</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ NEW CONFIRMED CASE MODAL (already-issued insurance) ══ -->
-<div class="overlay" id="modal-add-confirmed" onclick="closeAddConfirmed(event)">
-  <div class="modal modal-lg">
-    <div class="modal-hd">
-      <div>
-        <div class="modal-title">+ New Case (Issued)</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px;">Record an already-issued policy directly</div>
-      </div>
-      <button class="modal-close" onclick="closeAddConfirmedDirect()">✕</button>
-    </div>
-
-    <div class="frow">
-      <div class="ff"><label>Insured Name *</label><input id="a2-name" placeholder="e.g. TAN AH KOW"></div>
-      <div class="ff"><label>Contact Number</label><input id="a2-contact" placeholder="601XXXXXXXX"></div>
-    </div>
-    <div class="frow">
-      <div class="ff"><label>Policy Start Date *</label><input id="a2-startdate" type="date"></div>
-      <div class="ff"><label>Policy End Date *</label><input id="a2-enddate" type="date"></div>
-    </div>
-    <div class="frow">
-      <div class="ff"><label>Policy Number *</label><input id="a2-policyno" placeholder="e.g. FHE-F6047191-12"></div>
-      <div class="ff"><label>Policy Type *</label>
-        <select id="a2-cat" onchange="onCatSelectChange('a2-cat','a2-cat-custom')">
-          <option value="Fire / Business Ins">Fire / Business Ins</option>
-          <option value="Individual PA / Medical">Individual PA / Medical</option>
-          <option value="Annual Travel Ins">Annual Travel Ins</option>
-          <option value="Group Medical">Group Medical</option>
-          <option value="Group PA / GPA">Group PA / GPA</option>
-          <option value="__custom__">+ Add new type…</option>
-        </select>
-        <input id="a2-cat-custom" placeholder="Type your own category" style="display:none;margin-top:8px;">
-      </div>
-    </div>
-    <div class="ff">
-      <label>Upload Policy</label>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        <button class="btn btn-gold btn-sm" type="button" onclick="triggerUploadPolicyConfirmed()" style="width:fit-content;">📤 Upload Policy</button>
-        <input type="file" id="a2-upload-file" accept="application/pdf" style="display:none;" onchange="handleUploadPolicyConfirmed(event)">
-      </div>
-      <div id="a2-upload-status" style="font-size:11px;color:var(--muted);margin-top:5px;"></div>
-    </div>
-
-    <div class="modal-footer">
-      <button class="btn btn-ghost btn-sm" onclick="closeAddConfirmedDirect()">Cancel</button>
-      <button class="btn btn-gold" onclick="doAddConfirmed()">✓ Add Record</button>
+      <button class="btn btn-gold" id="add-submit-btn" onclick="doAddUnified()">✓ Add Record</button>
     </div>
   </div>
 </div>
@@ -2196,6 +2186,25 @@ function showAdd(){
   const custom=document.getElementById('a-cat-custom'); custom.style.display='none'; custom.value='';
   document.getElementById('a-expiry').value='';
   document.getElementById('a-status').value='reqquote';
+
+  populateCatSelect('a2-cat');
+  document.getElementById('a2-cat').value='Fire / Business Ins';
+  const custom2=document.getElementById('a2-cat-custom'); custom2.style.display='none'; custom2.value='';
+  a2PolicyUrl='';
+  document.getElementById('a2-upload-status').textContent='';
+
+  switchAddTab('quote');
+}
+function switchAddTab(tab){
+  const isQuote = tab==='quote';
+  document.getElementById('add-tab-quote').style.display = isQuote?'':'none';
+  document.getElementById('add-tab-issued').style.display = isQuote?'none':'';
+  document.getElementById('add-tab-btn-quote').classList.toggle('active', isQuote);
+  document.getElementById('add-tab-btn-issued').classList.toggle('active', !isQuote);
+}
+function doAddUnified(){
+  const isQuote = document.getElementById('add-tab-quote').style.display!=='none';
+  if(isQuote) doAdd(); else doAddConfirmed();
 }
 function isNextCalendarMonth(dateStr){
   if(!dateStr) return false;
@@ -2255,17 +2264,6 @@ function doAdd(){
 
 // ═══════════ NEW CASE (ISSUED) — direct entry for already-issued policies ══
 let a2PolicyUrl='';
-function showAddConfirmed(){
-  document.getElementById('modal-add-confirmed').classList.add('show');
-  populateCatSelect('a2-cat');
-  document.getElementById('a2-cat').value='Fire / Business Ins';
-  const custom=document.getElementById('a2-cat-custom'); custom.style.display='none'; custom.value='';
-  a2PolicyUrl='';
-  document.getElementById('a2-upload-status').textContent='';
-}
-function closeAddConfirmed(e){ if(e.target.id==='modal-add-confirmed') closeAddConfirmedDirect(); }
-function closeAddConfirmedDirect(){ document.getElementById('modal-add-confirmed').classList.remove('show'); }
-
 function triggerUploadPolicyConfirmed(){
   const name=document.getElementById('a2-name').value.trim();
   const catSel=document.getElementById('a2-cat').value;
@@ -2309,19 +2307,20 @@ function doAddConfirmed(){
   if(!policyNo){ toast('⚠ Policy Number is required'); return; }
   if(!category){ toast('⚠ Please select Policy Type'); return; }
   const nid=policies.length?Math.max(...policies.map(p=>p.id))+1:0;
+  const initialStatus = isNextCalendarMonth(end) ? 'expiredsoon' : 'renewaldone';
   policies.push({
     id:nid, name, expiry:end, policyStartDate:start,
     premium:0, category, insurer:'',
     contact:document.getElementById('a2-contact').value.trim(),
     remark:'', year:new Date(end).getFullYear(),
-    status:'renewaldone', notes:'', quoted:0,
+    status:initialStatus, notes:'', quoted:0,
     policyNumber:policyNo, policyUrl:a2PolicyUrl,
     contactDate:'', policyReceived:false, followups:[],
   });
   const _newP = policies[policies.length-1];
   logActivity('Created confirmed case',`Direct entry, policy no. ${policyNo}`,_newP);
   save(_newP);
-  closeAddConfirmedDirect();
+  closeAddDirect();
   refresh();
   toast('✓ New record added');
   ['a2-name','a2-contact','a2-startdate','a2-enddate','a2-policyno','a2-cat-custom'].forEach(id=>document.getElementById(id).value='');
