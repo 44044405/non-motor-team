@@ -1928,6 +1928,14 @@ function showRenewPrompt(p, nextYear){
           <label>New Policy Number <span style="color:var(--red);">*</span></label>
           <input id="rp-policyno" placeholder="e.g. FHE-F6047191-13" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:Inter,sans-serif;outline:none;">
         </div>
+        <div class="ff" style="margin-top:6px;">
+          <label>Upload Policy</label>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <button class="btn btn-gold btn-sm" type="button" onclick="triggerUploadPolicyRenew()" style="width:fit-content;">📤 Upload Policy</button>
+            <input type="file" id="rp-upload-file" accept="application/pdf" style="display:none;" onchange="handleUploadPolicyRenew(event)">
+          </div>
+          <div id="rp-upload-status" style="font-size:11px;color:var(--muted);margin-top:5px;"></div>
+        </div>
         <div class="modal-footer">
           <button class="btn btn-ghost btn-sm" onclick="skipRenewPrompt()">Skip, don't create</button>
           <button class="btn btn-gold" onclick="confirmRenew()">✓ Create ${nextYear} Record</button>
@@ -1951,7 +1959,37 @@ function showRenewPrompt(p, nextYear){
   document.getElementById('rp-premium').value='';
   document.getElementById('rp-policyno').value='';
   document.getElementById('rp-policyno').style.borderColor='';
+  rpPolicyUrl='';
+  document.getElementById('rp-upload-status').textContent='';
   el.classList.add('show');
+}
+
+let rpPolicyUrl='';
+function triggerUploadPolicyRenew(){
+  if(!getPolicyFolderId()){ toast('Please Connect Drive and select your "Non Motor" folder first (Settings)'); return; }
+  if(!driveConnected()){ toast('Click "Connect Drive" in Settings first'); return; }
+  document.getElementById('rp-upload-file').click();
+}
+async function handleUploadPolicyRenew(e){
+  const file=e.target.files[0]; if(!file) return;
+  const el=document.getElementById('renew-prompt');
+  const p=el._sourcePolicy;
+  const end=document.getElementById('rp-expiry').value||p.expiry;
+  const statusEl=document.getElementById('rp-upload-status');
+  if(statusEl) statusEl.textContent='⏳ Uploading…';
+  try{
+    const rootId=getPolicyFolderId();
+    const subId=await driveFindOrCreateFolder(productFolderName(p.category),rootId);
+    const fname=`POLICY (${p.name}) ${policyFileDateLabel(end)}.pdf`;
+    const result=await driveUploadFile(fname,subId,file);
+    rpPolicyUrl=result.webViewLink||('https://drive.google.com/file/d/'+result.id+'/view');
+    if(statusEl) statusEl.textContent='✓ Uploaded: '+fname;
+    toast('✓ Uploaded to Drive: '+fname);
+  }catch(err){
+    if(statusEl) statusEl.textContent='❌ Upload failed';
+    toast('❌ Upload failed: '+((err&&err.message)||'try Connect Drive again in Settings'));
+  }
+  e.target.value='';
 }
 
 function skipRenewPrompt(){
@@ -1977,7 +2015,7 @@ function confirmRenew(){
     id:nid, name:p.name, expiry:newExpiry,
     premium:newPremium, category:p.category,
     insurer:p.insurer, contact:p.contact,
-    remark:p.remark, year:nextYear, policyNumber:newPolicyNo,
+    remark:p.remark, year:nextYear, policyNumber:newPolicyNo, policyUrl:rpPolicyUrl,
     status:'contactpending', notes:'', quoted:0, contactDate:'', policyReceived:false, followups:[],
   });
   const _rp = policies[policies.length-1];
