@@ -500,7 +500,8 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
     <div class="logo-sub">Renewal Manager</div>
   </div>
   <nav class="nav">
-    <button class="sb-new" onclick="showAdd()">＋ New Record</button>
+    <button class="sb-new" onclick="showAdd()">＋ New Quotation</button>
+    <button class="sb-new" style="background:linear-gradient(145deg,#5f8a5f,#3d6b3d);margin-top:-4px;" onclick="showAddConfirmed()">＋ New Case (Issued)</button>
     <button class="nav-btn active" onclick="gotoView('all')" id="nb-all">
       <span class="nav-icon">📋</span> Master List
     </button>
@@ -896,9 +897,9 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
       <div class="ff"><label>Invoice No. <span style="color:var(--red);">*</span></label><input id="md-invoice" placeholder="e.g. INV-2027-001" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:inherit;outline:none;"></div>
       <div class="ff"><label>OR No. <span style="color:var(--red);">*</span></label><input id="md-or" placeholder="e.g. OR-2027-001" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:inherit;outline:none;"></div>
     </div>
+    <button class="btn btn-ghost btn-sm" id="md-new-year-btn" onclick="manualShowRenewPrompt()" style="margin-bottom:14px;">+ New Record for Next Year</button>
     <div class="modal-footer">
       <button class="btn btn-ghost btn-sm" onclick="closeDetailDirect()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveDetail()">Save</button>
     </div>
   </div>
 </div>
@@ -964,6 +965,55 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
     <div class="modal-footer">
       <button class="btn btn-ghost btn-sm" onclick="closeAddDirect()">Cancel</button>
       <button class="btn btn-gold" onclick="doAdd()">✓ Add Record</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ NEW CONFIRMED CASE MODAL (already-issued insurance) ══ -->
+<div class="overlay" id="modal-add-confirmed" onclick="closeAddConfirmed(event)">
+  <div class="modal modal-lg">
+    <div class="modal-hd">
+      <div>
+        <div class="modal-title">+ New Case (Issued)</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;">Record an already-issued policy directly</div>
+      </div>
+      <button class="modal-close" onclick="closeAddConfirmedDirect()">✕</button>
+    </div>
+
+    <div class="frow">
+      <div class="ff"><label>Insured Name *</label><input id="a2-name" placeholder="e.g. TAN AH KOW"></div>
+      <div class="ff"><label>Contact Number</label><input id="a2-contact" placeholder="601XXXXXXXX"></div>
+    </div>
+    <div class="frow">
+      <div class="ff"><label>Policy Start Date *</label><input id="a2-startdate" type="date"></div>
+      <div class="ff"><label>Policy End Date *</label><input id="a2-enddate" type="date"></div>
+    </div>
+    <div class="frow">
+      <div class="ff"><label>Policy Number *</label><input id="a2-policyno" placeholder="e.g. FHE-F6047191-12"></div>
+      <div class="ff"><label>Policy Type *</label>
+        <select id="a2-cat" onchange="onCatSelectChange('a2-cat','a2-cat-custom')">
+          <option value="Fire / Business Ins">Fire / Business Ins</option>
+          <option value="Individual PA / Medical">Individual PA / Medical</option>
+          <option value="Annual Travel Ins">Annual Travel Ins</option>
+          <option value="Group Medical">Group Medical</option>
+          <option value="Group PA / GPA">Group PA / GPA</option>
+          <option value="__custom__">+ Add new type…</option>
+        </select>
+        <input id="a2-cat-custom" placeholder="Type your own category" style="display:none;margin-top:8px;">
+      </div>
+    </div>
+    <div class="ff">
+      <label>Upload Policy</label>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <button class="btn btn-gold btn-sm" type="button" onclick="triggerUploadPolicyConfirmed()" style="width:fit-content;">📤 Upload Policy</button>
+        <input type="file" id="a2-upload-file" accept="application/pdf" style="display:none;" onchange="handleUploadPolicyConfirmed(event)">
+      </div>
+      <div id="a2-upload-status" style="font-size:11px;color:var(--muted);margin-top:5px;"></div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closeAddConfirmedDirect()">Cancel</button>
+      <button class="btn btn-gold" onclick="doAddConfirmed()">✓ Add Record</button>
     </div>
   </div>
 </div>
@@ -1227,7 +1277,7 @@ function initPolicies(savedArr){
   try{
     policies=all.map((r,i)=>{
       const s=saved.find(x=>x.id===i);
-      return{id:i,...r,status:s?.status||guessStatus(r),notes:s?.notes||'',quoted:s?.quoted||0,invoice:s?.invoice||'',ornum:s?.ornum||'',contactDate:s?.contactDate||'',policyReceived:s?.policyReceived||false,followups:s?.followups||[],policyNumber:s?.policyNumber||'',policyUrl:s?.policyUrl||'',coverNoteUrl:s?.coverNoteUrl||'',quotationUrl:s?.quotationUrl||'',renewalNoticeUrl:s?.renewalNoticeUrl||'',icNumber:s?.icNumber||'',requestQuotationDate:s?.requestQuotationDate||'',previousPolicyUrl:s?.previousPolicyUrl||''};
+      return{id:i,...r,status:s?.status||guessStatus(r),notes:s?.notes||'',quoted:s?.quoted||0,invoice:s?.invoice||'',ornum:s?.ornum||'',contactDate:s?.contactDate||'',policyReceived:s?.policyReceived||false,followups:s?.followups||[],policyNumber:s?.policyNumber||'',policyUrl:s?.policyUrl||'',coverNoteUrl:s?.coverNoteUrl||'',quotationUrl:s?.quotationUrl||'',renewalNoticeUrl:s?.renewalNoticeUrl||'',icNumber:s?.icNumber||'',requestQuotationDate:s?.requestQuotationDate||'',previousPolicyUrl:s?.previousPolicyUrl||'',policyStartDate:s?.policyStartDate||'',quotationNo:s?.quotationNo||''};
     });
     const extras=saved.filter(s=>s.id>=all.length);
     policies=[...policies,...extras];
@@ -1237,7 +1287,7 @@ function initPolicies(savedArr){
 }
 
 function policiesSnapshot(){
-  return policies.map(p=>({id:p.id,status:p.status,notes:p.notes,quoted:p.quoted,invoice:p.invoice||'',ornum:p.ornum||'',contactDate:p.contactDate||'',policyReceived:p.policyReceived||false,followups:p.followups||[],policyNumber:p.policyNumber||'',policyUrl:p.policyUrl||'',coverNoteUrl:p.coverNoteUrl||'',quotationUrl:p.quotationUrl||'',renewalNoticeUrl:p.renewalNoticeUrl||'',icNumber:p.icNumber||'',requestQuotationDate:p.requestQuotationDate||'',previousPolicyUrl:p.previousPolicyUrl||'',name:p.name,expiry:p.expiry,premium:p.premium,category:p.category,insurer:p.insurer,contact:p.contact,remark:p.remark,year:p.year}));
+  return policies.map(p=>({id:p.id,status:p.status,notes:p.notes,quoted:p.quoted,invoice:p.invoice||'',ornum:p.ornum||'',contactDate:p.contactDate||'',policyReceived:p.policyReceived||false,followups:p.followups||[],policyNumber:p.policyNumber||'',policyUrl:p.policyUrl||'',coverNoteUrl:p.coverNoteUrl||'',quotationUrl:p.quotationUrl||'',renewalNoticeUrl:p.renewalNoticeUrl||'',icNumber:p.icNumber||'',requestQuotationDate:p.requestQuotationDate||'',previousPolicyUrl:p.previousPolicyUrl||'',policyStartDate:p.policyStartDate||'',quotationNo:p.quotationNo||'',name:p.name,expiry:p.expiry,premium:p.premium,category:p.category,insurer:p.insurer,contact:p.contact,remark:p.remark,year:p.year}));
 }
 function cacheLocally(){ try{ localStorage.setItem('cha_v3',JSON.stringify(policiesSnapshot())); localStorage.setItem('cha_activity',JSON.stringify(ACTIVITY)); }catch(e){} }
 
@@ -1390,8 +1440,8 @@ function getCategoryList(){
   policies.forEach(p=>{ if(p.category) set.add(p.category); });
   return [...set].sort((a,b)=>a.localeCompare(b));
 }
-function populateCatSelect(){
-  const sel=document.getElementById('a-cat'); if(!sel) return;
+function populateCatSelect(selId){
+  const sel=document.getElementById(selId||'a-cat'); if(!sel) return;
   sel.innerHTML=getCategoryList().map(c=>`<option value="${c.replace(/"/g,'&quot;')}">${c}</option>`).join('')+'<option value="__custom__">+ Add new type…</option>';
 }
 function populateCatFilterSelect(){
@@ -1716,6 +1766,7 @@ function openDetail(id){
   document.getElementById('md-insurer-view').textContent=p.insurer;
   document.getElementById('md-contact-view').textContent=p.contact||'—';
   document.getElementById('md-instype').innerHTML=catTag(p.category)||'—';
+  const nyBtn=document.getElementById('md-new-year-btn'); if(nyBtn) nyBtn.textContent='+ New Record for '+(p.year+1);
   document.getElementById('md-remark').textContent=p.remark||'—';
   document.getElementById('md-notes').value=p.notes||'';
   toggleNotesPanel(!!(p.notes&&p.notes.trim()));
@@ -1835,6 +1886,10 @@ function saveDetail(){
 }
 
 // ── RENEW PROMPT ─────────────────────────────────────────────
+function manualShowRenewPrompt(){
+  const p=policies.find(x=>x.id===editingId); if(!p) return;
+  showRenewPrompt(p, p.year+1);
+}
 function showRenewPrompt(p, nextYear){
   // Build suggested expiry: same day/month next year
   const orig=new Date(p.expiry);
@@ -2072,7 +2127,23 @@ async function handleUploadPolicy(e){
     p.policyUrl=result.webViewLink||('https://drive.google.com/file/d/'+result.id+'/view');
     const puEl=document.getElementById('md-policyurl'); if(puEl) puEl.value=p.policyUrl;
     logActivity('Uploaded policy PDF',fname,p);
+
+    // Uploading a policy PDF while Policy Number is filled means it's done — auto-advance status
+    const pno=(document.getElementById('md-policyno')?.value||'').trim();
+    if(pno){
+      const prevStatus=p.status;
+      p.policyNumber=pno;
+      p.status='renewaldone';
+      const stSel=document.getElementById('md-status'); if(stSel) stSel.value='renewaldone';
+      logActivity('Auto-set Renewal Done','Policy uploaded with policy number '+pno,p);
+      if(prevStatus!=='renewaldone'){
+        const nextYear=p.year+1;
+        const alreadyExists=policies.some(x=>x.name===p.name && x.year===nextYear && x.insurer===p.insurer && x.category===p.category);
+        if(!alreadyExists) showRenewPrompt(p, nextYear);
+      }
+    }
     save(p);
+    refresh();
     toast('✓ Uploaded to Drive: '+fname);
   }catch(err){
     toast('❌ Upload failed: '+((err&&err.message)||'try Connect Drive again in Settings'));
@@ -2138,9 +2209,10 @@ function onExpiryDateChange(){
   if(isNextCalendarMonth(document.getElementById('a-expiry').value)) sel.value='expiredsoon';
   else if(sel.value==='expiredsoon') sel.value='reqquote';
 }
-function onCatSelectChange(){
-  const v=document.getElementById('a-cat').value;
-  document.getElementById('a-cat-custom').style.display=(v==='__custom__')?'':'none';
+function onCatSelectChange(selId,customId){
+  selId=selId||'a-cat'; customId=customId||'a-cat-custom';
+  const v=document.getElementById(selId).value;
+  document.getElementById(customId).style.display=(v==='__custom__')?'':'none';
 }
 function closeAdd(e){ if(e.target.id==='modal-add') closeAddDirect(); }
 function closeAddDirect(){ document.getElementById('modal-add').classList.remove('show'); }
@@ -2179,6 +2251,82 @@ function doAdd(){
   toast('✓ New record added');
   ['a-name','a-ic','a-expiry','a-contact','a-notes','a-rqdate','a-cat-custom'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('a-cat-custom').style.display='none';
+}
+
+// ═══════════ NEW CASE (ISSUED) — direct entry for already-issued policies ══
+let a2PolicyUrl='';
+function showAddConfirmed(){
+  document.getElementById('modal-add-confirmed').classList.add('show');
+  populateCatSelect('a2-cat');
+  document.getElementById('a2-cat').value='Fire / Business Ins';
+  const custom=document.getElementById('a2-cat-custom'); custom.style.display='none'; custom.value='';
+  a2PolicyUrl='';
+  document.getElementById('a2-upload-status').textContent='';
+}
+function closeAddConfirmed(e){ if(e.target.id==='modal-add-confirmed') closeAddConfirmedDirect(); }
+function closeAddConfirmedDirect(){ document.getElementById('modal-add-confirmed').classList.remove('show'); }
+
+function triggerUploadPolicyConfirmed(){
+  const name=document.getElementById('a2-name').value.trim();
+  const catSel=document.getElementById('a2-cat').value;
+  const category=catSel==='__custom__'?document.getElementById('a2-cat-custom').value.trim():catSel;
+  const end=document.getElementById('a2-enddate').value;
+  if(!name||!category||!end){ toast('⚠ Please fill Insured Name, Policy Type, and Policy End Date first'); return; }
+  if(!getPolicyFolderId()){ toast('Please Connect Drive and select your "Non Motor" folder first (Settings)'); return; }
+  if(!driveConnected()){ toast('Click "Connect Drive" in Settings first'); return; }
+  document.getElementById('a2-upload-file').click();
+}
+async function handleUploadPolicyConfirmed(e){
+  const file=e.target.files[0]; if(!file) return;
+  const name=document.getElementById('a2-name').value.trim().toUpperCase();
+  const catSel=document.getElementById('a2-cat').value;
+  const category=catSel==='__custom__'?document.getElementById('a2-cat-custom').value.trim():catSel;
+  const end=document.getElementById('a2-enddate').value;
+  const statusEl=document.getElementById('a2-upload-status');
+  if(statusEl) statusEl.textContent='⏳ Uploading…';
+  try{
+    const rootId=getPolicyFolderId();
+    const subId=await driveFindOrCreateFolder(productFolderName(category),rootId);
+    const fname=`POLICY (${name}) ${policyFileDateLabel(end)}.pdf`;
+    const result=await driveUploadFile(fname,subId,file);
+    a2PolicyUrl=result.webViewLink||('https://drive.google.com/file/d/'+result.id+'/view');
+    if(statusEl) statusEl.textContent='✓ Uploaded: '+fname;
+    toast('✓ Uploaded to Drive: '+fname);
+  }catch(err){
+    if(statusEl) statusEl.textContent='❌ Upload failed';
+    toast('❌ Upload failed: '+((err&&err.message)||'try Connect Drive again in Settings'));
+  }
+  e.target.value='';
+}
+function doAddConfirmed(){
+  const name=document.getElementById('a2-name').value.trim().toUpperCase();
+  const start=document.getElementById('a2-startdate').value;
+  const end=document.getElementById('a2-enddate').value;
+  const policyNo=document.getElementById('a2-policyno').value.trim();
+  const catSel=document.getElementById('a2-cat').value;
+  const category=catSel==='__custom__'?document.getElementById('a2-cat-custom').value.trim():catSel;
+  if(!name||!end){ toast('⚠ Insured Name & Policy End Date required'); return; }
+  if(!policyNo){ toast('⚠ Policy Number is required'); return; }
+  if(!category){ toast('⚠ Please select Policy Type'); return; }
+  const nid=policies.length?Math.max(...policies.map(p=>p.id))+1:0;
+  policies.push({
+    id:nid, name, expiry:end, policyStartDate:start,
+    premium:0, category, insurer:'',
+    contact:document.getElementById('a2-contact').value.trim(),
+    remark:'', year:new Date(end).getFullYear(),
+    status:'renewaldone', notes:'', quoted:0,
+    policyNumber:policyNo, policyUrl:a2PolicyUrl,
+    contactDate:'', policyReceived:false, followups:[],
+  });
+  const _newP = policies[policies.length-1];
+  logActivity('Created confirmed case',`Direct entry, policy no. ${policyNo}`,_newP);
+  save(_newP);
+  closeAddConfirmedDirect();
+  refresh();
+  toast('✓ New record added');
+  ['a2-name','a2-contact','a2-startdate','a2-enddate','a2-policyno','a2-cat-custom'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('a2-cat-custom').style.display='none';
+  a2PolicyUrl=''; document.getElementById('a2-upload-status').textContent='';
 }
 
 // ═══════════ EXPORT ════════════════════════════════════════════
@@ -2290,7 +2438,7 @@ function pickStatusSelect(s){
   if(editingId!==null) policies.find(p=>p.id===editingId)._ts=s;
   const cdEl=document.getElementById('md-contact-date');
   if(cdEl && !cdEl.value) cdEl.value=new Date().toISOString().slice(0,10);
-  toggleFollowupPanel(false);
+  toggleFollowupPanel(s==='followup');
 }
 
 // Open the policy document for the record being viewed
