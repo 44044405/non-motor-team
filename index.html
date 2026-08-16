@@ -334,7 +334,9 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
 
 /* Form fields */
 .frow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.frow-3 { grid-template-columns: 1fr 1fr 1fr; }
+.frow-3 { grid-template-columns: repeat(3,minmax(0,1fr)); }
+.frow-3 .ff, .frow .ff { min-width: 0; }
+.frow-3 input, .frow input { width: 100%; box-sizing: border-box; }
 .ff { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
 .ff.full { grid-column: 1/-1; }
 .ff label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
