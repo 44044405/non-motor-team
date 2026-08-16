@@ -2474,7 +2474,11 @@ function removeUploadedPolicy(){
 
 function renewalMessageTemplate(p){
   const type=productFolderLabel(p.category);
-  return `Here is the renewal quotation for ${p.name} ${type} policy. Please verify the insured risk address\n\n📍Risk Address : \n\nTotal : \n\nNeed to arrange renewal?`;
+  const isTravel=(p.category||'').includes('Travel');
+  const detailsBlock=isTravel
+    ? `🧳 Travel Date : \n✈️ Destination : Area __\n➕ Add on Coverage : Flight Cancelation + Pandemic (Covid)\n⚠️ Remark : No cover for domestic (Malaysia)`
+    : `📍Risk Address : `;
+  return `Here is the renewal quotation for ${p.name} ${type} policy. Please verify the insured risk address\n\n${detailsBlock}\n\nTotal : \n\nNeed to arrange renewal?`;
 }
 function copyRenewalTemplate(){
   const p=policies.find(x=>x.id===editingId); if(!p) return;
