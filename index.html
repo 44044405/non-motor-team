@@ -1591,8 +1591,8 @@ function renderPipeline(d){
 
 
 // ═══════════ ALL RECORDS LOCAL FILTER (year + month, Puspakom-style) ══
-let arYear = 2027;
-let arMonth = 0;
+let arYear = TODAY.getFullYear();
+let arMonth = TODAY.getMonth()+1;
 const AR_MONTHS = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 function mstYearOptions(){
