@@ -866,6 +866,11 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
       </div>
     </div>
 
+    <div id="quotready-template-box" style="display:none;margin-bottom:14px;padding:12px 14px;background:var(--sky-bg);border:1px solid var(--sky-border);border-radius:10px;">
+      <div style="font-size:11px;font-weight:700;color:var(--sky);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:8px;">Renewal Quotation Message</div>
+      <button class="btn btn-primary btn-sm" onclick="copyRenewalTemplate()">📋 Copy Message</button>
+    </div>
+
     <!-- Add follow-up entry -->
     <div class="sec-lbl" style="margin-bottom:6px;display:flex;align-items:center;gap:6px;cursor:pointer;" onclick="toggleFollowupPanel()">
       <span id="fu-toggle-arrow" style="display:inline-block;transition:transform .15s;">▸</span> Follow-up
@@ -1778,6 +1783,7 @@ function openDetail(id){
   delete p._ts;
   const stSel=document.getElementById('md-status');
   if(stSel) stSel.value=p.status;
+  const qrBox=document.getElementById('quotready-template-box'); if(qrBox) qrBox.style.display=(p.status==='quotready')?'':'none';
 
   // Policy number + document link
   const pnEl=document.getElementById('md-policyno'); if(pnEl){ pnEl.value=p.policyNumber||''; pnEl.style.borderColor=''; }
@@ -2440,6 +2446,7 @@ function pickStatusSelect(s){
   const cdEl=document.getElementById('md-contact-date');
   if(cdEl && !cdEl.value) cdEl.value=new Date().toISOString().slice(0,10);
   toggleFollowupPanel(s==='followup');
+  const qrBox=document.getElementById('quotready-template-box'); if(qrBox) qrBox.style.display=(s==='quotready')?'':'none';
 }
 
 // Open the policy document for the record being viewed
@@ -2463,6 +2470,20 @@ function removeUploadedPolicy(){
   logActivity('Removed policy link',p.name,p);
   save(p);
   toast('✓ Policy link removed — you can upload again');
+}
+
+function renewalMessageTemplate(p){
+  const type=productFolderLabel(p.category);
+  return `Here is the renewal quotation for ${p.name} ${type} policy. Please verify the insured risk address\n\n📍Risk Address : \n\nTotal : \n\nNeed to arrange renewal?`;
+}
+function copyRenewalTemplate(){
+  const p=policies.find(x=>x.id===editingId); if(!p) return;
+  const text=renewalMessageTemplate(p);
+  navigator.clipboard.writeText(text).then(()=>{
+    toast('✓ Message copied — paste it to send');
+  }).catch(()=>{
+    toast('❌ Could not copy — please copy manually');
+  });
 }
 
 // ═══════════ PENDING POLICY ═══════════════════════════════
