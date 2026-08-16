@@ -786,6 +786,7 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
         <div style="font-size:12px;color:var(--muted);margin-top:3px;" id="md-meta">—</div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;">
           <button class="btn btn-ghost btn-xs" id="md-viewpolicy" onclick="viewPolicy()" title="Open policy document" style="white-space:nowrap;">📄 View Policy</button>
+          <button class="btn btn-ghost btn-xs" id="md-removepolicy" onclick="removeUploadedPolicy()" title="Remove the uploaded policy link" style="display:none;color:var(--red);">🗑 Remove</button>
           <button class="btn btn-ghost btn-xs" id="md-edit-pencil" onclick="toggleCardEdit()" title="Amend expiry, premium, insurer, contact">✏️ Edit</button>
           <button class="btn btn-primary btn-xs" id="md-edit-save" onclick="saveCardEdit()" style="display:none;">✓ Save</button>
           <button class="btn btn-ghost btn-xs" id="md-edit-cancel" onclick="cancelCardEdit()" style="display:none;">✕ Cancel</button>
@@ -1757,6 +1758,7 @@ function openDetail(id){
   document.getElementById('md-contact-view').textContent=p.contact||'—';
   document.getElementById('md-instype').innerHTML=catTag(p.category)||'—';
   const nyBtn=document.getElementById('md-new-year-btn'); if(nyBtn) nyBtn.textContent='+ New Record for '+(p.year+1);
+  const rmBtn=document.getElementById('md-removepolicy'); if(rmBtn) rmBtn.style.display=p.policyUrl?'':'none';
   document.getElementById('md-remark').textContent=p.remark||'—';
   document.getElementById('md-notes').value=p.notes||'';
   toggleNotesPanel(!!(p.notes&&p.notes.trim()));
@@ -2449,6 +2451,18 @@ function viewPolicy(){
   else {
     toast('No policy uploaded yet — use "📤 Upload Policy" below');
   }
+}
+function removeUploadedPolicy(){
+  const p=policies.find(x=>x.id===editingId);
+  if(!p||!p.policyUrl) return;
+  const ok=confirm('Remove the uploaded policy link from this record? (The file stays in Drive — this only unlinks it here so you can upload a fresh one.)');
+  if(!ok) return;
+  p.policyUrl='';
+  const puEl=document.getElementById('md-policyurl'); if(puEl) puEl.value='';
+  document.getElementById('md-removepolicy').style.display='none';
+  logActivity('Removed policy link',p.name,p);
+  save(p);
+  toast('✓ Policy link removed — you can upload again');
 }
 
 // ═══════════ PENDING POLICY ═══════════════════════════════
