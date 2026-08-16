@@ -1759,6 +1759,10 @@ function openDetail(id){
   document.getElementById('md-premium-view').textContent=fmtRM(p.premium);
   document.getElementById('md-insurer-view').textContent=p.insurer;
   document.getElementById('md-contact-view').textContent=p.contact||'—';
+  document.getElementById('md-expiry-input').value=p.expiry||'';
+  document.getElementById('md-premium-input').value=p.premium||0;
+  document.getElementById('md-insurer-input').value=p.insurer||'';
+  document.getElementById('md-contact-input').value=p.contact||'';
   document.getElementById('md-instype').innerHTML=catTag(p.category)||'—';
   const nyBtn=document.getElementById('md-new-year-btn'); if(nyBtn) nyBtn.textContent='+ New Record for '+(p.year+1);
   const rmBtn=document.getElementById('md-removepolicy'); if(rmBtn) rmBtn.style.display=p.policyUrl?'':'none';
@@ -1856,6 +1860,11 @@ function saveDetail(){
 
   if(p._ts){ p.status=p._ts; delete p._ts; }
   p.notes=document.getElementById('md-notes').value;
+  const expInput=(document.getElementById('md-expiry-input')?.value||'').trim();
+  if(expInput) p.expiry=expInput;
+  p.premium=parseFloat(document.getElementById('md-premium-input')?.value)||p.premium||0;
+  p.insurer=(document.getElementById('md-insurer-input')?.value||'').trim()||p.insurer||'';
+  p.contact=(document.getElementById('md-contact-input')?.value||'').trim();
   p.policyNumber=document.getElementById('md-policyno')?.value?.trim()||'';
   p.policyUrl=document.getElementById('md-policyurl')?.value?.trim()||'';
   p.quotationNo=document.getElementById('md-quotationno')?.value?.trim()||'';

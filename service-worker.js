@@ -1,7 +1,7 @@
 /* Chin Hock Renewal Manager — service worker
    Makes the app installable and usable offline.
    Bump CACHE when you change index.html or icons to force an update. */
-const CACHE = 'ch-renewals-v22';
+const CACHE = 'ch-renewals-v23';
 const ASSETS = [
   './',
   './index.html',
