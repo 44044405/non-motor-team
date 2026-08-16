@@ -1295,6 +1295,7 @@ function logActivity(action,detail,policy){
 function save(changedPolicy){
   cacheLocally();
   queueSync();
+  pushNow(); // attempt an immediate push too, so a quick refresh right after Save can't race the debounce
   if(changedPolicy) syncToSheet(changedPolicy);
 }
 
