@@ -815,7 +815,7 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
         <input id="md-contact-input" type="text" style="display:none;background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:6px 9px;color:var(--text);font-size:13px;font-family:inherit;outline:none;width:100%;">
       </div>
       <div>
-        <label>Policy Number <span style="color:var(--red);">*</span></label>
+        <label>Policy Number</label>
         <input id="md-policyno" placeholder="e.g. FHE-F6047191-12" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:6px 9px;color:var(--text);font-size:13px;font-family:inherit;outline:none;width:100%;">
       </div>
       <div><label>Insurance Type</label><span id="md-instype">—</span></div>
@@ -1847,16 +1847,6 @@ function saveDetail(){
     // reset border if ok
     if(invEl) invEl.style.borderColor='';
     if(orEl) orEl.style.borderColor='';
-  }
-
-  // Policy Number required once a policy is issued (Payment Received / Renewal Done)
-  if(newStatus==='paymentready' || newStatus==='renewaldone'){
-    const pno=(document.getElementById('md-policyno')?.value||'').trim();
-    if(!pno){
-      const pnEl=document.getElementById('md-policyno');
-      if(pnEl){ pnEl.style.borderColor='var(--red)'; pnEl.focus(); }
-      toast('⚠ Policy Number is required for Ready / Renewed'); return;
-    }
   }
 
   if(p._ts){ p.status=p._ts; delete p._ts; }
