@@ -1473,10 +1473,10 @@ function clearGlobalFilter(){ refresh(); }
 const MONTHS=['','January','February','March','April','May','June','July','August','September','October','November','December'];
 function updateGlobalFilterLabel(){ }
 function filtered(){
-  // Use arYear/arMonth as the single source of truth for all views
-  let data = arYear ? policies.filter(p=>p.year===arYear) : policies;
-  if(arMonth) data = data.filter(p => new Date(p.expiry).getMonth()+1 === arMonth);
-  return data;
+  // Today's Tasks and Pipeline always show the live, current picture —
+  // they are "what needs doing right now" boards, not scoped to whatever
+  // year/month Master List happens to be browsing.
+  return policies;
 }
 
 // ═══════════ VIEWS ════════════════════════════════════════════
@@ -1641,7 +1641,7 @@ let arMonth = TODAY.getMonth()+1;
 const AR_MONTHS = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 function mstYearOptions(){
-  const ys=new Set([2025,2026,2027]); policies.forEach(p=>{ if(p.year) ys.add(p.year); });
+  const ys=new Set([TODAY.getFullYear()]); policies.forEach(p=>{ const y=new Date(p.expiry).getFullYear(); if(y) ys.add(y); });
   return '<option value="0">All years</option>'+[...ys].sort().map(y=>`<option value="${y}"${arYear==y?' selected':''}>${y}</option>`).join('');
 }
 function mstMonthOptions(){
@@ -1699,10 +1699,19 @@ function renderAll(){
   const cat=document.getElementById('tbl-cat').value;
   const ins=document.getElementById('tbl-ins').value;
   const st=document.getElementById('tbl-st').value;
-  // Use All Records local filter (arYear/arMonth), not global filter
+  // Use All Records local filter (arYear/arMonth), not global filter.
+  // Overdue + not-yet-resolved records always surface in the current period —
+  // insurance can't be backdated, so an unrenewed policy from any past year is
+  // just as due "now" as one expiring this month, and shouldn't require
+  // digging into an old year filter to find.
   let data = policies.map(p=>({...p,d:days(p.expiry)}));
-  if(arYear) data = data.filter(p=>p.year===arYear);
-  if(arMonth) data = data.filter(p=>new Date(p.expiry).getMonth()+1===arMonth);
+  data = data.filter(p=>{
+    if(p.d<0 && !TERMINAL_STATUSES.includes(p.status)) return true;
+    const e=new Date(p.expiry);
+    if(arYear && e.getFullYear()!==arYear) return false;
+    if(arMonth && e.getMonth()+1!==arMonth) return false;
+    return true;
+  });
   if(search) data=data.filter(p=>p.name.toLowerCase().includes(search)||p.insurer.toLowerCase().includes(search)||p.contact.includes(search)||(p.remark||'').toLowerCase().includes(search));
   if(cat) data=data.filter(p=>p.category===cat);
   if(ins) data=data.filter(p=>p.insurer===ins);
