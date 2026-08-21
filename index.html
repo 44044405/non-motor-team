@@ -953,8 +953,8 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
     <div class="sec-lbl">Policy Details</div>
     <div class="frow frow-3">
       <div class="ff"><label>Quotation No.</label><input id="md-quotationno" placeholder="e.g. QT-2027-001" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:inherit;outline:none;"></div>
-      <div class="ff"><label>Invoice No. <span style="color:var(--red);">*</span></label><input id="md-invoice" placeholder="e.g. INV-2027-001" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:inherit;outline:none;"></div>
-      <div class="ff"><label>OR No. <span style="color:var(--red);">*</span></label><input id="md-or" placeholder="e.g. OR-2027-001" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:inherit;outline:none;"></div>
+      <div class="ff"><label>Invoice No. <span id="md-invoice-req" style="color:var(--red);display:none;">*</span></label><input id="md-invoice" placeholder="e.g. INV-2027-001" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:inherit;outline:none;"></div>
+      <div class="ff"><label>OR No. <span id="md-or-req" style="color:var(--red);display:none;">*</span></label><input id="md-or" placeholder="e.g. OR-2027-001" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:13px;font-family:inherit;outline:none;"></div>
     </div>
     <button class="btn btn-ghost btn-sm" id="md-new-year-btn" onclick="manualShowRenewPrompt()" style="margin-bottom:14px;">+ New Record for Next Year</button>
     <div class="modal-footer">
@@ -1906,6 +1906,7 @@ function openDetail(id){
   if(mdInv) mdInv.value=p.invoice||'';
   if(mdOr) mdOr.value=p.ornum||'';
   const mdQn=document.getElementById('md-quotationno'); if(mdQn) mdQn.value=p.quotationNo||'';
+  updateInvOrRequired(p.status);
 
   // Contact date
   const cdEl=document.getElementById('md-contact-date');
@@ -1938,23 +1939,21 @@ function saveDetail(){
   const prevStatus=p.status;
   const newStatus=p._ts||p.status;
 
-  // Validate: invoice + OR required when Payment Received, Ready to Proceed
-  if(newStatus==='paymentready'){
-    const inv=(document.getElementById('md-invoice')?.value||'').trim();
-    const orv=(document.getElementById('md-or')?.value||'').trim();
-    const invEl=document.getElementById('md-invoice');
-    const orEl=document.getElementById('md-or');
-    if(!inv){
-      if(invEl){ invEl.style.borderColor='var(--red)'; invEl.focus(); }
-      toast('⚠ Invoice Number is required!'); return;
-    }
-    if(!orv){
-      if(orEl){ orEl.style.borderColor='var(--red)'; orEl.focus(); }
-      toast('⚠ OR Number is required!'); return;
-    }
-    // reset border if ok
-    if(invEl) invEl.style.borderColor='';
-    if(orEl) orEl.style.borderColor='';
+  // Which number each stage actually needs (Teoh 2026-08-21): the OR is the
+  // receipt, so it belongs at Payment Received; the invoice is only raised once
+  // the renewal is actually done. Requiring both at Payment Received was wrong
+  // and blocked saving with an invoice that doesn't exist yet.
+  const invEl=document.getElementById('md-invoice');
+  const orEl=document.getElementById('md-or');
+  if(invEl) invEl.style.borderColor='';
+  if(orEl) orEl.style.borderColor='';
+  if(newStatus==='paymentready' && !((orEl?.value||'').trim())){
+    if(orEl){ orEl.style.borderColor='var(--red)'; orEl.focus(); }
+    toast('⚠ OR Number is required for Payment Received'); return;
+  }
+  if(newStatus==='renewaldone' && !((invEl?.value||'').trim())){
+    if(invEl){ invEl.style.borderColor='var(--red)'; invEl.focus(); }
+    toast('⚠ Invoice Number is required for Renewal Done'); return;
   }
 
   if(p._ts){ p.status=p._ts; delete p._ts; }
@@ -2594,10 +2593,21 @@ function pickStatus(s,el){
 }
 
 // Status dropdown handler
+function updateInvOrRequired(status){
+  const invReq=document.getElementById('md-invoice-req');
+  const orReq=document.getElementById('md-or-req');
+  if(invReq) invReq.style.display=(status==='renewaldone')?'':'none';
+  if(orReq) orReq.style.display=(status==='paymentready')?'':'none';
+  const invEl=document.getElementById('md-invoice'); if(invEl) invEl.style.borderColor='';
+  const orEl=document.getElementById('md-or'); if(orEl) orEl.style.borderColor='';
+}
 function pickStatusSelect(s){
   if(editingId!==null) policies.find(p=>p.id===editingId)._ts=s;
   const cdEl=document.getElementById('md-contact-date');
-  if(cdEl && !cdEl.value) cdEl.value=new Date().toISOString().slice(0,10);
+  // isoLocal(), not toISOString() — the latter stamps yesterday's date in UTC+8
+  // for any status change made before 8am local.
+  if(cdEl && !cdEl.value) cdEl.value=isoLocal();
+  updateInvOrRequired(s);
   toggleFollowupPanel(s==='followup');
   const qrBtn=document.getElementById('quotready-copy-btn'); if(qrBtn) qrBtn.style.display=(s==='quotready')?'':'none';
 }
