@@ -1704,32 +1704,39 @@ function renderAll(){
   const ins=document.getElementById('tbl-ins').value;
   const st=document.getElementById('tbl-st').value;
   // Use All Records local filter (arYear/arMonth), not global filter.
-  // Overdue + not-yet-resolved records always surface in the current period —
-  // insurance can't be backdated, so an unrenewed policy from any past year is
-  // just as due "now" as one expiring this month, and shouldn't require
-  // digging into an old year filter to find.
-  let data = policies.map(p=>({...p,d:days(p.expiry)}));
-  data = data.filter(p=>{
-    if(p.d<0 && !TERMINAL_STATUSES.includes(p.status)) return true;
+  // Overdue + not-yet-resolved records from earlier periods still surface here —
+  // insurance can't be backdated, so an unrenewed old policy is just as due "now" —
+  // but they are GROUPED BELOW the selected month under a divider, never mixed into
+  // it. Mixed in and sorted by expiry, ~60 old rows sat on top of the month you
+  // actually picked and buried it.
+  const arInPeriod=p=>{
     const e=new Date(p.expiry);
     if(arYear && e.getFullYear()!==arYear) return false;
     if(arMonth && e.getMonth()+1!==arMonth) return false;
     return true;
-  });
+  };
+  const arIsCarry=p=>!arInPeriod(p) && p.d<0 && !TERMINAL_STATUSES.includes(p.status);
+  let data = policies.map(p=>({...p,d:days(p.expiry)}));
+  data = data.filter(p=>arInPeriod(p)||arIsCarry(p));
   if(search) data=data.filter(p=>p.name.toLowerCase().includes(search)||p.insurer.toLowerCase().includes(search)||p.contact.includes(search)||(p.remark||'').toLowerCase().includes(search));
   if(cat) data=data.filter(p=>p.category===cat);
   if(ins) data=data.filter(p=>p.insurer===ins);
   if(st) data=data.filter(p=>p.status===st);
   data.sort((a,b)=>{
+    // The selected period always comes first; the overdue backlog sinks below it.
+    const ga=arIsCarry(a)?1:0, gb=arIsCarry(b)?1:0;
+    if(ga!==gb) return ga-gb;
     let av=a[allSortKey],bv=b[allSortKey];
     if(allSortKey==='expiry'){av=new Date(av);bv=new Date(bv);}
     if(typeof av==='string')av=av.toLowerCase(),bv=bv.toLowerCase();
     return av<bv?-allSortDir:av>bv?allSortDir:0;
   });
+  const nCarry=data.filter(arIsCarry).length, nPeriod=data.length-nCarry;
   const periodTxt = arMonth ? `due in ${MONTHS[arMonth]}${arYear?' '+arYear:''}` : (arYear ? `in ${arYear}` : '(all years)');
-  document.getElementById('all-count').textContent = `${data.length} polic${data.length===1?'y':'ies'} ${periodTxt}`;
+  document.getElementById('all-count').textContent = `${nPeriod} polic${nPeriod===1?'y':'ies'} ${periodTxt}`+(nCarry?` · ${nCarry} still overdue from earlier`:'');
   document.getElementById('all-empty').style.display=data.length?'none':'';
-  document.getElementById('all-tbody').innerHTML=data.map(p=>`<tr onclick="openDetail(${p.id})">
+  let carryHeaderShown=false;
+  document.getElementById('all-tbody').innerHTML=data.map(p=>(arIsCarry(p)&&!carryHeaderShown?(carryHeaderShown=true,`<tr><td colspan="9" style="background:var(--red-bg);border-top:2px solid var(--red-border);border-bottom:1px solid var(--red-border);color:var(--red);font-size:12px;font-weight:700;letter-spacing:.3px;padding:9px 14px;">⚠ STILL OVERDUE FROM EARLIER PERIODS — ${nCarry} not yet renewed</td></tr>`):'')+`<tr onclick="openDetail(${p.id})">
     <td class="td-name">${p.name}<div class="td-sub">${p.remark||''}</div></td>
     <td>${fmtDate(p.expiry)}<br>${tblDayBadge(p.d)}</td>
     <td class="td-mono">${fmtRM(p.premium)}${p.quoted?`<br><span style="font-size:10px;color:var(--navy);">Q: ${fmtRM(p.quoted)}</span>`:''}</td>
