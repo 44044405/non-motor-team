@@ -796,6 +796,34 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
 </div><!-- /main -->
 </div><!-- /shell -->
 
+<!-- ══ RISK ADDRESS REVIEW ══ -->
+<div class="overlay" id="addr-review">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-hd">
+      <div style="min-width:0;flex:1;">
+        <div class="modal-title">📍 Risk Address found</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px;"><span id="ar-name">—</span> · <span id="ar-source"></span></div>
+      </div>
+      <button class="btn btn-ghost btn-xs" onclick="closeAddrReview()">✕</button>
+    </div>
+    <div class="modal-bd">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Nothing is saved until you confirm. Pick the right one, or edit it below.</div>
+      <div id="ar-options" style="margin-bottom:12px;"></div>
+      <div class="sec-lbl">Address to save</div>
+      <textarea id="ar-edit" rows="4" style="background:var(--card2);border:1.5px solid var(--border);border-radius:8px;padding:9px 11px;color:var(--text);font-size:13px;font-family:inherit;outline:none;width:100%;resize:vertical;line-height:1.5;margin-bottom:10px;"></textarea>
+      <button class="btn btn-ghost btn-xs" onclick="toggleAddrRaw()" style="margin-bottom:8px;">📄 Show the raw text read from the policy</button>
+      <div id="ar-raw-wrap" style="display:none;">
+        <textarea id="ar-raw" rows="9" readonly style="background:var(--card2);border:1.5px solid var(--border);border-radius:8px;padding:9px 11px;color:var(--muted);font-size:11px;font-family:'DM Mono',monospace;outline:none;width:100%;resize:vertical;line-height:1.5;"></textarea>
+        <div style="font-size:11px;color:var(--muted);margin-top:5px;">If the address is in here but wasn't picked up, copy it into the box above — and tell me which insurer it was so the patterns can be improved.</div>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-ghost btn-sm" onclick="closeAddrReview()">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="confirmAddrReview()">✓ Save Address</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ DETAIL / EDIT MODAL ══ -->
 <div class="overlay" id="modal-detail" onclick="closeDetail(event)">
   <div class="modal">
@@ -841,6 +869,13 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
       </div>
       <div><label>Insurance Type</label><span id="md-instype">—</span></div>
       <div class="dg-full" id="md-remark-row"><label>Remark</label><span id="md-remark" style="color:var(--muted);">—</span></div>
+      <div class="dg-full">
+        <label style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">📍 Risk Address
+          <button class="btn btn-ghost btn-xs" id="md-scan-addr-btn" onclick="scanAddressFromPolicy()" title="Read the risk address out of the uploaded policy PDF" style="text-transform:none;letter-spacing:0;">🔍 Scan from policy</button>
+          <span id="md-scan-addr-status" style="font-size:10.5px;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;"></span>
+        </label>
+        <textarea id="md-riskaddr" rows="3" placeholder="Used in the renewal message — scan it from the policy, or type it in" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:7px 9px;color:var(--text);font-size:13px;font-family:inherit;outline:none;width:100%;resize:vertical;line-height:1.45;"></textarea>
+      </div>
     </div>
     <input type="hidden" id="md-policyurl">
     <div class="ff" style="margin-bottom:10px;">
@@ -1071,6 +1106,7 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/legacy/build/pdf.min.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://apis.google.com/js/api.js" async defer></script>
 <script>
@@ -1296,7 +1332,7 @@ function initPolicies(savedArr){
       // seed rows below — otherwise an amended Expiry/Premium/Insurer/Contact snaps
       // back to the seed value on the next refresh.
       const keep=k=>(s&&s[k]!==undefined&&s[k]!==null)?s[k]:r[k];
-      return{id:i,...r,name:keep('name'),expiry:keep('expiry'),premium:keep('premium'),category:keep('category'),insurer:keep('insurer'),contact:keep('contact'),remark:keep('remark'),year:keep('year'),status:s?.status||guessStatus(r),notes:s?.notes||'',quoted:s?.quoted||0,invoice:s?.invoice||'',ornum:s?.ornum||'',contactDate:s?.contactDate||'',policyReceived:s?.policyReceived||false,followups:s?.followups||[],policyNumber:s?.policyNumber||'',policyUrl:s?.policyUrl||'',coverNoteUrl:s?.coverNoteUrl||'',quotationUrl:s?.quotationUrl||'',renewalNoticeUrl:s?.renewalNoticeUrl||'',icNumber:s?.icNumber||'',requestQuotationDate:s?.requestQuotationDate||'',previousPolicyUrl:s?.previousPolicyUrl||'',policyStartDate:s?.policyStartDate||'',quotationNo:s?.quotationNo||'',lastWaSent:s?.lastWaSent||''};
+      return{id:i,...r,name:keep('name'),expiry:keep('expiry'),premium:keep('premium'),category:keep('category'),insurer:keep('insurer'),contact:keep('contact'),remark:keep('remark'),year:keep('year'),status:s?.status||guessStatus(r),notes:s?.notes||'',quoted:s?.quoted||0,invoice:s?.invoice||'',ornum:s?.ornum||'',contactDate:s?.contactDate||'',policyReceived:s?.policyReceived||false,followups:s?.followups||[],policyNumber:s?.policyNumber||'',policyUrl:s?.policyUrl||'',coverNoteUrl:s?.coverNoteUrl||'',quotationUrl:s?.quotationUrl||'',renewalNoticeUrl:s?.renewalNoticeUrl||'',icNumber:s?.icNumber||'',requestQuotationDate:s?.requestQuotationDate||'',previousPolicyUrl:s?.previousPolicyUrl||'',policyStartDate:s?.policyStartDate||'',quotationNo:s?.quotationNo||'',lastWaSent:s?.lastWaSent||'',riskAddress:s?.riskAddress||''};
     });
     const extras=saved.filter(s=>s.id>=all.length);
     policies=[...policies,...extras];
@@ -1306,7 +1342,7 @@ function initPolicies(savedArr){
 }
 
 function policiesSnapshot(){
-  return policies.map(p=>({id:p.id,status:p.status,notes:p.notes,quoted:p.quoted,invoice:p.invoice||'',ornum:p.ornum||'',contactDate:p.contactDate||'',policyReceived:p.policyReceived||false,followups:p.followups||[],policyNumber:p.policyNumber||'',policyUrl:p.policyUrl||'',coverNoteUrl:p.coverNoteUrl||'',quotationUrl:p.quotationUrl||'',renewalNoticeUrl:p.renewalNoticeUrl||'',icNumber:p.icNumber||'',requestQuotationDate:p.requestQuotationDate||'',previousPolicyUrl:p.previousPolicyUrl||'',policyStartDate:p.policyStartDate||'',quotationNo:p.quotationNo||'',lastWaSent:p.lastWaSent||'',name:p.name,expiry:p.expiry,premium:p.premium,category:p.category,insurer:p.insurer,contact:p.contact,remark:p.remark,year:p.year}));
+  return policies.map(p=>({id:p.id,status:p.status,notes:p.notes,quoted:p.quoted,invoice:p.invoice||'',ornum:p.ornum||'',contactDate:p.contactDate||'',policyReceived:p.policyReceived||false,followups:p.followups||[],policyNumber:p.policyNumber||'',policyUrl:p.policyUrl||'',coverNoteUrl:p.coverNoteUrl||'',quotationUrl:p.quotationUrl||'',renewalNoticeUrl:p.renewalNoticeUrl||'',icNumber:p.icNumber||'',requestQuotationDate:p.requestQuotationDate||'',previousPolicyUrl:p.previousPolicyUrl||'',policyStartDate:p.policyStartDate||'',quotationNo:p.quotationNo||'',lastWaSent:p.lastWaSent||'',riskAddress:p.riskAddress||'',name:p.name,expiry:p.expiry,premium:p.premium,category:p.category,insurer:p.insurer,contact:p.contact,remark:p.remark,year:p.year}));
 }
 function cacheLocally(){ try{ localStorage.setItem('cha_v3',JSON.stringify(policiesSnapshot())); localStorage.setItem('cha_activity',JSON.stringify(ACTIVITY)); localStorage.setItem('cha_teamnames',JSON.stringify(TEAM_NAMES)); }catch(e){} }
 
@@ -1826,6 +1862,12 @@ function openDetail(id){
   document.getElementById('md-insurer-view').textContent=p.insurer;
   document.getElementById('md-contact-view').textContent=p.contact||'—';
   const _waSlot=document.getElementById('md-wa-slot'); if(_waSlot) _waSlot.innerHTML=waBtn(p);
+  const _ra=document.getElementById('md-riskaddr'); if(_ra) _ra.value=p.riskAddress||'';
+  const _sb=document.getElementById('md-scan-addr-btn');
+  if(_sb){ const has=!!(p.policyUrl||p.previousPolicyUrl); _sb.disabled=!has;
+    _sb.title=has?'Read the risk address out of the uploaded policy PDF':'Upload a policy PDF first, then this can scan it';
+    _sb.style.opacity=has?'':'0.45'; _sb.style.cursor=has?'':'not-allowed'; }
+  const _ss=document.getElementById('md-scan-addr-status'); if(_ss) _ss.textContent='';
   document.getElementById('md-expiry-input').value=p.expiry||'';
   document.getElementById('md-premium-input').value=p.premium||0;
   document.getElementById('md-insurer-input').value=p.insurer||'';
@@ -1917,6 +1959,7 @@ function saveDetail(){
 
   if(p._ts){ p.status=p._ts; delete p._ts; }
   p.notes=document.getElementById('md-notes').value;
+  p.riskAddress=(document.getElementById('md-riskaddr')?.value||'').trim();
   const expInput=(document.getElementById('md-expiry-input')?.value||'').trim();
   if(expInput) p.expiry=expInput;
   p.premium=parseFloat(document.getElementById('md-premium-input')?.value)||p.premium||0;
@@ -2232,6 +2275,9 @@ async function handleUploadPolicy(e){
     p.policyUrl=result.webViewLink||('https://drive.google.com/file/d/'+result.id+'/view');
     const puEl=document.getElementById('md-policyurl'); if(puEl) puEl.value=p.policyUrl;
     logActivity('Uploaded policy PDF',fname,p);
+    // Read the risk address straight off the PDF we still have in hand. Fire and
+    // forget — a slow OCR must never hold up the upload finishing.
+    if(!p.riskAddress) autoScanAddressAfterUpload(p,file);
 
     // Uploading a policy PDF while Policy Number is filled means it's done — auto-advance status
     const pno=(document.getElementById('md-policyno')?.value||'').trim();
@@ -2584,7 +2630,7 @@ function renewalMessageTemplate(p){
   const isTravel=(p.category||'').includes('Travel');
   const detailsBlock=isTravel
     ? `🧳 Travel Date : \n✈️ Destination : Area __\n➕ Add on Coverage : Flight Cancelation + Pandemic (Covid)\n⚠️ Remark : No cover for domestic (Malaysia)`
-    : `📍Risk Address : `;
+    : `📍Risk Address : ${(p.riskAddress||'').trim()}`;
   return `Here is the renewal quotation for ${p.name} ${type} policy. Please verify the insured risk address\n\n${detailsBlock}\n\nTotal : \n\nNeed to arrange renewal?`;
 }
 function copyRenewalTemplate(){
@@ -2595,6 +2641,297 @@ function copyRenewalTemplate(){
   }).catch(()=>{
     toast('❌ Could not copy — please copy manually');
   });
+}
+
+// ═══════════ POLICY ADDRESS SCANNER ═══════════════════════════
+// Reads the Risk Address out of a policy PDF. Two stages, because Teoh's
+// policies are a mix:
+//   1. pdf.js text layer — instant and free, but only works on PDFs the
+//      insurer generated digitally.
+//   2. Google Drive OCR — for the scanned/photographed ones, which have no
+//      text layer at all. We make a throwaway copy asking Drive to convert it
+//      to a Google Doc (Drive OCRs during that conversion), read the text
+//      back, then delete the temp Doc. Uses the Drive connection the app
+//      already has; the scope is full `drive` so this needs nothing new.
+// Nothing is ever written silently — whatever comes out goes to a review
+// dialog for Teoh to confirm or correct first.
+
+async function pdfTextLayer(file){
+  if(!window.pdfjsLib) return '';
+  try{
+    pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/legacy/build/pdf.worker.min.js';
+    const doc=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
+    let text='';
+    for(let i=1;i<=Math.min(doc.numPages,8);i++){
+      const page=await doc.getPage(i);
+      const c=await page.getTextContent();
+      text+=c.items.map(it=>it.str).join(' ')+'\n';
+    }
+    return text;
+  }catch(e){ return ''; }
+}
+
+// A scanned PDF still yields a few stray characters, so "did we get text?" has
+// to be a threshold, not a truthiness check.
+function looksLikeRealText(t){ return (t||'').replace(/\s+/g,'').length>=200; }
+
+async function driveOcrText(fileBlobOrId,label){
+  // driveConnected() already covers token validity/expiry in this app — there is
+  // no ensureDriveToken() here (that helper is Puspakom-only).
+  if(!driveConnected()) throw new Error('Google Drive is not connected — connect it in Settings, that is what does the OCR');
+  let tempId='';
+  try{
+    if(typeof fileBlobOrId==='string'){
+      // Already in Drive: copy it into a Google Doc, which triggers OCR.
+      const res=await fetch('https://www.googleapis.com/drive/v3/files/'+fileBlobOrId+'/copy?fields=id',{
+        method:'POST',
+        headers:{Authorization:'Bearer '+driveAccessToken,'Content-Type':'application/json'},
+        body:JSON.stringify({name:'~ocr-temp '+(label||''),mimeType:'application/vnd.google-apps.document'})
+      });
+      if(!res.ok) throw new Error('Drive OCR copy failed ('+res.status+')');
+      tempId=(await res.json()).id;
+    }else{
+      const boundary='-------ocr314159265358979';
+      const delim='\r\n--'+boundary+'\r\n', close='\r\n--'+boundary+'--';
+      const b64=arrayBufferToBase64(await fileBlobOrId.arrayBuffer());
+      const meta={name:'~ocr-temp '+(label||''),mimeType:'application/vnd.google-apps.document'};
+      const body=delim+'Content-Type: application/json\r\n\r\n'+JSON.stringify(meta)+
+        delim+'Content-Type: application/pdf\r\nContent-Transfer-Encoding: base64\r\n\r\n'+b64+close;
+      const res=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{
+        method:'POST',
+        headers:{Authorization:'Bearer '+driveAccessToken,'Content-Type':'multipart/related; boundary="'+boundary+'"'},
+        body
+      });
+      if(!res.ok) throw new Error('Drive OCR upload failed ('+res.status+') - a very large scan can exceed Drive OCR limits');
+      tempId=(await res.json()).id;
+    }
+    const ex=await fetch('https://www.googleapis.com/drive/v3/files/'+tempId+'/export?mimeType=text/plain',
+      {headers:{Authorization:'Bearer '+driveAccessToken}});
+    if(!ex.ok) throw new Error('Could not read the OCR result ('+ex.status+')');
+    return await ex.text();
+  } finally {
+    // Always clean up, even on failure — otherwise Drive fills with ~ocr-temp junk.
+    if(tempId){ try{ await fetch('https://www.googleapis.com/drive/v3/files/'+tempId,{method:'DELETE',headers:{Authorization:'Bearer '+driveAccessToken}}); }catch(e){} }
+  }
+}
+
+function driveIdFromUrl(url){ const m=String(url||'').match(/\/d\/([A-Za-z0-9_-]{20,})|[?&]id=([A-Za-z0-9_-]{20,})/); return m?(m[1]||m[2]):''; }
+
+// ── Address parsing ──────────────────────────────────────────
+// Malaysian insurers all label it differently, so try the labels first and
+// fall back to "the block that looks like a Malaysian address".
+const ADDR_LABELS=[
+  'situation of risk','situation at risk','situation','risk address','address of risk','location of risk',
+  'property address','insured property','insured premises','premises','situated at','risk location',
+  'alamat risiko','alamat harta','alamat'
+];
+const MY_STATES=['PULAU PINANG','PENANG','KEDAH','PERLIS','PERAK','SELANGOR','KUALA LUMPUR','PUTRAJAYA',
+  'NEGERI SEMBILAN','MELAKA','MALACCA','JOHOR','PAHANG','TERENGGANU','KELANTAN','SABAH','SARAWAK','LABUAN'];
+const ADDR_STOP=/\b(sum insured|total sum|period of insurance|interest insured|premium|policy no|policyholder|nric|occupation|description of|schedule|endorsement|excess|coverage|benefit|signature|stamp duty|service tax|gross premium)\b/i;
+
+function cleanAddr(t){
+  return String(t||'')
+    .replace(/[ \t]+/g,' ')
+    .replace(/\s*\n\s*/g,'\n')
+    .replace(/^[\s:.\-–,]+/,'')
+    .replace(/[\s,;.]+$/,'')
+    .trim();
+}
+function looksLikeMyAddress(t){
+  const u=(t||'').toUpperCase();
+  const hasPostcode=/\b\d{5}\b/.test(u);
+  const hasState=MY_STATES.some(st=>u.includes(st));
+  return (hasPostcode&&hasState)||(hasPostcode&&u.length>25);
+}
+// Returns candidates, best first: [{addr, how, confident, score}]
+// A labelled hit always outranks one found by postcode-hunting, because the
+// label tells us it really is the RISK address and not the customer's home or
+// the insurer's own office address.
+const ADDR_START=/(?:^|[\n\s])((?:NO\.?|LOT|PT|UNIT|TINGKAT|BLOK|BLOCK|TMN|TAMAN)\s*[\w\/-]+\s*,|\d+[A-Za-z]?(?:[-\/]\d+[A-Za-z]?)?\s*,)/gi;
+const FIELD_LABEL=/[A-Za-z][A-Za-z ]{2,}\s*:/g;
+// A bare label word left at the front of a chunk after matching a shorter alias
+// (e.g. matching "situation" inside "Situation of Risk :" leaves "of Risk :").
+const LABEL_REMNANT=/^(?:of|at|the|for)?\s*(?:risk|risiko|harta|premises|property|insured|location)?\s*[:\-\u2013]?\s*/i;
+
+function lastIndexOfRe(hay,re){
+  re.lastIndex=0; let m,last=-1;
+  while((m=re.exec(hay))){ last=m.index+m[0].length; if(re.lastIndex===m.index) re.lastIndex++; }
+  return last;
+}
+function firstIndexOfRe(hay,re,from){
+  const sub=hay.slice(from||0); const m=sub.match(re);
+  return m?((from||0)+m.index):-1;
+}
+
+function findRiskAddresses(text){
+  const out=[], seen=new Set();
+  const push=(a,how,score)=>{
+    a=cleanAddr(String(a||'').replace(LABEL_REMNANT,''));
+    if(a.length<12||a.length>320) return;
+    const k=a.toUpperCase().replace(/\W+/g,'');
+    if(seen.has(k)) return;
+    seen.add(k);
+    out.push({addr:a,how:how,confident:looksLikeMyAddress(a),score:score});
+  };
+  const flat=String(text||'').replace(/\r/g,'');
+
+  // ── 1. Labelled. Longest labels first so "situation of risk" wins over "situation".
+  const labels=ADDR_LABELS.slice().sort((a,b)=>b.length-a.length);
+  labels.forEach(lab=>{
+    const re=new RegExp(lab.replace(/ /g,'\\s+')+'\\s*[:\\-\\u2013]?\\s*([\\s\\S]{15,320})','gi');
+    let m;
+    while((m=re.exec(flat))){
+      let chunk=m[1].replace(LABEL_REMNANT,'');
+      // stop at the next known field, blank line, or "Something :" label
+      const cuts=[chunk.search(ADDR_STOP), chunk.indexOf('\n\n'), firstIndexOfRe(chunk,FIELD_LABEL,10)]
+        .filter(i=>i>15);
+      if(cuts.length) chunk=chunk.slice(0,Math.min.apply(null,cuts));
+      push(chunk,'Labelled "'+lab+'"',looksLikeMyAddress(chunk)?4:2);
+    }
+  });
+
+  // ── 2. Postcode hunt, for OCR output where the label didn't survive.
+  // Works on one-line PDF text and multi-line OCR alike: take a window around
+  // the 5-digit postcode and trim it back to something that looks like the
+  // start of an address, rather than swallowing the whole line.
+  const pc=/\b\d{5}\b/g; let pm;
+  while((pm=pc.exec(flat))){
+    const at=pm.index;
+    const winStart=Math.max(0,at-170), winEnd=Math.min(flat.length,at+110);
+    let win=flat.slice(winStart,winEnd);
+    let rel=at-winStart;
+
+    // front: drop everything up to the last preceding field label / stop word
+    const head=win.slice(0,rel);
+    let cutFrom=Math.max(lastIndexOfRe(head,new RegExp(ADDR_STOP.source,'gi')), lastIndexOfRe(head,FIELD_LABEL));
+    // prefer a real address opener ("NO 25,", "17-A,", "1234,") if one sits after that
+    const openerFrom=(()=>{
+      ADDR_START.lastIndex=0; let m,best=-1;
+      while((m=ADDR_START.exec(head))){ if(m.index>=Math.max(0,cutFrom)-2) { best=m.index+(m[0].length-m[1].length); break; } }
+      return best;
+    })();
+    if(openerFrom>=0) cutFrom=openerFrom; else if(cutFrom<0) cutFrom=0;
+    win=win.slice(cutFrom); rel-=cutFrom;
+
+    // back: keep the state name that usually follows the postcode (often on the
+    // NEXT line), then cut at the next field/stop word
+    let tail=win.slice(rel);
+    let tailCut=tail.length;
+    const stateHit=(()=>{
+      let best=-1;
+      MY_STATES.forEach(st=>{ const i=tail.toUpperCase().indexOf(st); if(i>=0&&(best<0||i<best)) best=i+st.length; });
+      return best;
+    })();
+    const hardCut=[tail.search(ADDR_STOP), tail.indexOf('\n\n'), firstIndexOfRe(tail,FIELD_LABEL,6)].filter(i=>i>0);
+    if(hardCut.length) tailCut=Math.min.apply(null,hardCut);
+    if(stateHit>0) tailCut=Math.max(stateHit,Math.min(tailCut,stateHit)); // never cut the state off
+    push(win.slice(0,rel+tailCut),'Found by postcode + state',1);
+  }
+
+  out.sort((a,b)=>(b.score-a.score)||(a.addr.length-b.addr.length));
+  return out.slice(0,6);
+}
+
+// ── Scan flow ────────────────────────────────────────────────
+let _scanState=null;
+function setScanStatus(t){ const el=document.getElementById('md-scan-addr-status'); if(el) el.textContent=t||''; }
+
+async function extractPolicyTextSmart(source,label,onStep){
+  let text='',how='';
+  if(source instanceof Blob){
+    onStep&&onStep('Reading PDF text…');
+    text=await pdfTextLayer(source);
+    if(looksLikeRealText(text)) how='PDF text layer';
+  }
+  if(!looksLikeRealText(text)){
+    onStep&&onStep('Scanned PDF — running Drive OCR (can take ~10-30s)…');
+    text=await driveOcrText(source,label);
+    how='Google Drive OCR';
+  }
+  return {text:text||'',how:how};
+}
+
+// Scan the policy already linked on the open record.
+async function scanAddressFromPolicy(){
+  const p=policies.find(x=>x.id===editingId); if(!p) return;
+  const fileId=driveIdFromUrl(p.policyUrl)||driveIdFromUrl(p.previousPolicyUrl);
+  if(!fileId){ toast('No policy file linked on this record yet — upload one first'); return; }
+  const btn=document.getElementById('md-scan-addr-btn');
+  if(btn) btn.disabled=true;
+  setScanStatus('Running Drive OCR (can take ~10-30s)…');
+  try{
+    const r=await extractPolicyTextSmart(fileId,p.name);
+    setScanStatus('');
+    openAddrReview(p,r.text,r.how);
+  }catch(err){
+    setScanStatus('');
+    toast('❌ Could not read that policy: '+((err&&err.message)||'unknown error'));
+  }finally{ if(btn) btn.disabled=false; }
+}
+
+// Called right after a policy PDF upload — the File is still in hand, so the
+// fast text-layer path gets a chance before any OCR.
+async function autoScanAddressAfterUpload(p,file){
+  try{
+    setScanStatus('Looking for the risk address…');
+    const r=await extractPolicyTextSmart(file,p.name,setScanStatus);
+    setScanStatus('');
+    if(!findRiskAddresses(r.text).length){
+      toast('Policy uploaded — but no risk address could be read from it. Type it in, or press 🔍 Scan to retry.');
+      return;
+    }
+    openAddrReview(p,r.text,r.how);
+  }catch(err){
+    setScanStatus('');
+    toast('Policy uploaded. Address scan failed: '+((err&&err.message)||'unknown error'));
+  }
+}
+
+function openAddrReview(p,text,how){
+  const found=findRiskAddresses(text);
+  _scanState={id:p.id,text:text,found:found};
+  const el=document.getElementById('addr-review'); if(!el) return;
+  document.getElementById('ar-source').textContent=how?('Read via '+how):'';
+  const list=document.getElementById('ar-options');
+  if(!found.length){
+    list.innerHTML='<div style="font-size:12.5px;color:var(--orange);padding:8px 0;">Nothing that looks like an address was found. Check the raw text below, or type it in yourself.</div>';
+  }else{
+    list.innerHTML=found.map(function(f,i){ return '\
+      <label style="display:flex;gap:9px;align-items:flex-start;padding:9px 11px;border:1.5px solid '+(i===0?'var(--navy)':'var(--border)')+';border-radius:8px;margin-bottom:7px;cursor:pointer;background:var(--card2);">\
+        <input type="radio" name="ar-pick" value="'+i+'" '+(i===0?'checked':'')+' onchange="pickAddrOption('+i+')" style="margin-top:3px;">\
+        <span style="min-width:0;">\
+          <span style="font-size:13px;white-space:pre-wrap;word-break:break-word;">'+f.addr.replace(/</g,'&lt;')+'</span>\
+          <span style="display:block;font-size:10.5px;color:'+(f.confident?'var(--green)':'var(--orange)')+';margin-top:4px;">'+(f.confident?'✓':'⚠')+' '+f.how+(f.confident?'':' · no postcode/state found, check this one')+'</span>\
+        </span>\
+      </label>'; }).join('');
+  }
+  document.getElementById('ar-edit').value=found.length?found[0].addr:'';
+  document.getElementById('ar-raw').value=(text||'').slice(0,4000);
+  document.getElementById('ar-raw-wrap').style.display='none';
+  document.getElementById('ar-name').textContent=p.name;
+  el.classList.add('show');
+}
+function pickAddrOption(i){
+  if(!_scanState||!_scanState.found[i]) return;
+  document.getElementById('ar-edit').value=_scanState.found[i].addr;
+  document.querySelectorAll('#ar-options label').forEach(function(l,n){ l.style.borderColor=(n===i)?'var(--navy)':'var(--border)'; });
+}
+function toggleAddrRaw(){
+  const w=document.getElementById('ar-raw-wrap');
+  w.style.display=(w.style.display==='none')?'block':'none';
+}
+function closeAddrReview(){ const e=document.getElementById('addr-review'); if(e) e.classList.remove('show'); }
+function confirmAddrReview(){
+  if(!_scanState) return closeAddrReview();
+  const p=policies.find(x=>x.id===_scanState.id); if(!p) return closeAddrReview();
+  const val=(document.getElementById('ar-edit').value||'').trim();
+  if(!val){ toast('⚠ Nothing to save — pick one or type the address'); return; }
+  p.riskAddress=val;
+  const box=document.getElementById('md-riskaddr'); if(box&&editingId===p.id) box.value=val;
+  logActivity('Risk address scanned',val.replace(/\n/g,', ').slice(0,120),p);
+  save();
+  closeAddrReview();
+  toast('✓ Risk address saved');
 }
 
 // ═══════════ TEAM & ACCESS ════════════════════════════════════
