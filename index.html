@@ -1947,13 +1947,20 @@ function saveDetail(){
   const orEl=document.getElementById('md-or');
   if(invEl) invEl.style.borderColor='';
   if(orEl) orEl.style.borderColor='';
-  if(newStatus==='paymentready' && !((orEl?.value||'').trim())){
+  const _inv=(invEl?.value||'').trim(), _or=(orEl?.value||'').trim();
+  if(newStatus==='paymentready' && !_or){
     if(orEl){ orEl.style.borderColor='var(--red)'; orEl.focus(); }
     toast('⚠ OR Number is required for Payment Received'); return;
   }
-  if(newStatus==='renewaldone' && !((invEl?.value||'').trim())){
-    if(invEl){ invEl.style.borderColor='var(--red)'; invEl.focus(); }
-    toast('⚠ Invoice Number is required for Renewal Done'); return;
+  // Renewal Done needs both: the money is in (OR) and the invoice is raised.
+  if(newStatus==='renewaldone' && (!_inv||!_or)){
+    if(!_or&&orEl) orEl.style.borderColor='var(--red)';
+    if(!_inv&&invEl) invEl.style.borderColor='var(--red)';
+    (!_or?orEl:invEl)?.focus();
+    toast(!_inv&&!_or ? '⚠ Renewal Done needs both the OR Number and the Invoice Number'
+      : (!_or ? '⚠ OR Number is required for Renewal Done'
+              : '⚠ Invoice Number is required for Renewal Done'));
+    return;
   }
 
   if(p._ts){ p.status=p._ts; delete p._ts; }
@@ -2597,7 +2604,7 @@ function updateInvOrRequired(status){
   const invReq=document.getElementById('md-invoice-req');
   const orReq=document.getElementById('md-or-req');
   if(invReq) invReq.style.display=(status==='renewaldone')?'':'none';
-  if(orReq) orReq.style.display=(status==='paymentready')?'':'none';
+  if(orReq) orReq.style.display=(status==='paymentready'||status==='renewaldone')?'':'none';
   const invEl=document.getElementById('md-invoice'); if(invEl) invEl.style.borderColor='';
   const orEl=document.getElementById('md-or'); if(orEl) orEl.style.borderColor='';
 }
