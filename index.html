@@ -486,6 +486,24 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
 .tm-chip { display:inline-flex; align-items:center; gap:6px; margin:0 6px 6px 0; padding:5px 10px;
   background:var(--card2); border:1px solid var(--border); border-radius:20px; font-size:12.5px; }
 .tm-chip button { border:0; background:transparent; cursor:pointer; color:var(--red); font-weight:700; font-size:13px; line-height:1; padding:0; }
+/* Notification bell + panel */
+.bell-wrap { position:relative; }
+.bell-btn { position:relative; }
+.bell-dot { position:absolute; top:-5px; right:-5px; min-width:17px; height:17px; padding:0 4px;
+  border-radius:9px; background:var(--red); color:#fff; font-size:10px; font-weight:800;
+  display:none; align-items:center; justify-content:center; line-height:17px; text-align:center; }
+.notif-panel { position:absolute; right:0; top:calc(100% + 8px); width:330px; max-height:400px;
+  overflow-y:auto; background:var(--card); border:1.5px solid var(--border); border-radius:12px;
+  box-shadow:0 12px 34px rgba(0,0,0,.18); padding:8px; z-index:500; display:none; text-align:left; }
+.notif-item { padding:8px 9px; border-radius:8px; font-size:12px; line-height:1.5; color:var(--text); }
+.notif-item + .notif-item { border-top:1px solid var(--border); }
+.notif-item .who { font-weight:700; color:var(--navy); }
+.notif-item .ts { font-size:10px; color:var(--muted); margin-top:2px; }
+.act-row { display:grid; grid-template-columns:132px 106px 1fr; gap:10px; padding:8px 10px;
+  border-bottom:1px solid var(--border); font-size:12px; align-items:start; }
+.act-row:last-child { border-bottom:none; }
+.act-row .a-ts { color:var(--muted); font-size:11px; font-family:'DM Mono',monospace; }
+.act-row .a-who { font-weight:700; color:var(--navy); }
 </style>
 </head>
 <body>
@@ -543,6 +561,10 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
       <strong id="today-str">—</strong>
     </div>
     <div class="topbar-actions">
+      <span class="bell-wrap">
+        <button class="btn btn-ghost btn-sm bell-btn" onclick="toggleNotifPanel(event)" title="What your teammates changed" aria-label="Notifications">🔔<span class="bell-dot" id="notifDot"></span></button>
+        <div class="notif-panel" id="notifPanel"></div>
+      </span>
       <button class="btn btn-ghost btn-sm" onclick="gotoView('settings')" title="Sheet Sync, Backup, Connect Drive">⚙ Settings</button>
     </div>
   </div>
@@ -784,6 +806,16 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
         <div class="sec-lbl">Team &amp; Access</div>
         <div id="team-access-wrap"></div>
       </div>
+      <div class="tbl-wrap" style="padding:20px 22px;max-width:760px;margin-bottom:16px;">
+        <div class="sec-lbl">🗑 Trash<span id="trash-count"></span></div>
+        <div style="font-size:12.5px;color:var(--muted);margin-bottom:12px;">Deleted records land here. Restore one, or remove it for good.</div>
+        <div id="trash-wrap"></div>
+      </div>
+      <div class="tbl-wrap" style="padding:20px 22px;max-width:760px;margin-bottom:16px;">
+        <div class="sec-lbl">📜 Activity Log</div>
+        <div style="font-size:12.5px;color:var(--muted);margin-bottom:12px;">Every change anyone on the team has made. Read-only.</div>
+        <div id="activity-wrap"></div>
+      </div>
       <div class="tbl-wrap" style="padding:20px 22px;max-width:520px;">
         <div class="sec-lbl">Google Drive</div>
         <div style="font-size:12.5px;color:var(--muted);margin-bottom:10px;">Connect your Google account for policy document uploads.</div>
@@ -868,6 +900,7 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
         <input id="md-policyno" placeholder="e.g. FHE-F6047191-12" style="background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:6px 9px;color:var(--text);font-size:13px;font-family:inherit;outline:none;width:100%;">
       </div>
       <div><label>Insurance Type</label><span id="md-instype">—</span></div>
+      <div class="dg-full" id="md-delete-row" style="display:none;"><button class="btn btn-ghost btn-xs" onclick="deleteRecord()" style="color:var(--red);">🗑 Delete this record</button><span style="font-size:10.5px;color:var(--muted);margin-left:8px;">Goes to Trash, restorable</span></div>
       <div class="dg-full" id="md-remark-row"><label>Remark</label><span id="md-remark" style="color:var(--muted);">—</span></div>
       <div class="dg-full">
         <label style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">📍 Risk Address
@@ -1325,6 +1358,7 @@ function initPolicies(savedArr){
   const all=[...RAW_2026,...RAW_2027];
   let saved=savedArr;
   if(!saved){ try{ saved=JSON.parse(localStorage.getItem('cha_v3')||'[]'); }catch(e){ saved=[]; } }
+  const trashed=new Set([...(TRASH||[]).map(t=>t.id),...(PURGED||[])]);
   try{
     policies=all.map((r,i)=>{
       const s=saved.find(x=>x.id===i);
@@ -1335,22 +1369,84 @@ function initPolicies(savedArr){
       return{id:i,...r,name:keep('name'),expiry:keep('expiry'),premium:keep('premium'),category:keep('category'),insurer:keep('insurer'),contact:keep('contact'),remark:keep('remark'),year:keep('year'),status:s?.status||guessStatus(r),notes:s?.notes||'',quoted:s?.quoted||0,invoice:s?.invoice||'',ornum:s?.ornum||'',contactDate:s?.contactDate||'',policyReceived:s?.policyReceived||false,followups:s?.followups||[],policyNumber:s?.policyNumber||'',policyUrl:s?.policyUrl||'',coverNoteUrl:s?.coverNoteUrl||'',quotationUrl:s?.quotationUrl||'',renewalNoticeUrl:s?.renewalNoticeUrl||'',icNumber:s?.icNumber||'',requestQuotationDate:s?.requestQuotationDate||'',previousPolicyUrl:s?.previousPolicyUrl||'',policyStartDate:s?.policyStartDate||'',quotationNo:s?.quotationNo||'',lastWaSent:s?.lastWaSent||'',riskAddress:s?.riskAddress||''};
     });
     const extras=saved.filter(s=>s.id>=all.length);
-    policies=[...policies,...extras];
+    policies=[...policies,...extras].filter(x=>!trashed.has(x.id));
   }catch(e){
-    policies=all.map((r,i)=>({id:i,...r,status:guessStatus(r),notes:'',quoted:0}));
+    policies=all.map((r,i)=>({id:i,...r,status:guessStatus(r),notes:'',quoted:0})).filter(x=>!trashed.has(x.id));
   }
 }
 
 function policiesSnapshot(){
   return policies.map(p=>({id:p.id,status:p.status,notes:p.notes,quoted:p.quoted,invoice:p.invoice||'',ornum:p.ornum||'',contactDate:p.contactDate||'',policyReceived:p.policyReceived||false,followups:p.followups||[],policyNumber:p.policyNumber||'',policyUrl:p.policyUrl||'',coverNoteUrl:p.coverNoteUrl||'',quotationUrl:p.quotationUrl||'',renewalNoticeUrl:p.renewalNoticeUrl||'',icNumber:p.icNumber||'',requestQuotationDate:p.requestQuotationDate||'',previousPolicyUrl:p.previousPolicyUrl||'',policyStartDate:p.policyStartDate||'',quotationNo:p.quotationNo||'',lastWaSent:p.lastWaSent||'',riskAddress:p.riskAddress||'',name:p.name,expiry:p.expiry,premium:p.premium,category:p.category,insurer:p.insurer,contact:p.contact,remark:p.remark,year:p.year}));
 }
-function cacheLocally(){ try{ localStorage.setItem('cha_v3',JSON.stringify(policiesSnapshot())); localStorage.setItem('cha_activity',JSON.stringify(ACTIVITY)); localStorage.setItem('cha_teamnames',JSON.stringify(TEAM_NAMES)); }catch(e){} }
+function cacheLocally(){ try{ localStorage.setItem('cha_v3',JSON.stringify(policiesSnapshot())); localStorage.setItem('cha_activity',JSON.stringify(ACTIVITY)); localStorage.setItem('cha_teamnames',JSON.stringify(TEAM_NAMES)); localStorage.setItem('cha_trash',JSON.stringify(TRASH)); localStorage.setItem('cha_purged',JSON.stringify(PURGED)); }catch(e){} }
 
 // ═══════════ CHANGE HISTORY (kept, not shown in the UI) ════════
 let ACTIVITY=[];
 function logActivity(action,detail,policy){
   ACTIVITY.push({ts:new Date().toISOString(),who:localStorage.getItem('ch_nm_name')||'Unknown',policyId:policy?policy.id:null,policyName:policy?policy.name:'',action,detail:detail||''});
   if(ACTIVITY.length>1000) ACTIVITY=ACTIVITY.slice(-1000);
+  // We already know about our own actions the instant they happen — mark them
+  // seen so the next poll's teammate diff doesn't notify us about ourselves.
+  seenActivityLen=ACTIVITY.length;
+}
+
+// ═══════════ NOTIFICATIONS (🔔) ══════════════════════════════
+// No new backend: the ACTIVITY array was already being collected and synced,
+// it just had no UI anywhere. startPolling() diffs the server's copy against
+// what this session has seen and turns anything new-and-not-mine into a
+// notification.
+let seenActivityLen=0,recentNotifs=[],unseenNotifCount=0,notifPanelOpen=false;
+function actWhen(ts){
+  const d=new Date(ts); if(isNaN(d)) return String(ts||'');
+  const mins=Math.round((Date.now()-d.getTime())/60000);
+  if(mins<1) return 'just now';
+  if(mins<60) return mins+'m ago';
+  if(mins<24*60) return Math.round(mins/60)+'h ago';
+  return d.toLocaleDateString('en-MY',{day:'2-digit',month:'short'})+' '+d.toLocaleTimeString('en-MY',{hour:'2-digit',minute:'2-digit'});
+}
+function renderNotifDot(){
+  const b=document.getElementById('notifDot'); if(!b) return;
+  b.style.display=unseenNotifCount?'block':'none';
+  b.textContent=unseenNotifCount>9?'9+':String(unseenNotifCount);
+}
+function toggleNotifPanel(ev){
+  if(ev) ev.stopPropagation();
+  notifPanelOpen=!notifPanelOpen;
+  const el=document.getElementById('notifPanel'); if(!el) return;
+  el.style.display=notifPanelOpen?'block':'none';
+  if(notifPanelOpen){ unseenNotifCount=0; renderNotifDot(); renderNotifPanel(); }
+}
+function renderNotifPanel(){
+  const el=document.getElementById('notifPanel'); if(!el) return;
+  const head='<div style="padding:5px 9px 9px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);border-bottom:1px solid var(--border);margin-bottom:4px;">Team updates</div>';
+  el.innerHTML=head+(recentNotifs.length
+    ? recentNotifs.map(n=>'<div class="notif-item"><span class="who">'+esc(n.who)+'</span> '+esc(n.action)+
+        (n.policyName?' — <b>'+esc(n.policyName)+'</b>':'')+(n.detail?'<div style="color:var(--muted);">'+esc(n.detail)+'</div>':'')+
+        '<div class="ts">'+actWhen(n.ts)+'</div></div>').join('')
+    : '<div style="padding:22px 10px;text-align:center;font-size:12px;color:var(--muted);">Nothing new from the team</div>')+
+    '<div style="padding:8px 9px 3px;border-top:1px solid var(--border);margin-top:4px;"><button class="btn btn-ghost btn-xs" onclick="toggleNotifPanel();gotoView(\'settings\');setTimeout(function(){var e=document.getElementById(\'activity-wrap\');if(e)e.scrollIntoView({block:\'center\'});},60);">📜 See full activity log</button></div>';
+}
+function pushNotifs(entries){
+  if(!entries||!entries.length) return;
+  recentNotifs=[...entries.slice().reverse(),...recentNotifs].slice(0,40);
+  unseenNotifCount+=entries.length;
+  renderNotifDot();
+  if(notifPanelOpen) renderNotifPanel();
+  const last=entries[entries.length-1];
+  toast('🔔 '+last.who+' '+last.action+(last.policyName?' — '+last.policyName:'')+(entries.length>1?' (+'+(entries.length-1)+' more)':''));
+}
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ═══════════ ACTIVITY LOG VIEW ════════════════════════════════
+function renderActivityLog(){
+  const el=document.getElementById('activity-wrap'); if(!el) return;
+  const rows=ACTIVITY.slice().reverse().slice(0,300);
+  if(!rows.length){ el.innerHTML='<div style="font-size:12.5px;color:var(--muted);">Nothing recorded yet.</div>'; return; }
+  el.innerHTML='<div style="max-height:420px;overflow-y:auto;border:1px solid var(--border);border-radius:9px;background:var(--card2);">'+
+    rows.map(a=>'<div class="act-row"><span class="a-ts">'+actWhen(a.ts)+'</span><span class="a-who">'+esc(a.who)+'</span>'+
+      '<span>'+esc(a.action)+(a.policyName?' — <b>'+esc(a.policyName)+'</b>':'')+
+      (a.detail?'<div style="color:var(--muted);font-size:11px;margin-top:2px;">'+esc(a.detail)+'</div>':'')+'</span></div>').join('')+
+    '</div><div style="font-size:11px;color:var(--muted);margin-top:7px;">Showing the '+rows.length+' most recent of '+ACTIVITY.length+' entries.</div>';
 }
 
 function save(changedPolicy){
@@ -1372,6 +1468,16 @@ function myName(){ try{ return localStorage.getItem('ch_nm_name')||''; }catch(e)
 // Names the admin has registered. Synced with everything else in the same
 // Supabase row so the whole team shares one list.
 let TEAM_NAMES=[];
+// Deleted records live here instead of vanishing. Critically, initPolicies()
+// has to skip these ids: it rebuilds every record from the hardcoded RAW_2026/
+// RAW_2027 seed rows, so without this filter a deleted seed record would simply
+// reappear on the next refresh.
+let TRASH=[];
+// Tombstones: ids of records deleted for good. Needed because "delete forever"
+// removes the record's DATA but initPolicies() would otherwise rebuild the row
+// straight back out of the hardcoded seed, i.e. delete-forever would un-delete
+// it. Just ids, so nothing of the record itself is retained.
+let PURGED=[];
 
 const SUPABASE_URL='https://lxjtwkxgxwojtltfdugj.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_ZoX2XxOdZKAdpQvExq3SpA_ixtWw-db';
@@ -1379,8 +1485,8 @@ const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 let currentRev=0,dirtyPending=false,savingInFlight=false,pollTimer=null;
 
 function unwrapPayload(payload){
-  if(Array.isArray(payload)) return {policies:payload,activity:[],teamNames:[]}; // legacy shape (before activity log existed)
-  return {policies:Array.isArray(payload?.policies)?payload.policies:[],activity:Array.isArray(payload?.activity)?payload.activity:[],teamNames:Array.isArray(payload?.teamNames)?payload.teamNames:[]};
+  if(Array.isArray(payload)) return {policies:payload,activity:[],teamNames:[],trash:[],purged:[]}; // legacy shape (before activity log existed)
+  return {policies:Array.isArray(payload?.policies)?payload.policies:[],activity:Array.isArray(payload?.activity)?payload.activity:[],teamNames:Array.isArray(payload?.teamNames)?payload.teamNames:[],trash:Array.isArray(payload?.trash)?payload.trash:[],purged:Array.isArray(payload?.purged)?payload.purged:[]};
 }
 async function loadFromServer(){
   const {data,error}=await sb.from('app_state_nonmotor').select('rev,data').eq('id',1).single();
@@ -1395,13 +1501,13 @@ async function pushNow(){
   try{
     const nextRev=currentRev+1;
     const {data,error}=await sb.from('app_state_nonmotor')
-      .update({data:{policies:policiesSnapshot(),activity:ACTIVITY,teamNames:TEAM_NAMES},rev:nextRev,updated_at:new Date().toISOString()})
+      .update({data:{policies:policiesSnapshot(),activity:ACTIVITY,teamNames:TEAM_NAMES,trash:TRASH,purged:PURGED},rev:nextRev,updated_at:new Date().toISOString()})
       .eq('id',1).eq('rev',currentRev).select('rev,data');
     if(error){ if(/JWT|auth|permission|token/i.test(error.message||''))showLogin('Login expired — please log in again'); return; }
     if(!data||!data.length){
       // conflict: someone else already saved (rev moved) — reload their version
       const cur=await sb.from('app_state_nonmotor').select('rev,data').eq('id',1).single();
-      if(cur.data){ const u=unwrapPayload(cur.data.data); initPolicies(u.policies); ACTIVITY=u.activity; TEAM_NAMES=u.teamNames; cacheLocally(); currentRev=cur.data.rev||0; if(typeof refresh==='function')refresh(); toast('⚠️ Data was updated by someone else — latest version loaded, please recheck your recent changes'); }
+      if(cur.data){ const u=unwrapPayload(cur.data.data); TRASH=u.trash; PURGED=u.purged; initPolicies(u.policies); ACTIVITY=u.activity; TEAM_NAMES=u.teamNames; cacheLocally(); currentRev=cur.data.rev||0; if(typeof refresh==='function')refresh(); toast('⚠️ Data was updated by someone else — latest version loaded, please recheck your recent changes'); }
       return;
     }
     currentRev=data[0].rev;
@@ -1411,11 +1517,22 @@ async function pushNow(){
 function startPolling(){
   if(pollTimer)clearInterval(pollTimer);
   pollTimer=setInterval(async()=>{
-    if(dirtyPending||savingInFlight)return;
+    // editingId guard: without it, a teammate's save swaps the whole policies
+    // array out from under an open detail card and the edits in it get lost.
+    if(dirtyPending||savingInFlight||editingId!==null)return;
     try{
       const {data,error}=await sb.from('app_state_nonmotor').select('rev,data').eq('id',1).single();
       if(error||!data)return;
-      if((data.rev||0)!==currentRev){ const u=unwrapPayload(data.data); initPolicies(u.policies); ACTIVITY=u.activity; TEAM_NAMES=u.teamNames; cacheLocally(); currentRev=data.rev||0; if(typeof refresh==='function')refresh(); }
+      if((data.rev||0)!==currentRev){
+        const u=unwrapPayload(data.data);
+        const myWho=localStorage.getItem('ch_nm_name')||'';
+        const fresh=u.activity.slice(seenActivityLen).filter(a=>a.who!==myWho);
+        TRASH=u.trash; PURGED=u.purged; initPolicies(u.policies); ACTIVITY=u.activity; TEAM_NAMES=u.teamNames;
+        seenActivityLen=ACTIVITY.length;
+        cacheLocally(); currentRev=data.rev||0;
+        if(typeof refresh==='function')refresh();
+        pushNotifs(fresh);
+      }
     }catch(e){}
   },7000);
 }
@@ -1447,9 +1564,13 @@ async function logout(){ try{await sb.auth.signOut();}catch(e){} if(pollTimer)cl
 // everything else maps by name. Runs on every boot but is a no-op once done.
 const STATUS_MIGRATION_OLD_TO_NEW={contact:'contactpending',waiting:'followup',payment:'confirmqt',ready:'paymentready',renewed:'renewaldone',hold:'onhold',reqquote:'reqquote'};
 function migrateStatuses(){
+  // The one-off "every 2027 record becomes Renewal Done" rule USED to run here.
+  // It was applied to the shared data long ago, but it ran on every boot, so any
+  // status the team changed on a 2027 record was silently reset on the next
+  // refresh. Removed 2026-08-21 with Teoh's go-ahead. The old->new key rename
+  // below stays: it is genuinely idempotent and still needed for legacy records.
   let changed=false;
   policies.forEach(p=>{
-    if(p.year===2027){ if(p.status!=='renewaldone'){ p.status='renewaldone'; changed=true; } return; }
     const mapped=STATUS_MIGRATION_OLD_TO_NEW[p.status];
     if(mapped && mapped!==p.status){ p.status=mapped; changed=true; }
   });
@@ -1462,9 +1583,11 @@ async function boot(){
     CURRENT_USER_EMAIL=(session.user&&session.user.email)||'';
     let remote=null;
     try{ remote=await loadFromServer(); }catch(e){ remote=null; /* offline: fall back to local cache */ }
-    if(remote){ initPolicies(remote.policies); ACTIVITY=remote.activity; TEAM_NAMES=remote.teamNames; cacheLocally(); }
+    if(remote){ TRASH=remote.trash; PURGED=remote.purged; initPolicies(remote.policies); ACTIVITY=remote.activity; TEAM_NAMES=remote.teamNames; cacheLocally(); }
     else{ initPolicies(); try{ ACTIVITY=JSON.parse(localStorage.getItem('cha_activity')||'[]'); }catch(e){ ACTIVITY=[]; }
-          try{ TEAM_NAMES=JSON.parse(localStorage.getItem('cha_teamnames')||'[]'); }catch(e){ TEAM_NAMES=[]; } }
+          try{ TEAM_NAMES=JSON.parse(localStorage.getItem('cha_teamnames')||'[]'); }catch(e){ TEAM_NAMES=[]; }
+          try{ TRASH=JSON.parse(localStorage.getItem('cha_trash')||'[]'); }catch(e){ TRASH=[]; }
+          try{ PURGED=JSON.parse(localStorage.getItem('cha_purged')||'[]'); }catch(e){ PURGED=[]; } }
     // Approved-name gate (same model as the Endorsement Dashboard): a non-admin has to
     // sign in under a name the admin registered, so the activity log's "who" is a real
     // person instead of free text. Deliberately FAILS OPEN while the list is still
@@ -1478,6 +1601,8 @@ async function boot(){
       }
     }
     migrateStatuses();
+    // Everything already on the server at login is history, not news.
+    seenActivityLen=ACTIVITY.length;
     hideLogin();
     startAppUI();
     startPolling();
@@ -1583,7 +1708,7 @@ function gotoView(v){
   else if(FILTERED_STATUSES.includes(v)){
     document.getElementById('view-filtered').style.display='block';
   }
-  if(v==='settings'){ updateDriveButtonUI(); renderWaSettings(); renderTeamAccess(); }
+  if(v==='settings'){ updateDriveButtonUI(); renderWaSettings(); renderTeamAccess(); renderActivityLog(); renderTrash(); }
   refresh();
 }
 
@@ -1907,6 +2032,7 @@ function openDetail(id){
   if(mdOr) mdOr.value=p.ornum||'';
   const mdQn=document.getElementById('md-quotationno'); if(mdQn) mdQn.value=p.quotationNo||'';
   updateInvOrRequired(p.status);
+  const _dr=document.getElementById('md-delete-row'); if(_dr) _dr.style.display=isAdmin()?'':'none';
 
   // Contact date
   const cdEl=document.getElementById('md-contact-date');
@@ -2951,6 +3077,65 @@ function confirmAddrReview(){
   toast('✓ Risk address saved');
 }
 
+// ═══════════ TRASH (soft delete) ══════════════════════════════
+// Admin-only, and reversible. Nothing is ever hard-deleted by the delete
+// button — a mistyped record can be removed from the working list without
+// losing what was in it.
+function deleteRecord(){
+  const p=policies.find(x=>x.id===editingId); if(!p) return;
+  if(!isAdmin()){ toast('Only admin can delete records'); return; }
+  if(!confirm('Delete "'+p.name+'"?\n\nIt moves to Trash (Settings) and can be restored later.')) return;
+  const copy=Object.assign({},policiesSnapshot().find(x=>x.id===p.id)||p);
+  copy.deletedAt=new Date().toISOString();
+  copy.deletedBy=myName()||CURRENT_USER_EMAIL||'Unknown';
+  TRASH.push(copy);
+  policies=policies.filter(x=>x.id!==p.id);
+  logActivity('Deleted record',p.name+' \u00b7 '+fmtDate(p.expiry),p);
+  closeDetailDirect();
+  save(); refresh(); renderTrash();
+  toast('\U0001F5D1 Moved to Trash \u2014 restore it in Settings if that was a mistake');
+}
+function restoreFromTrash(id){
+  if(!isAdmin()){ toast('Only admin can restore records'); return; }
+  const i=TRASH.findIndex(x=>x.id===id); if(i<0) return;
+  const rec=TRASH.splice(i,1)[0];
+  delete rec.deletedAt; delete rec.deletedBy;
+  PURGED=PURGED.filter(x=>x!==id);
+  logActivity('Restored record',rec.name||('#'+id),null);
+  // Rebuild from the snapshot so a restored seed record comes back through the
+  // same path as every other record.
+  const snap=policiesSnapshot(); snap.push(rec);
+  initPolicies(snap);
+  save(); refresh(); renderTrash();
+  toast('\u21ba Restored '+(rec.name||'record'));
+}
+function permanentlyDelete(id){
+  if(!isAdmin()){ toast('Only admin can delete records'); return; }
+  const rec=TRASH.find(x=>x.id===id); if(!rec) return;
+  if(!confirm('Permanently delete "'+(rec.name||'this record')+'"?\n\nThe record and its details are erased and cannot be recovered.')) return;
+  TRASH=TRASH.filter(x=>x.id!==id);
+  if(!PURGED.includes(id)) PURGED.push(id); // tombstone, else the seed row returns
+  logActivity('Permanently deleted record',rec.name||('#'+id),null);
+  save(); refresh(); renderTrash();
+  toast('Permanently deleted');
+}
+function renderTrash(){
+  const el=document.getElementById('trash-wrap'); if(!el) return;
+  const cnt=document.getElementById('trash-count'); if(cnt) cnt.textContent=TRASH.length?(' \u00b7 '+TRASH.length):'';
+  if(!isAdmin()){ el.innerHTML='<div style="font-size:12.5px;color:var(--muted);">Only admin can see and restore deleted records.</div>'; return; }
+  if(!TRASH.length){ el.innerHTML='<div style="font-size:12.5px;color:var(--muted);">Trash is empty.</div>'; return; }
+  const rows=TRASH.slice().sort((a,b)=>String(b.deletedAt||'').localeCompare(String(a.deletedAt||'')));
+  el.innerHTML=rows.map(r=>'<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--border);border-radius:9px;background:var(--card2);margin-bottom:7px;">'+
+    '<div style="min-width:0;"><div style="font-size:13px;font-weight:700;">'+esc(r.name||'(no name)')+'</div>'+
+    '<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+esc(r.category||'')+(r.expiry?' \u00b7 '+fmtDate(r.expiry):'')+
+    (r.premium?' \u00b7 '+fmtRM(r.premium):'')+'</div>'+
+    '<div style="font-size:10.5px;color:var(--muted);margin-top:3px;">Deleted '+actWhen(r.deletedAt)+(r.deletedBy?' by '+esc(r.deletedBy):'')+'</div></div>'+
+    '<div style="display:flex;gap:6px;flex-shrink:0;">'+
+    '<button class="btn btn-ghost btn-xs" onclick="restoreFromTrash('+r.id+')">\u21ba Restore</button>'+
+    '<button class="btn btn-ghost btn-xs" style="color:var(--red);" onclick="permanentlyDelete('+r.id+')">\u2715 Delete forever</button>'+
+    '</div></div>').join('');
+}
+
 // ═══════════ TEAM & ACCESS ════════════════════════════════════
 // Logins themselves live in Supabase Auth (one email + password per person) —
 // deliberately NOT in this file, so no password ever touches the frontend code.
@@ -3204,7 +3389,7 @@ function selectPolicyFolder(){
 
 // ═══════════ BACKUP / EXPORT ════════════════════════════════════
 function exportBackup(){
-  const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),policies:policiesSnapshot(),activity:ACTIVITY,teamNames:TEAM_NAMES},null,2)],{type:'application/json'});
+  const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),policies:policiesSnapshot(),activity:ACTIVITY,teamNames:TEAM_NAMES,trash:TRASH,purged:PURGED},null,2)],{type:'application/json'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob); a.download='nonmotor_backup_'+TODAY.toISOString().slice(0,10)+'.json'; a.click();
   toast('✓ Backup downloaded');
@@ -3222,6 +3407,8 @@ function importBackup(e){
       initPolicies(restored);
       if(Array.isArray(d.activity)) ACTIVITY=d.activity;
       if(Array.isArray(d.teamNames)) TEAM_NAMES=d.teamNames;
+      if(Array.isArray(d.trash)) TRASH=d.trash;
+      if(Array.isArray(d.purged)) PURGED=d.purged;
       cacheLocally();
       queueSync();
       refresh();
@@ -3327,6 +3514,13 @@ function startAppUI(){
   document.getElementById('today-str').textContent=days_arr[TODAY.getDay()]+', '+TODAY.toLocaleDateString('en-MY',{day:'numeric',month:'long',year:'numeric'});
   updateDriveButtonUI();
   renderWhoAmI();
+  renderNotifDot();
+  document.addEventListener('click',function(e){
+    if(!notifPanelOpen) return;
+    if(e.target.closest && e.target.closest('.bell-wrap')) return;
+    notifPanelOpen=false;
+    const el=document.getElementById('notifPanel'); if(el) el.style.display='none';
+  });
   // Init Master List year/month filter
   initMstFilterBar();
   filterPP('pending');
