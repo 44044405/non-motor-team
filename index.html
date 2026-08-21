@@ -1271,7 +1271,11 @@ function initPolicies(savedArr){
   try{
     policies=all.map((r,i)=>{
       const s=saved.find(x=>x.id===i);
-      return{id:i,...r,status:s?.status||guessStatus(r),notes:s?.notes||'',quoted:s?.quoted||0,invoice:s?.invoice||'',ornum:s?.ornum||'',contactDate:s?.contactDate||'',policyReceived:s?.policyReceived||false,followups:s?.followups||[],policyNumber:s?.policyNumber||'',policyUrl:s?.policyUrl||'',coverNoteUrl:s?.coverNoteUrl||'',quotationUrl:s?.quotationUrl||'',renewalNoticeUrl:s?.renewalNoticeUrl||'',icNumber:s?.icNumber||'',requestQuotationDate:s?.requestQuotationDate||'',previousPolicyUrl:s?.previousPolicyUrl||'',policyStartDate:s?.policyStartDate||'',quotationNo:s?.quotationNo||''};
+      // The team's own edits to the core policy fields must win over the hardcoded
+      // seed rows below — otherwise an amended Expiry/Premium/Insurer/Contact snaps
+      // back to the seed value on the next refresh.
+      const keep=k=>(s&&s[k]!==undefined&&s[k]!==null)?s[k]:r[k];
+      return{id:i,...r,name:keep('name'),expiry:keep('expiry'),premium:keep('premium'),category:keep('category'),insurer:keep('insurer'),contact:keep('contact'),remark:keep('remark'),year:keep('year'),status:s?.status||guessStatus(r),notes:s?.notes||'',quoted:s?.quoted||0,invoice:s?.invoice||'',ornum:s?.ornum||'',contactDate:s?.contactDate||'',policyReceived:s?.policyReceived||false,followups:s?.followups||[],policyNumber:s?.policyNumber||'',policyUrl:s?.policyUrl||'',coverNoteUrl:s?.coverNoteUrl||'',quotationUrl:s?.quotationUrl||'',renewalNoticeUrl:s?.renewalNoticeUrl||'',icNumber:s?.icNumber||'',requestQuotationDate:s?.requestQuotationDate||'',previousPolicyUrl:s?.previousPolicyUrl||'',policyStartDate:s?.policyStartDate||'',quotationNo:s?.quotationNo||''};
     });
     const extras=saved.filter(s=>s.id>=all.length);
     policies=[...policies,...extras];
