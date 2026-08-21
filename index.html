@@ -475,6 +475,17 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
 .login-card button{width:100%;margin-top:14px;border:0;cursor:pointer;font:inherit;font-size:14px;font-weight:640;color:#fff;background:var(--navy);border-radius:var(--radius-sm);padding:13px 0;transition:transform .2s;box-shadow:var(--shadow);}
 .login-card button:hover{transform:translateY(-1px);}
 .login-card #loginMsg{margin-top:14px;font-size:13px;color:var(--muted);min-height:18px;}
+/* WhatsApp quick-send button (list rows + detail card) */
+.wa-btn { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px;
+  border:none; border-radius:6px; cursor:pointer; padding:0; margin-left:6px; vertical-align:middle;
+  background:rgba(37,211,102,.14); color:#1f9d55; transition:background .12s,transform .12s; }
+.wa-btn:hover { background:rgba(37,211,102,.28); transform:translateY(-1px); }
+.wa-btn svg { width:14px; height:14px; display:block; }
+/* Already messaged today — solid green so a second click is a conscious choice */
+.wa-btn.sent { background:#1f9d55; color:#fff; }
+.tm-chip { display:inline-flex; align-items:center; gap:6px; margin:0 6px 6px 0; padding:5px 10px;
+  background:var(--card2); border:1px solid var(--border); border-radius:20px; font-size:12.5px; }
+.tm-chip button { border:0; background:transparent; cursor:pointer; color:var(--red); font-weight:700; font-size:13px; line-height:1; padding:0; }
 </style>
 </head>
 <body>
@@ -520,6 +531,7 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
   </nav>
 
   <div style="padding:14px 18px;border-top:1px solid rgba(255,255,255,0.08);">
+    <div id="whoAmI" style="font-size:11px;color:rgba(255,255,255,0.42);padding:0 12px 8px;line-height:1.4;word-break:break-word;"></div>
     <button class="nav-btn" onclick="logout()" style="color:rgba(255,255,255,0.5);"><span class="nav-icon">🚪</span> Log Out</button>
   </div>
 </aside>
@@ -763,6 +775,15 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
           <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
         </div>
       </div>
+      <div class="tbl-wrap" style="padding:20px 22px;max-width:520px;margin-bottom:16px;">
+        <div class="sec-lbl">WhatsApp</div>
+        <div style="font-size:12.5px;color:var(--muted);margin-bottom:12px;">Where the green WhatsApp button opens the chat. This is per-device — each person picks their own.</div>
+        <div id="wa-mode-wrap" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+      </div>
+      <div class="tbl-wrap" style="padding:20px 22px;max-width:520px;margin-bottom:16px;">
+        <div class="sec-lbl">Team &amp; Access</div>
+        <div id="team-access-wrap"></div>
+      </div>
       <div class="tbl-wrap" style="padding:20px 22px;max-width:520px;">
         <div class="sec-lbl">Google Drive</div>
         <div style="font-size:12.5px;color:var(--muted);margin-bottom:10px;">Connect your Google account for policy document uploads.</div>
@@ -811,7 +832,7 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
         <input id="md-insurer-input" type="text" style="display:none;background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:6px 9px;color:var(--text);font-size:13px;font-family:inherit;outline:none;width:100%;">
       </div>
       <div><label>Contact No.</label>
-        <span id="md-contact-view" class="td-mono">—</span>
+        <span id="md-contact-view" class="td-mono">—</span><span id="md-wa-slot"></span>
         <input id="md-contact-input" type="text" style="display:none;background:var(--card2);border:1.5px solid var(--border);border-radius:7px;padding:6px 9px;color:var(--text);font-size:13px;font-family:inherit;outline:none;width:100%;">
       </div>
       <div>
@@ -1275,7 +1296,7 @@ function initPolicies(savedArr){
       // seed rows below — otherwise an amended Expiry/Premium/Insurer/Contact snaps
       // back to the seed value on the next refresh.
       const keep=k=>(s&&s[k]!==undefined&&s[k]!==null)?s[k]:r[k];
-      return{id:i,...r,name:keep('name'),expiry:keep('expiry'),premium:keep('premium'),category:keep('category'),insurer:keep('insurer'),contact:keep('contact'),remark:keep('remark'),year:keep('year'),status:s?.status||guessStatus(r),notes:s?.notes||'',quoted:s?.quoted||0,invoice:s?.invoice||'',ornum:s?.ornum||'',contactDate:s?.contactDate||'',policyReceived:s?.policyReceived||false,followups:s?.followups||[],policyNumber:s?.policyNumber||'',policyUrl:s?.policyUrl||'',coverNoteUrl:s?.coverNoteUrl||'',quotationUrl:s?.quotationUrl||'',renewalNoticeUrl:s?.renewalNoticeUrl||'',icNumber:s?.icNumber||'',requestQuotationDate:s?.requestQuotationDate||'',previousPolicyUrl:s?.previousPolicyUrl||'',policyStartDate:s?.policyStartDate||'',quotationNo:s?.quotationNo||''};
+      return{id:i,...r,name:keep('name'),expiry:keep('expiry'),premium:keep('premium'),category:keep('category'),insurer:keep('insurer'),contact:keep('contact'),remark:keep('remark'),year:keep('year'),status:s?.status||guessStatus(r),notes:s?.notes||'',quoted:s?.quoted||0,invoice:s?.invoice||'',ornum:s?.ornum||'',contactDate:s?.contactDate||'',policyReceived:s?.policyReceived||false,followups:s?.followups||[],policyNumber:s?.policyNumber||'',policyUrl:s?.policyUrl||'',coverNoteUrl:s?.coverNoteUrl||'',quotationUrl:s?.quotationUrl||'',renewalNoticeUrl:s?.renewalNoticeUrl||'',icNumber:s?.icNumber||'',requestQuotationDate:s?.requestQuotationDate||'',previousPolicyUrl:s?.previousPolicyUrl||'',policyStartDate:s?.policyStartDate||'',quotationNo:s?.quotationNo||'',lastWaSent:s?.lastWaSent||''};
     });
     const extras=saved.filter(s=>s.id>=all.length);
     policies=[...policies,...extras];
@@ -1285,9 +1306,9 @@ function initPolicies(savedArr){
 }
 
 function policiesSnapshot(){
-  return policies.map(p=>({id:p.id,status:p.status,notes:p.notes,quoted:p.quoted,invoice:p.invoice||'',ornum:p.ornum||'',contactDate:p.contactDate||'',policyReceived:p.policyReceived||false,followups:p.followups||[],policyNumber:p.policyNumber||'',policyUrl:p.policyUrl||'',coverNoteUrl:p.coverNoteUrl||'',quotationUrl:p.quotationUrl||'',renewalNoticeUrl:p.renewalNoticeUrl||'',icNumber:p.icNumber||'',requestQuotationDate:p.requestQuotationDate||'',previousPolicyUrl:p.previousPolicyUrl||'',policyStartDate:p.policyStartDate||'',quotationNo:p.quotationNo||'',name:p.name,expiry:p.expiry,premium:p.premium,category:p.category,insurer:p.insurer,contact:p.contact,remark:p.remark,year:p.year}));
+  return policies.map(p=>({id:p.id,status:p.status,notes:p.notes,quoted:p.quoted,invoice:p.invoice||'',ornum:p.ornum||'',contactDate:p.contactDate||'',policyReceived:p.policyReceived||false,followups:p.followups||[],policyNumber:p.policyNumber||'',policyUrl:p.policyUrl||'',coverNoteUrl:p.coverNoteUrl||'',quotationUrl:p.quotationUrl||'',renewalNoticeUrl:p.renewalNoticeUrl||'',icNumber:p.icNumber||'',requestQuotationDate:p.requestQuotationDate||'',previousPolicyUrl:p.previousPolicyUrl||'',policyStartDate:p.policyStartDate||'',quotationNo:p.quotationNo||'',lastWaSent:p.lastWaSent||'',name:p.name,expiry:p.expiry,premium:p.premium,category:p.category,insurer:p.insurer,contact:p.contact,remark:p.remark,year:p.year}));
 }
-function cacheLocally(){ try{ localStorage.setItem('cha_v3',JSON.stringify(policiesSnapshot())); localStorage.setItem('cha_activity',JSON.stringify(ACTIVITY)); }catch(e){} }
+function cacheLocally(){ try{ localStorage.setItem('cha_v3',JSON.stringify(policiesSnapshot())); localStorage.setItem('cha_activity',JSON.stringify(ACTIVITY)); localStorage.setItem('cha_teamnames',JSON.stringify(TEAM_NAMES)); }catch(e){} }
 
 // ═══════════ CHANGE HISTORY (kept, not shown in the UI) ════════
 let ACTIVITY=[];
@@ -1306,14 +1327,24 @@ function save(changedPolicy){
 // ═══════════ SHARED TEAM SYNC (Supabase) ═══════════════════════
 // Workflow state (status/notes/follow-ups) lives in one row of the
 // `app_state_nonmotor` table, so every team member sees the same data.
+// Accounts allowed to manage the approved-name list and see everything.
+// Same list as the Endorsement Dashboard and Puspakom, kept identical on purpose.
+const ADMIN_EMAILS=['info@chinhockagency.com'];
+let CURRENT_USER_EMAIL='';
+function isAdmin(){ return ADMIN_EMAILS.map(e=>e.toLowerCase()).includes((CURRENT_USER_EMAIL||'').toLowerCase()); }
+function myName(){ try{ return localStorage.getItem('ch_nm_name')||''; }catch(e){ return ''; } }
+// Names the admin has registered. Synced with everything else in the same
+// Supabase row so the whole team shares one list.
+let TEAM_NAMES=[];
+
 const SUPABASE_URL='https://lxjtwkxgxwojtltfdugj.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_ZoX2XxOdZKAdpQvExq3SpA_ixtWw-db';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 let currentRev=0,dirtyPending=false,savingInFlight=false,pollTimer=null;
 
 function unwrapPayload(payload){
-  if(Array.isArray(payload)) return {policies:payload,activity:[]}; // legacy shape (before activity log existed)
-  return {policies:Array.isArray(payload?.policies)?payload.policies:[],activity:Array.isArray(payload?.activity)?payload.activity:[]};
+  if(Array.isArray(payload)) return {policies:payload,activity:[],teamNames:[]}; // legacy shape (before activity log existed)
+  return {policies:Array.isArray(payload?.policies)?payload.policies:[],activity:Array.isArray(payload?.activity)?payload.activity:[],teamNames:Array.isArray(payload?.teamNames)?payload.teamNames:[]};
 }
 async function loadFromServer(){
   const {data,error}=await sb.from('app_state_nonmotor').select('rev,data').eq('id',1).single();
@@ -1328,13 +1359,13 @@ async function pushNow(){
   try{
     const nextRev=currentRev+1;
     const {data,error}=await sb.from('app_state_nonmotor')
-      .update({data:{policies:policiesSnapshot(),activity:ACTIVITY},rev:nextRev,updated_at:new Date().toISOString()})
+      .update({data:{policies:policiesSnapshot(),activity:ACTIVITY,teamNames:TEAM_NAMES},rev:nextRev,updated_at:new Date().toISOString()})
       .eq('id',1).eq('rev',currentRev).select('rev,data');
     if(error){ if(/JWT|auth|permission|token/i.test(error.message||''))showLogin('Login expired — please log in again'); return; }
     if(!data||!data.length){
       // conflict: someone else already saved (rev moved) — reload their version
       const cur=await sb.from('app_state_nonmotor').select('rev,data').eq('id',1).single();
-      if(cur.data){ const u=unwrapPayload(cur.data.data); initPolicies(u.policies); ACTIVITY=u.activity; cacheLocally(); currentRev=cur.data.rev||0; if(typeof refresh==='function')refresh(); toast('⚠️ Data was updated by someone else — latest version loaded, please recheck your recent changes'); }
+      if(cur.data){ const u=unwrapPayload(cur.data.data); initPolicies(u.policies); ACTIVITY=u.activity; TEAM_NAMES=u.teamNames; cacheLocally(); currentRev=cur.data.rev||0; if(typeof refresh==='function')refresh(); toast('⚠️ Data was updated by someone else — latest version loaded, please recheck your recent changes'); }
       return;
     }
     currentRev=data[0].rev;
@@ -1348,7 +1379,7 @@ function startPolling(){
     try{
       const {data,error}=await sb.from('app_state_nonmotor').select('rev,data').eq('id',1).single();
       if(error||!data)return;
-      if((data.rev||0)!==currentRev){ const u=unwrapPayload(data.data); initPolicies(u.policies); ACTIVITY=u.activity; cacheLocally(); currentRev=data.rev||0; if(typeof refresh==='function')refresh(); }
+      if((data.rev||0)!==currentRev){ const u=unwrapPayload(data.data); initPolicies(u.policies); ACTIVITY=u.activity; TEAM_NAMES=u.teamNames; cacheLocally(); currentRev=data.rev||0; if(typeof refresh==='function')refresh(); }
     }catch(e){}
   },7000);
 }
@@ -1392,10 +1423,24 @@ async function boot(){
   try{
     const {data:{session}}=await sb.auth.getSession();
     if(!session){ showLogin('Please log in'); return; }
+    CURRENT_USER_EMAIL=(session.user&&session.user.email)||'';
     let remote=null;
     try{ remote=await loadFromServer(); }catch(e){ remote=null; /* offline: fall back to local cache */ }
-    if(remote){ initPolicies(remote.policies); ACTIVITY=remote.activity; cacheLocally(); }
-    else{ initPolicies(); try{ ACTIVITY=JSON.parse(localStorage.getItem('cha_activity')||'[]'); }catch(e){ ACTIVITY=[]; } }
+    if(remote){ initPolicies(remote.policies); ACTIVITY=remote.activity; TEAM_NAMES=remote.teamNames; cacheLocally(); }
+    else{ initPolicies(); try{ ACTIVITY=JSON.parse(localStorage.getItem('cha_activity')||'[]'); }catch(e){ ACTIVITY=[]; }
+          try{ TEAM_NAMES=JSON.parse(localStorage.getItem('cha_teamnames')||'[]'); }catch(e){ TEAM_NAMES=[]; } }
+    // Approved-name gate (same model as the Endorsement Dashboard): a non-admin has to
+    // sign in under a name the admin registered, so the activity log's "who" is a real
+    // person instead of free text. Deliberately FAILS OPEN while the list is still
+    // empty — this app is in daily team use and an empty list would lock everyone out.
+    if(!isAdmin() && TEAM_NAMES.length){
+      const nm=myName().trim().toLowerCase();
+      if(!nm || !TEAM_NAMES.some(n=>String(n).toLowerCase()===nm)){
+        try{ await sb.auth.signOut(); }catch(e){}
+        showLogin('That name is not on the approved list — check the spelling, or ask admin to add it under Settings → Team & Access.');
+        return;
+      }
+    }
     migrateStatuses();
     hideLogin();
     startAppUI();
@@ -1502,7 +1547,7 @@ function gotoView(v){
   else if(FILTERED_STATUSES.includes(v)){
     document.getElementById('view-filtered').style.display='block';
   }
-  if(v==='settings') updateDriveButtonUI();
+  if(v==='settings'){ updateDriveButtonUI(); renderWaSettings(); renderTeamAccess(); }
   refresh();
 }
 
@@ -1585,7 +1630,7 @@ function renderToday(d){
           ${catTag(p.category)}
           <span class="pcard-ins">${p.insurer}</span>
         </div>
-        ${p.contact?`<div style="font-size:11px;color:var(--muted);margin-top:4px;">📞 ${p.contact}</div>`:''}
+        ${p.contact?`<div style="font-size:11px;color:var(--muted);margin-top:4px;">📞 ${p.contact}${waBtn(p)}</div>`:''}
         ${p.notes?`<div class="pcard-note">📝 ${p.notes}</div>`:''}
         <div class="progress-row">${prog}</div>
         <div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;">
@@ -1604,7 +1649,7 @@ function renderToday(d){
     <td class="td-mono">${fmtRM(p.premium)}</td>
     <td>${catTag(p.category)}</td>
     <td>${p.insurer}</td>
-    <td class="td-mono" style="font-size:11px;">${p.contact||'—'}</td>
+    <td class="td-mono" style="font-size:11px;white-space:nowrap;">${p.contact||'—'}${waBtn(p)}</td>
     <td>${statusBadge(p.status)}</td>
     <td><button class="btn btn-primary btn-xs" onclick="event.stopPropagation();openDetail(${p.id})">Edit</button></td>
   </tr>`).join('');
@@ -1742,7 +1787,7 @@ function renderAll(){
     <td class="td-mono">${fmtRM(p.premium)}${p.quoted?`<br><span style="font-size:10px;color:var(--navy);">Q: ${fmtRM(p.quoted)}</span>`:''}</td>
     <td>${catTag(p.category)}</td>
     <td style="font-size:12px;">${p.insurer}</td>
-    <td class="td-mono" style="font-size:11px;">${p.contact||'—'}</td>
+    <td class="td-mono" style="font-size:11px;white-space:nowrap;">${p.contact||'—'}${waBtn(p)}</td>
     <td>${statusBadge(p.status)}</td>
     <td style="font-size:11px;color:var(--muted);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.notes||'—'}${p.invoice?`<br><span style="color:var(--teal);font-weight:600;">🧾 ${p.invoice}</span>`:''}</td>
     <td><button class="btn btn-primary btn-xs" onclick="event.stopPropagation();openDetail(${p.id})">Edit</button></td>
@@ -1762,7 +1807,7 @@ function renderFiltered(v,d){
     <td class="td-mono">${fmtRM(p.premium)}${p.quoted?`<br><span style="font-size:10px;color:var(--navy);">Q: ${fmtRM(p.quoted)}</span>`:''}</td>
     <td>${catTag(p.category)}</td>
     <td style="font-size:12px;">${p.insurer}</td>
-    <td class="td-mono" style="font-size:11px;">${p.contact||'—'}</td>
+    <td class="td-mono" style="font-size:11px;white-space:nowrap;">${p.contact||'—'}${waBtn(p)}</td>
     <td style="font-size:11px;color:var(--muted);max-width:160px;">${p.notes||'—'}</td>
     <td><button class="btn btn-primary btn-xs" onclick="event.stopPropagation();openDetail(${p.id})">Edit</button></td>
   </tr>`).join('');
@@ -1780,6 +1825,7 @@ function openDetail(id){
   document.getElementById('md-premium-view').textContent=fmtRM(p.premium);
   document.getElementById('md-insurer-view').textContent=p.insurer;
   document.getElementById('md-contact-view').textContent=p.contact||'—';
+  const _waSlot=document.getElementById('md-wa-slot'); if(_waSlot) _waSlot.innerHTML=waBtn(p);
   document.getElementById('md-expiry-input').value=p.expiry||'';
   document.getElementById('md-premium-input').value=p.premium||0;
   document.getElementById('md-insurer-input').value=p.insurer||'';
@@ -2551,6 +2597,126 @@ function copyRenewalTemplate(){
   });
 }
 
+// ═══════════ TEAM & ACCESS ════════════════════════════════════
+// Logins themselves live in Supabase Auth (one email + password per person) —
+// deliberately NOT in this file, so no password ever touches the frontend code.
+// This list is only the "which names are allowed in" gate, shared via Supabase.
+function renderWhoAmI(){
+  const el=document.getElementById('whoAmI'); if(!el) return;
+  const nm=myName();
+  el.textContent=(nm?nm:'(no name set)')+(CURRENT_USER_EMAIL?' · '+CURRENT_USER_EMAIL:'')+(isAdmin()?' · admin':'');
+}
+function renderTeamAccess(){
+  const el=document.getElementById('team-access-wrap'); if(!el) return;
+  const admin=isAdmin();
+  const chips=TEAM_NAMES.length
+    ? TEAM_NAMES.map(n=>`<span class="tm-chip">${n}${admin?`<button onclick="removeTeamName(${JSON.stringify(n).replace(/"/g,'&quot;')})" title="Remove ${n}">✕</button>`:''}</span>`).join('')
+    : `<div style="font-size:12px;color:var(--orange);">No names added yet — the name check is switched off until you add at least one, so anyone with a valid login can still get in.</div>`;
+  el.innerHTML=`
+    <div style="font-size:12.5px;color:var(--muted);margin-bottom:10px;">You are signed in as <b>${myName()||'(no name)'}</b>${CURRENT_USER_EMAIL?' ('+CURRENT_USER_EMAIL+')':''}.</div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:4px;">Admin</div>
+    <div style="font-size:12.5px;margin-bottom:14px;">${ADMIN_EMAILS.join(', ')}</div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:4px;">Give someone their own login</div>
+    <div style="font-size:12.5px;color:var(--muted);margin-bottom:14px;">Supabase → <b>Authentication → Users → Add user</b>: set their email + a password and pass it to them directly. Then add their name below so the app recognises them.</div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:4px;">Approved names</div>
+    <div style="font-size:12.5px;color:var(--muted);margin-bottom:10px;">A non-admin has to type one of these at login (not case-sensitive). This is what stops a shared login being used under someone else's name.</div>
+    ${admin?`<div style="display:flex;gap:8px;margin-bottom:10px;">
+      <input id="newTeamName" type="text" placeholder="Add a name…" style="flex:1;font:inherit;font-size:13px;background:var(--card2);border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);outline:none;" onkeydown="if(event.key==='Enter')addTeamName()">
+      <button class="btn btn-primary btn-sm" onclick="addTeamName()">Add</button>
+    </div>`:`<div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Only admin can change this list.</div>`}
+    <div>${chips}</div>`;
+}
+function addTeamName(){
+  if(!isAdmin()){ toast('Only admin can change the approved names'); return; }
+  const inp=document.getElementById('newTeamName'); if(!inp) return;
+  const v=inp.value.trim(); if(!v) return;
+  if(TEAM_NAMES.some(n=>String(n).toLowerCase()===v.toLowerCase())){ toast('Already in the list'); return; }
+  TEAM_NAMES.push(v);
+  logActivity('Added approved name',v);
+  save(); renderTeamAccess(); toast('✓ Added '+v);
+}
+function removeTeamName(name){
+  if(!isAdmin()){ toast('Only admin can change the approved names'); return; }
+  if(!confirm('Remove "'+name+'" from the approved list?\n\nThey won\'t be able to log in again until the name is re-added.')) return;
+  TEAM_NAMES=TEAM_NAMES.filter(n=>n!==name);
+  logActivity('Removed approved name',name);
+  save(); renderTeamAccess(); toast('Removed '+name);
+}
+
+// ═══════════ WHATSAPP QUICK SEND ══════════════════════════════
+// One click on the WhatsApp mark opens that customer's chat with the renewal
+// message already typed in — no copy/paste, no searching for the number.
+//
+// TWO deliberate implementation choices, don't "tidy" them away:
+//  1. `web.whatsapp.com/send?phone=` — NOT `wa.me/`. wa.me shows a
+//     "Continue to Chat" interstitial every single time; /send goes straight
+//     into the conversation.
+//  2. `window.open(url,'chWaWindow')` with NO 'noopener'. The window NAME is
+//     what makes every click reuse the same WhatsApp tab instead of piling up
+//     a new one. Adding 'noopener' makes Chrome ignore the name and open a
+//     fresh tab each time — which is the exact complaint this feature fixes.
+const WA_ICON=`<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.27-.47-2.42-1.49-.9-.8-1.5-1.79-1.68-2.09-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.6-.92-2.19-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.01-1.04 2.47 0 1.46 1.06 2.87 1.21 3.07.15.2 2.09 3.2 5.08 4.36 2.98 1.16 2.98.77 3.52.72.54-.05 1.75-.71 2-1.41.25-.69.25-1.29.17-1.41-.07-.12-.27-.2-.57-.35z"/><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.87 9.87 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm0 18.02h-.01a8.2 8.2 0 0 1-4.18-1.14l-.3-.18-3.11.82.83-3.04-.2-.31a8.15 8.15 0 0 1-1.25-4.36c0-4.54 3.7-8.23 8.23-8.23 2.2 0 4.26.86 5.81 2.41a8.17 8.17 0 0 1 2.41 5.82c0 4.54-3.7 8.21-8.23 8.21z"/></svg>`;
+
+// Per-device, not synced: whoever has WhatsApp Desktop installed can switch to
+// it and skip the WhatsApp Web reload entirely.
+const WA_MODE_KEY='ch_nm_wa_mode';
+function waMode(){ try{ return localStorage.getItem(WA_MODE_KEY)==='app'?'app':'web'; }catch(e){ return 'web'; } }
+function setWaMode(m){ try{ localStorage.setItem(WA_MODE_KEY,m==='app'?'app':'web'); }catch(e){} renderWaSettings(); toast(m==='app'?'WhatsApp Desktop App selected':'WhatsApp Web selected'); }
+
+// Malaysian numbers get keyed in every possible way — normalise to what wa.me wants.
+function waNumber(raw){
+  let d=String(raw||'').replace(/\D/g,'');
+  if(!d) return '';
+  if(d.startsWith('60')) return d;      // already has the country code
+  if(d.startsWith('0'))  return '60'+d.slice(1);  // 01x… → 601x…
+  if(d.startsWith('1'))  return '60'+d;  // bare mobile, no leading zero
+  return d;                              // assume already international
+}
+function waCopy(text){
+  if(navigator.clipboard) return navigator.clipboard.writeText(text).catch(()=>{});
+  try{ const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); }catch(e){}
+}
+// Local calendar date as YYYY-MM-DD. NOT toISOString() — that converts local
+// midnight to UTC, which in Malaysia (UTC+8) reports yesterday's date.
+function isoLocal(d){ const x=d||new Date(); return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0'); }
+function waSentToday(p){ return !!p.lastWaSent && p.lastWaSent===isoLocal(); }
+function waBtn(p){
+  if(!waNumber(p.contact)) return '';
+  const sent=waSentToday(p);
+  return `<button class="wa-btn${sent?' sent':''}" onclick="waSend(${p.id},event)" title="${sent?'Already messaged today — ':''}WhatsApp ${p.contact}" aria-label="Send WhatsApp to ${p.name}">${WA_ICON}</button>`;
+}
+function waSend(id,ev){
+  if(ev) ev.stopPropagation();
+  const p=policies.find(x=>x.id===id); if(!p) return;
+  const txt=renewalMessageTemplate(p);
+  const num=waNumber(p.contact);
+  waCopy(txt); // always copy as a fallback, in case WhatsApp drops the prefilled text
+  if(!num){
+    toast('⚠ No phone number saved for '+p.name+' — message copied instead. Add the contact number first.');
+    return;
+  }
+  const q='phone='+num+'&text='+encodeURIComponent(txt);
+  if(waMode()==='app'){
+    // Custom protocol: the OS hands this to WhatsApp Desktop and our page stays put,
+    // so there is no browser tab and no reload at all.
+    window.location.href='whatsapp://send?'+q;
+  }else{
+    window.open('https://web.whatsapp.com/send?'+q,'chWaWindow');
+  }
+  p.lastWaSent=isoLocal();
+  logActivity('WhatsApp opened',`${p.name} · ${num}`,p);
+  save();
+  refresh();
+  if(editingId===p.id) openDetail(p.id);
+  toast('Opening WhatsApp → '+p.name+' ('+num+')');
+}
+function renderWaSettings(){
+  const el=document.getElementById('wa-mode-wrap'); if(!el) return;
+  const m=waMode();
+  const btn=(v,label,note)=>`<button class="btn ${m===v?'btn-primary':'btn-ghost'} btn-sm" onclick="setWaMode('${v}')" style="text-align:left;">${label}<div style="font-size:10.5px;font-weight:400;opacity:.8;margin-top:2px;">${note}</div></button>`;
+  el.innerHTML=btn('web','🌐 WhatsApp Web','Reuses one browser tab')+btn('app','💻 WhatsApp Desktop App','Instant, no tab or reload');
+}
+
 // ═══════════ PENDING POLICY ═══════════════════════════════
 let ppFilter = 'pending';
 
@@ -2684,7 +2850,7 @@ function selectPolicyFolder(){
 
 // ═══════════ BACKUP / EXPORT ════════════════════════════════════
 function exportBackup(){
-  const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),policies:policiesSnapshot(),activity:ACTIVITY},null,2)],{type:'application/json'});
+  const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),policies:policiesSnapshot(),activity:ACTIVITY,teamNames:TEAM_NAMES},null,2)],{type:'application/json'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob); a.download='nonmotor_backup_'+TODAY.toISOString().slice(0,10)+'.json'; a.click();
   toast('✓ Backup downloaded');
@@ -2701,6 +2867,7 @@ function importBackup(e){
       if(!ok){ toast('Restore cancelled'); return; }
       initPolicies(restored);
       if(Array.isArray(d.activity)) ACTIVITY=d.activity;
+      if(Array.isArray(d.teamNames)) TEAM_NAMES=d.teamNames;
       cacheLocally();
       queueSync();
       refresh();
@@ -2805,6 +2972,7 @@ const days_arr=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Sat
 function startAppUI(){
   document.getElementById('today-str').textContent=days_arr[TODAY.getDay()]+', '+TODAY.toLocaleDateString('en-MY',{day:'numeric',month:'long',year:'numeric'});
   updateDriveButtonUI();
+  renderWhoAmI();
   // Init Master List year/month filter
   initMstFilterBar();
   filterPP('pending');
