@@ -512,7 +512,7 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
     <img class="lc-logo-img" src="chinhock-logo.jpg" alt="Chin Hock Agency">
     <h2>Renewal Manager</h2>
     <p>CHIN HOCK AGENCY (M) SDN BHD</p>
-    <input id="loginEmail" type="email" placeholder="Team email" onkeydown="if(event.key==='Enter')document.getElementById('loginName').focus()" autocomplete="username">
+    <input id="loginEmail" type="email" placeholder="Your email" onkeydown="if(event.key==='Enter')document.getElementById('loginName').focus()" autocomplete="username">
     <input id="loginName" type="text" placeholder="Your name (shown on everything you do)" onkeydown="if(event.key==='Enter')document.getElementById('loginPass').focus()" autocomplete="name">
     <input id="loginPass" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')submitLogin()" autocomplete="current-password">
     <button id="loginBtn" onclick="submitLogin()">Log In</button>
@@ -572,6 +572,11 @@ td { padding: 10px 14px; font-size: 12px; vertical-align: middle; }
   <div class="content">
 
     <!-- URGENT BANNER -->
+    <div class="urgent-banner" id="setup-banner" style="display:none;background:var(--orange-bg);border-color:var(--orange);">
+      <span style="font-size:18px;">⚠️</span>
+      <span class="ub-text">Per-person logins aren't finished: <strong>no approved names yet</strong>, so the name check is switched off and anyone with a valid login can sign in under any name.</span>
+      <button class="btn btn-sm" style="background:var(--orange);color:#fff;margin-left:auto;" onclick="gotoView('settings');setTimeout(function(){var e=document.getElementById('team-access-wrap');if(e)e.scrollIntoView({block:'center'});},60);">Add names</button>
+    </div>
     <div class="urgent-banner" id="urgent-banner">
       <span style="font-size:18px;">🚨</span>
       <span class="ub-text"><strong id="ub-txt">0 policies</strong> expiring within 7 days — not yet renewed!</span>
@@ -1531,6 +1536,7 @@ function startPolling(){
         seenActivityLen=ACTIVITY.length;
         cacheLocally(); currentRev=data.rev||0;
         if(typeof refresh==='function')refresh();
+        renderSetupBanner();
         pushNotifs(fresh);
       }
     }catch(e){}
@@ -3140,6 +3146,12 @@ function renderTrash(){
 // Logins themselves live in Supabase Auth (one email + password per person) —
 // deliberately NOT in this file, so no password ever touches the frontend code.
 // This list is only the "which names are allowed in" gate, shared via Supabase.
+function renderSetupBanner(){
+  const el=document.getElementById('setup-banner'); if(!el) return;
+  const show=isAdmin() && !TEAM_NAMES.length;
+  el.style.display=show?'':'none';
+  el.classList.toggle('show',show);
+}
 function renderWhoAmI(){
   const el=document.getElementById('whoAmI'); if(!el) return;
   const nm=myName();
@@ -3172,14 +3184,14 @@ function addTeamName(){
   if(TEAM_NAMES.some(n=>String(n).toLowerCase()===v.toLowerCase())){ toast('Already in the list'); return; }
   TEAM_NAMES.push(v);
   logActivity('Added approved name',v);
-  save(); renderTeamAccess(); toast('✓ Added '+v);
+  save(); renderTeamAccess(); renderSetupBanner(); toast('✓ Added '+v);
 }
 function removeTeamName(name){
   if(!isAdmin()){ toast('Only admin can change the approved names'); return; }
   if(!confirm('Remove "'+name+'" from the approved list?\n\nThey won\'t be able to log in again until the name is re-added.')) return;
   TEAM_NAMES=TEAM_NAMES.filter(n=>n!==name);
   logActivity('Removed approved name',name);
-  save(); renderTeamAccess(); toast('Removed '+name);
+  save(); renderTeamAccess(); renderSetupBanner(); toast('Removed '+name);
 }
 
 // ═══════════ WHATSAPP QUICK SEND ══════════════════════════════
@@ -3514,6 +3526,7 @@ function startAppUI(){
   document.getElementById('today-str').textContent=days_arr[TODAY.getDay()]+', '+TODAY.toLocaleDateString('en-MY',{day:'numeric',month:'long',year:'numeric'});
   updateDriveButtonUI();
   renderWhoAmI();
+  renderSetupBanner();
   renderNotifDot();
   document.addEventListener('click',function(e){
     if(!notifPanelOpen) return;
